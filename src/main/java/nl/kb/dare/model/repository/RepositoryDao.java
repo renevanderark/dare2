@@ -7,6 +7,8 @@ import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
+import java.util.List;
+
 @RegisterMapper(RepositoryMapper.class)
 public interface RepositoryDao {
 
@@ -25,4 +27,7 @@ public interface RepositoryDao {
             "set url=:r.url, metadataPrefix=:r.metadataPrefix, oai_set=:r.set, datestamp=:r.dateStamp " +
             "where id = :id")
     void update(@Bind("id") Integer id, @BindBean("r") Repository repositoryConfig);
+
+    @SqlQuery("select id, url, metadataPrefix, oai_set, datestamp from repositories")
+    List<Repository> list();
 }

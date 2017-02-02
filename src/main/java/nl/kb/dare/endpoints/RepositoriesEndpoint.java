@@ -14,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.List;
 
 @Path("/repositories")
 public class RepositoriesEndpoint {
@@ -22,6 +23,13 @@ public class RepositoriesEndpoint {
     public RepositoriesEndpoint(RepositoryDao dao) {
 
         this.dao = dao;
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response index() {
+        final List<Repository> list = dao.list();
+        return Response.ok().entity(list).build();
     }
 
     @POST

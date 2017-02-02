@@ -1,10 +1,12 @@
 package nl.kb.dare.endpoints;
 
+import com.google.common.collect.Lists;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
@@ -85,5 +87,20 @@ public class RepositoriesEndpointTest {
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
 
+    @Test
+    public void indexShouldRespondWithAListOfRepositories() {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao);
+        final Repository repositoryConfig1 = new Repository("http://example.com", "prefix", "setname", "123", 1);
+        final Repository repositoryConfig2 = new Repository("http://example.com", "prefix", "setname", "123", 2);
+        final List<Repository> repositories = Lists.newArrayList(repositoryConfig1, repositoryConfig2);
+
+        when(dao.list()).thenReturn(repositories);
+        final Response response = instance.index();
+
+        verify(dao).list();
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+        assertThat(response.getEntity(), equalTo(repositories));
+    }
 
 }

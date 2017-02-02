@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Repository {
 
+    private Integer id;
     private String url;
     private String metadataPrefix;
     private String set;
@@ -18,6 +19,11 @@ public class Repository {
         this.metadataPrefix = metadataPrefix;
         this.set = set;
         this.dateStamp = dateStamp;
+    }
+
+    public Repository(String url, String metadataPrefix, String set, String dateStamp, Integer id) {
+        this(url, metadataPrefix, set, dateStamp);
+        this.id = id;
     }
 
     @JsonProperty
@@ -58,5 +64,15 @@ public class Repository {
     @JsonProperty
     public void setDateStamp(String dateStamp) {
         this.dateStamp = dateStamp;
+    }
+
+    @JsonProperty
+    public Integer getId() {
+        return id;
+    }
+
+    @JsonProperty
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
