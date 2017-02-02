@@ -70,4 +70,20 @@ public class RepositoriesEndpointTest {
         assertThat(response.getEntity(), hasProperty("message", equalTo("repository not found with id: 123")));
         assertThat(response.getEntity(), hasProperty("code", equalTo(Response.Status.NOT_FOUND.getStatusCode())));
     }
+
+    @Test
+    public void updateShouldUpdateTheRepository() {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
+        final Integer id = 123;
+
+        final Response response = instance.update(id, repositoryConfig);
+
+        verify(dao).update(id, repositoryConfig);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+
+
 }
