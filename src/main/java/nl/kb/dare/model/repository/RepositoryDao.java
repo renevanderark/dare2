@@ -1,4 +1,4 @@
-package dao;
+package nl.kb.dare.model.repository;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.BindBean;

@@ -1,4 +1,4 @@
-package endpoints;
+package nl.kb.dare.endpoints;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,4 +1,4 @@
-package dao;
+package nl.kb.dare.model.repository;
 
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;

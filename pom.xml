@@ -154,22 +154,6 @@
                 <version>2.19.1</version>
             </plugin>
             <plugin>
-                <artifactId>exec-maven-plugin</artifactId>
-                <groupId>org.codehaus.mojo</groupId>
-                <executions>
-                    <execution><!-- Run our version calculation script -->
-                        <id>Build assets</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>${basedir}/build-assets.sh</executable>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>${appassembler.version}</version>
@@ -183,7 +167,7 @@
                             <programs>
                                 <program>
                                     <id>run</id>
-                                    <mainClass>nl.kb.dropwizard.App</mainClass>
+                                    <mainClass>nl.kb.dare.App</mainClass>
                                 </program>
                             </programs>
                         </configuration>

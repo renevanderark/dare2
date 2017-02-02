@@ -1,7 +1,7 @@
-package endpoints;
+package nl.kb.dare.endpoints;
 
-import dao.Repository;
-import dao.RepositoryDao;
+import nl.kb.dare.model.repository.Repository;
+import nl.kb.dare.model.repository.RepositoryDao;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;

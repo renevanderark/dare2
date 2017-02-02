@@ -1,4 +1,4 @@
-package dao;
+package nl.kb.dare.model.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

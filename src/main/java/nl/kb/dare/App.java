@@ -1,5 +1,7 @@
-import dao.RepositoryDao;
-import endpoints.RepositoriesEndpoint;
+package nl.kb.dare;
+
+import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.endpoints.RepositoriesEndpoint;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
