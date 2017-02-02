@@ -2,7 +2,7 @@
 
 Initial setup
 
-![build status](https://travis-ci.org/renevanderark/dare2.svg?branch=master)
+[![build status](https://travis-ci.org/renevanderark/dare2.svg?branch=master)](https://travis-ci.org/renevanderark/dare2)
 
 ## Setting up the database
 
