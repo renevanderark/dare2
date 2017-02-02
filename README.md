@@ -2,6 +2,8 @@
 
 Initial setup
 
+![build status](https://travis-ci.org/renevanderark/dare2.svg?branch=master)
+
 ## Setting up the database
 
 This application expects a database with support for jdbc. 
