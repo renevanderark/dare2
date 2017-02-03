@@ -5,8 +5,10 @@ import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -105,18 +107,67 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() {
+    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryValidator validator = mock(RepositoryValidator.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
+        final Integer id = 123;
+        final RepositoryValidator.ValidationResult validationResult = validator.new ValidationResult();
+        when(dao.findById(id)).thenReturn(repositoryConfig);
+        when(validator.validate(repositoryConfig)).thenReturn(validationResult);
 
+        final Response response = instance.validate(id);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+        assertThat(response.getEntity(), equalTo(validationResult));
+    }
+    @Test
+    public void validateShouldReturnNotFoundWhenRepositoryIsNotFound() {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final Integer id = 123;
+        when(dao.findById(id)).thenReturn(null);
+
+        final Response response = instance.validate(id);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.NOT_FOUND.getStatusCode()));
+        assertThat(response.getEntity(), hasProperty("message", equalTo("repository not found with id: 123")));
+        assertThat(response.getEntity(), hasProperty("code", equalTo(Response.Status.NOT_FOUND.getStatusCode())));
+    }
+
+
+    @Test
+    public void validateShouldHandleSAXException() throws IOException, SAXException {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryValidator validator = mock(RepositoryValidator.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final Integer id = 123;
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
+        when(dao.findById(id)).thenReturn(repositoryConfig);
+        when(validator.validate(repositoryConfig)).thenThrow(SAXException.class);
+
+        final Response response = instance.validate(id);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+        assertThat(response.getEntity(), hasProperty("message", equalTo("failed to parse xml response for repository url: http://example.com")));
+        assertThat(response.getEntity(), hasProperty("code", equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())));
     }
 
     @Test
-    public void validateShouldHandleSAXException() {
+    public void validateShouldHandleIOException() throws IOException, SAXException {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryValidator validator = mock(RepositoryValidator.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final Integer id = 123;
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
+        when(dao.findById(id)).thenReturn(repositoryConfig);
+        when(validator.validate(repositoryConfig)).thenThrow(IOException.class);
 
+        final Response response = instance.validate(id);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+        assertThat(response.getEntity(), hasProperty("message", equalTo("repository url could not be reached: http://example.com")));
+        assertThat(response.getEntity(), hasProperty("code", equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode())));
     }
-
-    @Test
-    public void validateShouldHandleIOException() {
-
-    }
-
 }
