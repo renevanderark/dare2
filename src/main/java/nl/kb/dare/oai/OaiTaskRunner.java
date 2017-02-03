@@ -2,24 +2,28 @@ package nl.kb.dare.oai;
 
 public class OaiTaskRunner implements Runnable {
 
-    private boolean isEnabled = true;
+    private final ListIdentifiers listIdentifiers;
+    private boolean isEnabled = false;
 
-    public OaiTaskRunner() {
+    public OaiTaskRunner(ListIdentifiers listIdentifiers) {
+        this.listIdentifiers = listIdentifiers;
     }
 
     public void setEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
     }
 
+
+
     @Override
     public void run() {
         while (true) {
             if (isEnabled) {
-                System.out.println("tick");
+                listIdentifiers.harvestBatches();
             }
 
             try {
-                Thread.sleep(1000L);
+                Thread.sleep(200L);
             } catch (InterruptedException e) {
                 break;
             }

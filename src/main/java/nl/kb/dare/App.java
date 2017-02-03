@@ -8,9 +8,10 @@ import nl.kb.dare.endpoints.ManagedTaskEndpoint;
 import nl.kb.dare.endpoints.RepositoriesEndpoint;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
+import nl.kb.dare.oai.ListIdentifiers;
 import nl.kb.dare.oai.OaiTaskManager;
 import nl.kb.dare.oai.OaiTaskRunner;
-import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.skife.jdbi.v2.DBI;
 
 public class App extends Application<Config> {
@@ -23,14 +24,14 @@ public class App extends Application<Config> {
         final DBIFactory factory = new DBIFactory();
         final DBI jdbi = factory.build(environment, config.getDataSourceFactory(), "mysql");
         final RepositoryDao repositoryDao = jdbi.onDemand(RepositoryDao.class);
-        final HttpClient oaiHarvestClient = new HttpClientBuilder(environment)
-                .build("oai-harvest-client");
+        final CloseableHttpClient oaiValidateClient = new HttpClientBuilder(environment)
+                .build("oai-validate-client");
 
-        final OaiTaskRunner oaiTaskRunner = new OaiTaskRunner();
+        final OaiTaskRunner oaiTaskRunner = new OaiTaskRunner(new ListIdentifiers(repositoryDao));
 
         environment.lifecycle().manage(new OaiTaskManager(oaiTaskRunner));
 
-        register(environment, new RepositoriesEndpoint(repositoryDao, new RepositoryValidator(oaiHarvestClient)));
+        register(environment, new RepositoriesEndpoint(repositoryDao, new RepositoryValidator(oaiValidateClient)));
         register(environment, new ManagedTaskEndpoint(oaiTaskRunner));
     }
 
