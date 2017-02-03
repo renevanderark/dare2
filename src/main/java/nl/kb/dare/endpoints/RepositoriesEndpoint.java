@@ -2,6 +2,8 @@ package nl.kb.dare.endpoints;
 
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.repository.RepositoryValidator;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -13,16 +15,19 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
 @Path("/repositories")
 public class RepositoriesEndpoint {
     private RepositoryDao dao;
+    private RepositoryValidator validator;
 
-    public RepositoriesEndpoint(RepositoryDao dao) {
+    public RepositoriesEndpoint(RepositoryDao dao, RepositoryValidator validator) {
 
         this.dao = dao;
+        this.validator = validator;
     }
 
     @GET
@@ -55,12 +60,38 @@ public class RepositoriesEndpoint {
         final Repository repositoryConfig = dao.findById(id);
 
         if (repositoryConfig == null) {
-            return Response
-                    .status(Response.Status.NOT_FOUND)
-                    .entity(new ErrorResponse("repository not found with id: " + id, Response.Status.NOT_FOUND.getStatusCode()))
+            return notFoundResponse(id);
+        }
+
+        return Response.ok(repositoryConfig).build();
+    }
+
+    @GET
+    @Path("/{id}/validate")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validate(@PathParam("id") Integer id) {
+        final Repository repositoryConfig = dao.findById(id);
+
+        if (repositoryConfig == null) {
+            return notFoundResponse(id);
+        }
+
+        final RepositoryValidator.ValidationResult result;
+
+        try {
+            result = validator.validate(repositoryConfig);
+            return Response.ok(result).build();
+        } catch (IOException e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ErrorResponse("repository url could not be reached: " + repositoryConfig.getUrl(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))
+                    .build();
+        } catch (SAXException e) {
+
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ErrorResponse("failed to parse xml response for repository url: " + repositoryConfig.getUrl(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))
                     .build();
         }
-        return Response.ok(repositoryConfig).build();
     }
 
     @DELETE
@@ -70,5 +101,12 @@ public class RepositoriesEndpoint {
         dao.remove(id);
 
         return Response.ok().build();
+    }
+
+    private Response notFoundResponse(Integer id) {
+        return Response
+                .status(Response.Status.NOT_FOUND)
+                .entity(new ErrorResponse("repository not found with id: " + id, Response.Status.NOT_FOUND.getStatusCode()))
+                .build();
     }
 }
