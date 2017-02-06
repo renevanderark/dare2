@@ -95,6 +95,7 @@ public class RepositoryValidatorTest {
         try {
             mdFormatsXml.close();
             listSetsXml.close();
+            corruptXml.close();
         } catch (IOException ignored) {
 
         }
