@@ -55,6 +55,7 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
 
     @Override
     public void onRequestError(Exception exception) {
+
         ioExceptions.add(new IOException(exception));
     }
 
@@ -76,5 +77,13 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
         if (saxExceptions.size() > 0) {
             throw saxExceptions.get(0);
         }
+    }
+
+    @Override
+    public List<Exception> getExceptions() {
+        List<Exception> exceptions = Lists.newArrayList();
+        exceptions.addAll(ioExceptions);
+        exceptions.addAll(saxExceptions);
+        return exceptions;
     }
 }

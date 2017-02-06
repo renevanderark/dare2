@@ -6,6 +6,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 public interface HttpResponseHandler {
 
@@ -20,4 +21,6 @@ public interface HttpResponseHandler {
     void setUrl(URL url);
 
     void throwAnyException() throws IOException, SAXException;
+
+    List<Exception> getExceptions();
 }

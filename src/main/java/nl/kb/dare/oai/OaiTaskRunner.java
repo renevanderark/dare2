@@ -31,7 +31,8 @@ public class OaiTaskRunner implements Runnable {
                 repositoryDao.list()
                         .stream()
                         .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
-                                (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone)))
+                                (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone),
+                                Throwable::printStackTrace))
                         .forEach(ListIdentifiers::harvest);
             }
 

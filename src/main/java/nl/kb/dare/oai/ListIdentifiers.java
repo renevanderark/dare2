@@ -15,12 +15,16 @@ class ListIdentifiers {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
     private final Consumer<Repository> onHarvestComplete;
+    private final Consumer<Exception> onException;
 
-    ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, Consumer<Repository> onHarvestComplete) {
+    ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                    Consumer<Repository> onHarvestComplete,
+                    Consumer<Exception> onException) {
         this.repositoryConfig = repositoryConfig;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
         this.onHarvestComplete = onHarvestComplete;
+        this.onException = onException;
     }
 
     private URL makeRequestUrl(String resumptionToken) throws MalformedURLException {
@@ -57,6 +61,11 @@ class ListIdentifiers {
                 httpFetcher.execute(requestUrl, responseHandler);
                 final Optional<String> optResumptionToken = xmlHandler.getResumptionToken();
                 final Optional<String> optDateStamp = xmlHandler.getLastDateStamp();
+
+                if (responseHandler.getExceptions().size() > 0) {
+                    responseHandler.getExceptions().forEach(onException);
+                    break;
+                }
 
                 if (optDateStamp.isPresent()) {
                     lastDateStamp = optDateStamp.get();
