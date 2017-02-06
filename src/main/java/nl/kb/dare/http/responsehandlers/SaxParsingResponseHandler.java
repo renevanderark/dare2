@@ -60,7 +60,7 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
 
     @Override
     public void onRedirect(String sourceLocation, String targetLocation) {
-        // not expected in ListSets or ListMetadataFormats
+        // not expected in standard OAI endpoint
     }
 
     @Override
@@ -68,6 +68,7 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
         this.url = url;
     }
 
+    @Override
     public void throwAnyException() throws IOException, SAXException {
         if (ioExceptions.size() > 0) {
             throw ioExceptions.get(0);

@@ -10,7 +10,6 @@ import nl.kb.dare.http.LenientHttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
-import nl.kb.dare.oai.ListIdentifiers;
 import nl.kb.dare.oai.OaiTaskManager;
 import nl.kb.dare.oai.OaiTaskRunner;
 import org.skife.jdbi.v2.DBI;
@@ -28,7 +27,7 @@ public class App extends Application<Config> {
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
         final RepositoryDao repositoryDao = jdbi.onDemand(RepositoryDao.class);
-        final OaiTaskRunner oaiTaskRunner = new OaiTaskRunner(new ListIdentifiers(repositoryDao));
+        final OaiTaskRunner oaiTaskRunner = new OaiTaskRunner(repositoryDao, httpFetcher, responseHandlerFactory);
 
         environment.lifecycle().manage(new OaiTaskManager(oaiTaskRunner));
 

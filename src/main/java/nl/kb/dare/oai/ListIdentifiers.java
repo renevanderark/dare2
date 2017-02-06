@@ -1,84 +1,62 @@
 package nl.kb.dare.oai;
 
-import com.google.common.collect.Sets;
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.Repository;
-import nl.kb.dare.model.repository.RepositoryDao;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
+class ListIdentifiers {
+    private final Long sleepTime = 1000L;
+    private final Repository repositoryConfig;
+    private final HttpFetcher httpFetcher;
+    private final ResponseHandlerFactory responseHandlerFactory;
+    private String resumptionToken = null;
 
-public class ListIdentifiers {
-    private final RepositoryDao repositoryDao;
-    private Set<Harvester> harvesters = Sets.newHashSet();
-
-    public ListIdentifiers(RepositoryDao repositoryDao) {
-        this.repositoryDao = repositoryDao;
-        initialize();
+    ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+        this.repositoryConfig = repositoryConfig;
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
     }
 
-    private void initialize() {
-        harvesters = repositoryDao.list().stream().map(Harvester::new).collect(toSet());
-    }
+    private URL makeRequestUrl() throws MalformedURLException {
+        final StringBuilder urlBuilder = new StringBuilder();
+        urlBuilder.append(repositoryConfig.getUrl()).append("?").append("verb=ListIdentifiers");
 
-    public void harvestBatches() {
-        for (Harvester harvester : harvesters) {
-            harvester.harvestBatch();
-        }
-    }
+        if (resumptionToken != null) {
+            urlBuilder.append("&").append(String.format("resumptionToken=%s", resumptionToken));
+        } else {
+            urlBuilder
+                    .append("&").append(String.format("set=%s", repositoryConfig.getSet()))
+                    .append("&").append(String.format("metadataPrefix=%s", repositoryConfig.getMetadataPrefix()));
 
-    private class Harvester {
-        private final String url;
-        private final String set;
-        private final String metadataPrefix;
-        private final String from;
-        private String resumptionToken = null;
-
-        Harvester(Repository repository) {
-            this.url = repository.getUrl();
-            this.set = repository.getSet();
-            this.metadataPrefix = repository.getMetadataPrefix();
-            this.from = repository.getDateStamp();
-        }
-
-        void harvestBatch() {
-            final StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append(url).append("?").append("verb=ListIdentifiers");
-
-            if (resumptionToken != null) {
-                urlBuilder.append("&").append(String.format("resumptionToken=%s", resumptionToken));
-            } else {
-                urlBuilder
-                        .append("&").append(String.format("set=%s", set))
-                        .append("&").append(String.format("metadataPrefix=%s", metadataPrefix));
-
-                if (from != null) {
-                    urlBuilder.append("&").append(String.format("from=%s", from));
-                }
+            if (repositoryConfig.getDateStamp() != null) {
+                urlBuilder.append("&").append(String.format("from=%s", repositoryConfig.getDateStamp()));
             }
+        }
+        return new URL(urlBuilder.toString());
+    }
 
+    void harvest() {
+        try {
+            while (resumptionToken == null || resumptionToken.trim().length() > 0) {
+                final URL requestUrl = makeRequestUrl();
+                final ListIdentifiersXmlHandler xmlHandler = new ListIdentifiersXmlHandler();
+                final HttpResponseHandler responseHandler = responseHandlerFactory.getSaxParsingHandler(xmlHandler);
 
-            System.out.println(urlBuilder.toString());
-            try {
-                final HttpURLConnection connection = (HttpURLConnection) new URL(urlBuilder.toString()).openConnection();
-                final InputStream inputStream = connection.getInputStream();
-                final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                System.out.println(requestUrl);
 
-                String line;
-                while((line = bufferedReader.readLine()) != null) {
-                    System.out.println(line);
-                }
-                bufferedReader.close();
-            } catch (IOException e) {
-                System.err.println("TODO: log error with data!");
-                e.printStackTrace();
+                httpFetcher.execute(requestUrl, responseHandler);
+                resumptionToken = xmlHandler.getResumptionToken();
+                Thread.sleep(sleepTime);
             }
+        } catch (InterruptedException ignored) {
+            // SEVERE!!
+        } catch (MalformedURLException e) {
+            // SEVERE!!
+            throw new RuntimeException(e);
         }
     }
 }

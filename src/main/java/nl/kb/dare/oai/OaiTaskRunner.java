@@ -1,25 +1,36 @@
 package nl.kb.dare.oai;
 
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.dare.model.repository.RepositoryDao;
+
 public class OaiTaskRunner implements Runnable {
 
-    private final ListIdentifiers listIdentifiers;
+    private final RepositoryDao repositoryDao;
+    private final HttpFetcher httpFetcher;
+    private final ResponseHandlerFactory responseHandlerFactory;
     private boolean isEnabled = false;
 
-    public OaiTaskRunner(ListIdentifiers listIdentifiers) {
-        this.listIdentifiers = listIdentifiers;
+    public OaiTaskRunner(RepositoryDao repositoryDao, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+        this.repositoryDao = repositoryDao;
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
     }
+
+
 
     public void setEnabled(boolean isEnabled) {
         this.isEnabled = isEnabled;
     }
 
-
-
     @Override
     public void run() {
         while (true) {
             if (isEnabled) {
-                listIdentifiers.harvestBatches();
+                repositoryDao.list()
+                        .stream()
+                        .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory))
+                        .forEach(ListIdentifiers::harvest);
             }
 
             try {
