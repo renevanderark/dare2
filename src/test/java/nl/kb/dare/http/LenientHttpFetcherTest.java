@@ -54,6 +54,73 @@ public class LenientHttpFetcherTest {
     }
 
     @Test
+    public void executeShouldInvokeSetUrlOfHandler() throws IOException {
+        final LenientHttpFetcher instance = new LenientHttpFetcher(false);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final InputStream responseData = mock(InputStream.class);
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        final URL url = makeUrl(responseData, connection);
+
+        instance.execute(url, responseHandler);
+
+        verify(responseHandler).setUrl(url);
+    }
+
+    @Test
+    public void executeShouldInvokeOnRequestErrorWhenIOExceptionIsThrownByGetResponseCode() throws IOException {
+        final LenientHttpFetcher instance = new LenientHttpFetcher(false);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final InputStream responseData = mock(InputStream.class);
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        final URL url = makeUrl(responseData, connection);
+        final IOException ioException = new IOException();
+        when(connection.getResponseCode()).thenThrow(ioException);
+
+        instance.execute(url, responseHandler);
+
+        verify(responseHandler).onRequestError(ioException);
+        verify(responseHandler, never()).onRedirect(any(), any());
+        verify(responseHandler, never()).onResponseError(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any());
+    }
+
+    @Test
+    public void executeShouldInvokeOnRequestErrorWhenIOExceptionIsThrownByGetInputStream() throws IOException {
+        final LenientHttpFetcher instance = new LenientHttpFetcher(false);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final InputStream responseData = mock(InputStream.class);
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        final URL url = makeUrl(responseData, connection);
+        final IOException ioException = new IOException();
+        when(connection.getInputStream()).thenThrow(ioException);
+
+        instance.execute(url, responseHandler);
+
+        verify(responseHandler).onRequestError(ioException);
+        verify(responseHandler, never()).onRedirect(any(), any());
+        verify(responseHandler, never()).onResponseError(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any());
+    }
+
+    @Test
+    public void executeShouldPassInputStreamAndResponseCodeToResponseErrorHandler() throws IOException {
+        final LenientHttpFetcher instance = new LenientHttpFetcher(false);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final InputStream responseData = mock(InputStream.class);
+        final HttpURLConnection connection = mock(HttpURLConnection.class);
+        final URL url = makeUrl(responseData, connection);
+        when(connection.getResponseCode()).thenReturn(500);
+
+        instance.execute(url, responseHandler);
+
+        verify(responseHandler).onResponseError(Response.Status.INTERNAL_SERVER_ERROR, responseData);
+        verify(responseHandler, never()).onRequestError(any());
+        verify(responseHandler, never()).onResponseData(any(), any());
+        verify(responseHandler, never()).onRedirect(any(), any());
+    }
+
+
+    @Test
     public void executeShouldHandleRedirects() throws IOException {
         final LenientHttpFetcher instance = new LenientHttpFetcher(false);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
@@ -71,4 +138,5 @@ public class LenientHttpFetcherTest {
         verify(responseHandler, never()).onResponseError(any(), any());
         verify(responseHandler, never()).onResponseData(any(), any());
     }
+
 }
