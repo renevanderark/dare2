@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 class ListIdentifiers {
-    private final Long sleepTime = 50L;
     private final Repository repositoryConfig;
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
@@ -57,10 +56,10 @@ class ListIdentifiers {
 
                 httpFetcher.execute(requestUrl, responseHandler);
                 final Optional<String> optResumptionToken = xmlHandler.getResumptionToken();
-                final Optional<String> optDatestamp = xmlHandler.getLastDateStamp();
+                final Optional<String> optDateStamp = xmlHandler.getLastDateStamp();
 
-                if (optDatestamp.isPresent()) {
-                    lastDateStamp = optDatestamp.get();
+                if (optDateStamp.isPresent()) {
+                    lastDateStamp = optDateStamp.get();
                 }
 
                 if (optResumptionToken.isPresent()) {
@@ -68,14 +67,11 @@ class ListIdentifiers {
                 } else {
                     break;
                 }
-                Thread.sleep(sleepTime);
             }
+
             repositoryConfig.setDateStamp(lastDateStamp);
             onHarvestComplete.accept(repositoryConfig);
             System.out.println("** harvest done for " + repositoryConfig.getId() + " / " + repositoryConfig.getSet());
-        } catch (InterruptedException e) {
-            // SEVERE!!
-            throw new RuntimeException(e);
         } catch (MalformedURLException e) {
             // SEVERE!!
             throw new RuntimeException(e);
