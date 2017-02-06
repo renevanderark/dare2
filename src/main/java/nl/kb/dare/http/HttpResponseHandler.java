@@ -1,0 +1,23 @@
+package nl.kb.dare.http;
+
+import org.xml.sax.SAXException;
+
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
+public interface HttpResponseHandler {
+
+    void onResponseData(Response.Status status, InputStream responseData);
+
+    void onResponseError(Response.Status status, InputStream responseData);
+
+    void onRequestError(Exception exception);
+
+    void onRedirect(String sourceLocation, String targetLocation);
+
+    void setUrl(URL url);
+
+    void throwAnyException() throws IOException, SAXException;
+}
