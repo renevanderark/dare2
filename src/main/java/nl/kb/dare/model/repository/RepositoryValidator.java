@@ -1,57 +1,61 @@
 package nl.kb.dare.model.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.net.URL;
 
 public class RepositoryValidator {
-    private final HttpClient oaiHarvestClient;
-    private final SAXParser saxParser;
-    {
-        try {
-            saxParser = SAXParserFactory.newInstance().newSAXParser();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private final HttpFetcher httpFetcher;
+    private final ResponseHandlerFactory responseHandlerFactory;
+
+    public class ValidationResult {
+        @JsonProperty
+        Boolean setExists = false;
+        @JsonProperty
+        Boolean metadataFormatSupported = false;
     }
 
-    public RepositoryValidator(HttpClient oaiHarvestClient) {
-        this.oaiHarvestClient = oaiHarvestClient;
+    public RepositoryValidator(HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
     }
 
     public ValidationResult validate(Repository repositoryConfig) throws IOException, SAXException {
-        final HttpGet listSetsGet = new HttpGet(String.format("%s?verb=ListSets", repositoryConfig.getUrl()));
-        final HttpGet listMdGet = new HttpGet(String.format("%s?verb=ListMetadataFormats", repositoryConfig.getUrl()));
-        final HttpResponse listSetsResponse = oaiHarvestClient.execute(listSetsGet);
-        final HttpResponse listMdResponse = oaiHarvestClient.execute(listMdGet);
+        final URL listSetsUrl = new URL(String.format("%s?verb=ListSets", repositoryConfig.getUrl()));
+        final URL listMdUrl = new URL(String.format("%s?verb=ListMetadataFormats", repositoryConfig.getUrl()));
 
         final ValidationResult validationResult = new ValidationResult();
-        final ListSetsHandler listSetsHandler = new ListSetsHandler(repositoryConfig.getSet(), validationResult);
-        final ListMetadataFormatsHandler listMetadataFormatsHandler =
-                new ListMetadataFormatsHandler(repositoryConfig.getMetadataPrefix(), validationResult);
 
-        saxParser.parse(listSetsResponse.getEntity().getContent(), listSetsHandler);
-        saxParser.parse(listMdResponse.getEntity().getContent(), listMetadataFormatsHandler);
+        final ListSetsXmlHandler listSetsXmlHandler = new ListSetsXmlHandler(repositoryConfig.getSet(), validationResult);
+        final ListMetadataFormatsXmlHandler listMetadataFormatsXmlHandler =
+                new ListMetadataFormatsXmlHandler(repositoryConfig.getMetadataPrefix(), validationResult);
+
+        final HttpResponseHandler listSetsHandler = responseHandlerFactory.getSaxParsingHandler(listSetsXmlHandler);
+        httpFetcher.execute(listSetsUrl, listSetsHandler);
+        listSetsHandler.throwAnyException();
+
+        final HttpResponseHandler listMdHandler = responseHandlerFactory.getSaxParsingHandler(listMetadataFormatsXmlHandler);
+        httpFetcher.execute(listMdUrl, listMdHandler);
+        listMdHandler.throwAnyException();
 
         return validationResult;
     }
 
-    private static class ListSetsHandler extends DefaultHandler {
+    private static class ListSetsXmlHandler extends DefaultHandler {
         private final String SET_SPEC = "setSpec";
         private final String expectedSet;
         private ValidationResult validationResult;
 
         private boolean inSetSpec = false;
 
-        ListSetsHandler(String expectedSet, ValidationResult validationResult) {
+        ListSetsXmlHandler(String expectedSet, ValidationResult validationResult) {
             this.expectedSet = expectedSet;
             this.validationResult = validationResult;
         }
@@ -78,14 +82,14 @@ public class RepositoryValidator {
         }
     }
 
-    private static class ListMetadataFormatsHandler extends DefaultHandler {
+    private static class ListMetadataFormatsXmlHandler extends DefaultHandler {
 
         private static final String METADATA_PREFIX = "metadataPrefix";
         private final String expectedMetadataPrefix;
         private final ValidationResult validationResult;
         private boolean inMetadataPrefix = false;
 
-        ListMetadataFormatsHandler(String expectedMetadataPrefix, ValidationResult validationResult) {
+        ListMetadataFormatsXmlHandler(String expectedMetadataPrefix, ValidationResult validationResult) {
             this.expectedMetadataPrefix = expectedMetadataPrefix;
             this.validationResult = validationResult;
         }
@@ -112,10 +116,4 @@ public class RepositoryValidator {
         }
     }
 
-    public class ValidationResult {
-        @JsonProperty
-        Boolean setExists = false;
-        @JsonProperty
-        Boolean metadataFormatSupported = false;
-    }
 }
