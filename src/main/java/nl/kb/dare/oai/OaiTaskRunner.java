@@ -4,6 +4,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.RepositoryDao;
 
+// FIXME: should be a scheduled task
 public class OaiTaskRunner implements Runnable {
 
     private final RepositoryDao repositoryDao;
@@ -29,7 +30,8 @@ public class OaiTaskRunner implements Runnable {
             if (isEnabled) {
                 repositoryDao.list()
                         .stream()
-                        .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory))
+                        .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
+                                (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone)))
                         .forEach(ListIdentifiers::harvest);
             }
 

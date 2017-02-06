@@ -7,21 +7,24 @@ import nl.kb.dare.model.repository.Repository;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 class ListIdentifiers {
-    private final Long sleepTime = 1000L;
+    private final Long sleepTime = 50L;
     private final Repository repositoryConfig;
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
-    private String resumptionToken = null;
+    private final Consumer<Repository> onHarvestComplete;
 
-    ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+    ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, Consumer<Repository> onHarvestComplete) {
         this.repositoryConfig = repositoryConfig;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
+        this.onHarvestComplete = onHarvestComplete;
     }
 
-    private URL makeRequestUrl() throws MalformedURLException {
+    private URL makeRequestUrl(String resumptionToken) throws MalformedURLException {
         final StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(repositoryConfig.getUrl()).append("?").append("verb=ListIdentifiers");
 
@@ -41,19 +44,38 @@ class ListIdentifiers {
 
     void harvest() {
         try {
+
+            String resumptionToken = null;
+            String lastDateStamp = repositoryConfig.getDateStamp();
+
             while (resumptionToken == null || resumptionToken.trim().length() > 0) {
-                final URL requestUrl = makeRequestUrl();
-                final ListIdentifiersXmlHandler xmlHandler = new ListIdentifiersXmlHandler();
+                final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance();
                 final HttpResponseHandler responseHandler = responseHandlerFactory.getSaxParsingHandler(xmlHandler);
+                final URL requestUrl = makeRequestUrl(resumptionToken);
 
                 System.out.println(requestUrl);
 
                 httpFetcher.execute(requestUrl, responseHandler);
-                resumptionToken = xmlHandler.getResumptionToken();
+                final Optional<String> optResumptionToken = xmlHandler.getResumptionToken();
+                final Optional<String> optDatestamp = xmlHandler.getLastDateStamp();
+
+                if (optDatestamp.isPresent()) {
+                    lastDateStamp = optDatestamp.get();
+                }
+
+                if (optResumptionToken.isPresent()) {
+                    resumptionToken = optResumptionToken.get();
+                } else {
+                    break;
+                }
                 Thread.sleep(sleepTime);
             }
-        } catch (InterruptedException ignored) {
+            repositoryConfig.setDateStamp(lastDateStamp);
+            onHarvestComplete.accept(repositoryConfig);
+            System.out.println("** harvest done for " + repositoryConfig.getId() + " / " + repositoryConfig.getSet());
+        } catch (InterruptedException e) {
             // SEVERE!!
+            throw new RuntimeException(e);
         } catch (MalformedURLException e) {
             // SEVERE!!
             throw new RuntimeException(e);
