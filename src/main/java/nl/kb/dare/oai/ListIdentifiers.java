@@ -6,6 +6,8 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,6 +15,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 class ListIdentifiers {
+    private static final Logger LOG = LoggerFactory.getLogger(ListIdentifiers.class);
+
     private final Repository repositoryConfig;
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
@@ -61,7 +65,7 @@ class ListIdentifiers {
                 final HttpResponseHandler responseHandler = responseHandlerFactory.getSaxParsingHandler(xmlHandler);
                 final URL requestUrl = makeRequestUrl(resumptionToken);
 
-                System.out.println(requestUrl);
+                LOG.info(requestUrl.toString());
 
                 httpFetcher.execute(requestUrl, responseHandler);
                 final Optional<String> optResumptionToken = xmlHandler.getResumptionToken();
@@ -85,7 +89,7 @@ class ListIdentifiers {
 
             repositoryConfig.setDateStamp(lastDateStamp);
             onHarvestComplete.accept(repositoryConfig);
-            System.out.println("** harvest done for " + repositoryConfig.getId() + " / " + repositoryConfig.getSet());
+            LOG.info("** harvest done for " + repositoryConfig.getId() + " / " + repositoryConfig.getSet());
         } catch (MalformedURLException e) {
             // SEVERE!!
             throw new RuntimeException(e);
