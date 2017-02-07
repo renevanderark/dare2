@@ -26,9 +26,10 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         repositoryDao.list()
                 .stream()
                 .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
-                        (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone),
-                        Throwable::printStackTrace))
-                .forEach(ListIdentifiers::harvest);
+                        (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone), // onHarvestDone
+                        Throwable::printStackTrace, // onError
+                        System.out::println // onOaiRecord
+                )).forEach(ListIdentifiers::harvest);
 
     }
 

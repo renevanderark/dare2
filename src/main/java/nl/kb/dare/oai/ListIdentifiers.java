@@ -3,6 +3,7 @@ package nl.kb.dare.oai;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
 
 import java.net.MalformedURLException;
@@ -16,15 +17,18 @@ class ListIdentifiers {
     private final ResponseHandlerFactory responseHandlerFactory;
     private final Consumer<Repository> onHarvestComplete;
     private final Consumer<Exception> onException;
+    private Consumer<OaiRecord> onOaiRecord;
 
     ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                     Consumer<Repository> onHarvestComplete,
-                    Consumer<Exception> onException) {
+                    Consumer<Exception> onException,
+                    Consumer<OaiRecord> onOaiRecord) {
         this.repositoryConfig = repositoryConfig;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
         this.onHarvestComplete = onHarvestComplete;
         this.onException = onException;
+        this.onOaiRecord = onOaiRecord;
     }
 
     private URL makeRequestUrl(String resumptionToken) throws MalformedURLException {
@@ -52,7 +56,7 @@ class ListIdentifiers {
             String lastDateStamp = repositoryConfig.getDateStamp();
 
             while (resumptionToken == null || resumptionToken.trim().length() > 0) {
-                final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance();
+                final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance(repositoryConfig.getId(), onOaiRecord);
                 final HttpResponseHandler responseHandler = responseHandlerFactory.getSaxParsingHandler(xmlHandler);
                 final URL requestUrl = makeRequestUrl(resumptionToken);
 

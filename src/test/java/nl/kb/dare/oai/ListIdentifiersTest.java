@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
 import org.junit.After;
@@ -22,6 +23,8 @@ import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.Is.is;
 
 public class ListIdentifiersTest {
@@ -52,6 +55,7 @@ public class ListIdentifiersTest {
 
     @Before
     public void setup() {
+
         withResumptionToken = RepositoryValidatorTest.class.getResourceAsStream("/oai/ListIdentifiersWithResumptionToken.xml");
         withResumptionToken2 = RepositoryValidatorTest.class.getResourceAsStream("/oai/ListIdentifiersWithResumptionToken.xml");
         withoutResumptionToken = RepositoryValidatorTest.class.getResourceAsStream("/oai/ListIdentifiersWithoutResumptionToken.xml");
@@ -77,7 +81,9 @@ public class ListIdentifiersTest {
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
         final Consumer<Repository> repositoryConsumer = (repoDone) -> { };
         final Consumer<Exception> errorConsumer = (err) -> { };
-        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer);
+        final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
+
+        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 
         instance.harvest();
 
@@ -91,13 +97,14 @@ public class ListIdentifiersTest {
         final List<String> dateStamps = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> dateStamps.add(repoDone.getDateStamp());
         final Consumer<Exception> errorConsumer = (err) -> { };
-        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer);
+        final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
+        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 
         instance.harvest();
 
         assertThat(dateStamps.size(), is(1));
         // Value taken from last record in ListIdentifiersWithoutResumptionToken.xml
-        assertThat(dateStamps.get(0), is("2017-01-18T01:00:40Z"));
+        assertThat(dateStamps.get(0), is("2017-01-18T01:00:31Z"));
     }
 
     @Test
@@ -109,7 +116,8 @@ public class ListIdentifiersTest {
         final List<Exception> exceptions = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> dateStamps.add(repoDone.getDateStamp());
         final Consumer<Exception> errorConsumer = exceptions::add;
-        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer);
+        final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
+        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 
         instance.harvest();
 
@@ -119,7 +127,41 @@ public class ListIdentifiersTest {
         assertThat(dateStamps.size(), is(1));
         // Original value
         assertThat(dateStamps.get(0), is(orignalDateStamp));
+    }
 
+    @Test
+    public void harvestShouldInvokeOnOaiRecordConsumerWithTheOaiRecord() {
+        final String orignalDateStamp = "initialDatestampValue";
+        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp, 123);
+        final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
+        final List<OaiRecord> oaiRecords = Lists.newArrayList();
+        final Consumer<Repository> repositoryConsumer = (repoDone) -> { };
+        final Consumer<Exception> errorConsumer = (exception) -> { };
+        final Consumer<OaiRecord> onOaiRecord = oaiRecords::add;
+        final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
+
+        instance.harvest();
+
+        assertThat(oaiRecords.size(), is(5));
+
+        // Value taken from first record in ListIdentifiersWithResumptionToken.xml
+        assertThat(oaiRecords.get(0), allOf(
+            hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162830")),
+            hasProperty("dateStamp", is("2017-01-13T01:05:49Z")),
+            hasProperty("status", is(OaiRecord.Status.PENDING)),
+            hasProperty("repositoryId", is(123))
+        ));
+
+        // Value taken from second record in ListIdentifiersWithResumptionToken.xml
+        assertThat(oaiRecords.get(1), hasProperty("status", is(OaiRecord.Status.DELETED)));
+
+        // Value taken from last record in ListIdentifiersWithoutResumptionToken.xml
+        assertThat(oaiRecords.get(4), allOf(
+                hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/161841")),
+                hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
+                hasProperty("status", is(OaiRecord.Status.PENDING)),
+                hasProperty("repositoryId", is(123))
+        ));
 
     }
 }
