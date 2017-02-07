@@ -1,5 +1,6 @@
 package nl.kb.dare.http;
 
+import nl.kb.dare.model.reporting.ErrorReport;
 import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.Response;
@@ -22,5 +23,5 @@ public interface HttpResponseHandler {
 
     void throwAnyException() throws IOException, SAXException;
 
-    List<Exception> getExceptions();
+    List<ErrorReport> getExceptions();
 }

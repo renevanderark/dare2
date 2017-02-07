@@ -5,6 +5,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
+import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
 import org.junit.After;
@@ -80,7 +81,7 @@ public class ListIdentifiersTest {
         final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", null);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
         final Consumer<Repository> repositoryConsumer = (repoDone) -> { };
-        final Consumer<Exception> errorConsumer = (err) -> { };
+        final Consumer<ErrorReport> errorConsumer = (err) -> { };
         final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
 
         final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
@@ -96,7 +97,7 @@ public class ListIdentifiersTest {
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withResumptionToken2, withoutResumptionToken);
         final List<String> dateStamps = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> dateStamps.add(repoDone.getDateStamp());
-        final Consumer<Exception> errorConsumer = (err) -> { };
+        final Consumer<ErrorReport> errorConsumer = (err) -> { };
         final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
         final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 
@@ -113,16 +114,16 @@ public class ListIdentifiersTest {
         final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(corruptXml);
         final List<String> dateStamps = Lists.newArrayList();
-        final List<Exception> exceptions = Lists.newArrayList();
+        final List<ErrorReport> exceptions = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> dateStamps.add(repoDone.getDateStamp());
-        final Consumer<Exception> errorConsumer = exceptions::add;
+        final Consumer<ErrorReport> errorConsumer = exceptions::add;
         final Consumer<OaiRecord> onOaiRecord = (oaiRecord) -> { };
         final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 
         instance.harvest();
 
         assertThat(exceptions.size(), is(1));
-        assertThat(exceptions.get(0), instanceOf(SAXException.class));
+        assertThat(exceptions.get(0).getException(), instanceOf(SAXException.class));
 
         assertThat(dateStamps.size(), is(1));
         // Original value
@@ -136,7 +137,7 @@ public class ListIdentifiersTest {
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
         final List<OaiRecord> oaiRecords = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> { };
-        final Consumer<Exception> errorConsumer = (exception) -> { };
+        final Consumer<ErrorReport> errorConsumer = (exception) -> { };
         final Consumer<OaiRecord> onOaiRecord = oaiRecords::add;
         final ListIdentifiers instance = new ListIdentifiers(repositoryConfig, httpFetcher, new ResponseHandlerFactory(), repositoryConsumer, errorConsumer, onOaiRecord);
 

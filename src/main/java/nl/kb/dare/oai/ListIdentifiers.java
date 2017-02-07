@@ -4,6 +4,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
+import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 
 import java.net.MalformedURLException;
@@ -16,12 +17,12 @@ class ListIdentifiers {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
     private final Consumer<Repository> onHarvestComplete;
-    private final Consumer<Exception> onException;
+    private final Consumer<ErrorReport> onException;
     private Consumer<OaiRecord> onOaiRecord;
 
     ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                     Consumer<Repository> onHarvestComplete,
-                    Consumer<Exception> onException,
+                    Consumer<ErrorReport> onException,
                     Consumer<OaiRecord> onOaiRecord) {
         this.repositoryConfig = repositoryConfig;
         this.httpFetcher = httpFetcher;

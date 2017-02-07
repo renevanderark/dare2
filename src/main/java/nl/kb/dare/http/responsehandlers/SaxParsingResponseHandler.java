@@ -2,6 +2,7 @@ package nl.kb.dare.http.responsehandlers;
 
 import com.google.common.collect.Lists;
 import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.dare.model.reporting.ErrorReport;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -12,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 class SaxParsingResponseHandler implements HttpResponseHandler {
     private final SAXParser saxParser;
@@ -80,10 +84,10 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
     }
 
     @Override
-    public List<Exception> getExceptions() {
-        List<Exception> exceptions = Lists.newArrayList();
-        exceptions.addAll(ioExceptions);
-        exceptions.addAll(saxExceptions);
-        return exceptions;
+    public List<ErrorReport> getExceptions() {
+        return Stream.concat(
+            ioExceptions.stream().map(ex -> new ErrorReport(ex, url)),
+            saxExceptions.stream().map(ex -> new ErrorReport(ex, url))
+        ).collect(toList());
     }
 }
