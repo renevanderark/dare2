@@ -149,18 +149,18 @@ public class ListIdentifiersTest {
         assertThat(oaiRecords.get(0), allOf(
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162830")),
             hasProperty("dateStamp", is("2017-01-13T01:05:49Z")),
-            hasProperty("status", is(OaiRecord.Status.PENDING)),
+            hasProperty("status", is("pending")),
             hasProperty("repositoryId", is(123))
         ));
 
         // Value taken from second record in ListIdentifiersWithResumptionToken.xml
-        assertThat(oaiRecords.get(1), hasProperty("status", is(OaiRecord.Status.DELETED)));
+        assertThat(oaiRecords.get(1), hasProperty("status", is("deleted")));
 
         // Value taken from last record in ListIdentifiersWithoutResumptionToken.xml
         assertThat(oaiRecords.get(4), allOf(
                 hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/161841")),
                 hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
-                hasProperty("status", is(OaiRecord.Status.PENDING)),
+                hasProperty("status", is("pending")),
                 hasProperty("repositoryId", is(123))
         ));
 
