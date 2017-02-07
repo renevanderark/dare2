@@ -12,7 +12,7 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     private static final String RESUMPTION_TOKEN_ELEMENT = "resumptionToken";
     private static final String DATE_STAMP_ELEMENT = "datestamp";
     private static final String HEADER_ELEMENT = "header";
-    public static final String IDENTIFIER_ELEMENT = "identifier";
+    private static final String IDENTIFIER_ELEMENT = "identifier";
 
     private final Integer repositoryId;
     private final Consumer<OaiRecord> onOaiRecord;
@@ -26,6 +26,9 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     private String resumptionToken = null;
     private String lastDateStamp = null;
 
+    private StringBuilder resumptionTokenBuilder = new StringBuilder();
+    private StringBuilder dateStampBuilder = new StringBuilder();
+    private StringBuilder identifierBuilder = new StringBuilder();
 
     private ListIdentifiersXmlHandler(Integer repositoryId, Consumer<OaiRecord> onOaiRecord) {
         this.repositoryId = repositoryId;
@@ -65,30 +68,39 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     }
 
     private void handleIdentifier(char[] ch, int start, int length) {
-        currentOaiRecord.setIdentifier(new String(ch, start, length));
+        identifierBuilder.append(getStrippedText(ch, start, length));
     }
 
 
     private void handleDateStamp(char[] ch, int start, int length) {
-        final String dateStamp = new String(ch, start, length);
-        lastDateStamp = dateStamp;
-        currentOaiRecord.setDateStamp(dateStamp);
+        dateStampBuilder.append(getStrippedText(ch, start, length));
     }
 
     private void handleResumptionToken(char[] ch, int start, int length) {
-        resumptionToken = new String(ch, start, length);
+        resumptionTokenBuilder.append(getStrippedText(ch, start, length));
+    }
+
+
+    private String getStrippedText(char[] ch, int start, int length) {
+        return new String(ch, start, length)
+                .replaceAll("\0", "")
+                .replaceAll("\\r\\n", "")
+                .replaceAll("\\n", "");
     }
 
     private void startDateStamp() {
         inDateStamp = true;
+        dateStampBuilder = new StringBuilder();
     }
 
     private void startResumptionToken() {
         inResumptionToken = true;
+        resumptionTokenBuilder = new StringBuilder();
     }
 
     private void startIdentifier() {
         inIdentifier = true;
+        identifierBuilder = new StringBuilder();
     }
 
     private void endOaiRecord() {
@@ -96,15 +108,20 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     }
 
     private void endDateStamp() {
+
         inDateStamp = false;
+        lastDateStamp = dateStampBuilder.toString();
+        currentOaiRecord.setDateStamp(dateStampBuilder.toString());
     }
 
     private void endResumptionToken() {
         inResumptionToken = false;
+        resumptionToken = resumptionTokenBuilder.toString();
     }
 
     private void endIdentifier() {
         inIdentifier = false;
+        currentOaiRecord.setIdentifier(identifierBuilder.toString());
     }
 
     private void startOaiRecord(Attributes attributes) {

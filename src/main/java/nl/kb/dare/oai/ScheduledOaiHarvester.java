@@ -1,5 +1,6 @@
 package nl.kb.dare.oai;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
@@ -39,6 +40,8 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     @Override
     protected void runOneIteration() throws Exception {
+        final Stopwatch timer = Stopwatch.createStarted();
+
         repositoryDao.list()
                 .stream()
                 .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
@@ -46,6 +49,8 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                         errorReport -> saveErrorReport(errorReport, repo.getId()), // onError
                         this::saveOaiRecord // onOaiRecord
                 )).forEach(ListIdentifiers::harvest);
+
+        LOG.info("Harvest finished, time taken: {} seconds", timer.stop().elapsed(TimeUnit.SECONDS));
     }
 
     private void saveOaiRecord(OaiRecord oaiRecord) {
