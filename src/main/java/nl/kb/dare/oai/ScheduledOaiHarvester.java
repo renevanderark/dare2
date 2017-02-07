@@ -7,6 +7,9 @@ import nl.kb.dare.model.repository.RepositoryDao;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Subclasses are guaranteed that the life cycle methods (runOneIteration(), startUp() and shutDown()) will never run concurrently
+ */
 public class ScheduledOaiHarvester extends AbstractScheduledService {
     private final RepositoryDao repositoryDao;
     private final HttpFetcher httpFetcher;
@@ -26,10 +29,11 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                         (repoDone) -> repositoryDao.update(repoDone.getId(), repoDone),
                         Throwable::printStackTrace))
                 .forEach(ListIdentifiers::harvest);
+
     }
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 12, TimeUnit.HOURS);
+        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 1, TimeUnit.HOURS);
     }
 }
