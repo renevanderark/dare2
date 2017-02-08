@@ -43,12 +43,6 @@
             <artifactId>dropwizard-db</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
-        <!--make requests to other webservices-->
-        <dependency>
-            <groupId>io.dropwizard</groupId>
-            <artifactId>dropwizard-client</artifactId>
-            <version>${dropwizard.version}</version>
-        </dependency>
 
         <!--jdbi-->
         <dependency>
