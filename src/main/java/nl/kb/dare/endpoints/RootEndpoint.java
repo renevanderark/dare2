@@ -1,8 +1,9 @@
 package nl.kb.dare.endpoints;
 
 
-import com.google.common.collect.Lists;
-import nl.kb.dare.util.JsonBuilder;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -15,10 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
-
-import static nl.kb.dare.util.JsonBuilder.jsn;
-import static nl.kb.dare.util.JsonBuilder.jsnA;
-import static nl.kb.dare.util.JsonBuilder.jsnO;
 
 @Path("/")
 @Produces(MediaType.TEXT_HTML)
@@ -79,15 +76,35 @@ public class RootEndpoint {
     }
 
     private String parseHtmlTemplate(String... pathParams) {
-        final String jsEnv =
-                jsnO("env", jsnO(
-                        "pathParams", jsnA(Lists.newArrayList(pathParams).stream().map(JsonBuilder::jsn)),
-                        "hostname", jsn(hostName),
-                        "wsProtocol", jsn(wsProtocol)
-                )).toString();
+        final JsEnv env = new JsEnv(pathParams, hostName, wsProtocol);
 
-        return HTML_TEMPLATE
-                .replace("<%= APP_TITLE %>", appTitle)
-                .replace("<%= JS_ENVIRONMENT %>", String.format("var globals = %s;", jsEnv));
+        try {
+            final String jsEnv = new ObjectMapper().writeValueAsString(env);
+            return HTML_TEMPLATE
+                    .replace("<%= APP_TITLE %>", appTitle)
+                    .replace("<%= JS_ENVIRONMENT %>", String.format("var globals = %s;", jsEnv));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return HTML_TEMPLATE
+                    .replace("<%= APP_TITLE %>", appTitle)
+                    .replace("<%= JS_ENVIRONMENT %>", String.format("var globals = %s;", "{}"));
+        }
+
+    }
+
+    private class JsEnv {
+        @JsonProperty
+        private final String[] pathParams;
+        @JsonProperty
+        private final String hostName;
+        @JsonProperty
+        private final String wsProtocol;
+
+        JsEnv(String[] pathParams, String hostName, String wsProtocol) {
+
+            this.pathParams = pathParams;
+            this.hostName = hostName;
+            this.wsProtocol = wsProtocol;
+        }
     }
 }

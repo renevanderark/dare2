@@ -18,7 +18,7 @@
 <script type="text/javascript">
     console.log(globals);
 
-    var webSocket = new WebSocket(globals.env.wsProtocol + "://" + globals.env.hostname + "/status-socket");
+    var webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
 
     webSocket.onmessage = function (payload) {
         document.getElementById("status").innerHTML = JSON.stringify(JSON.parse(payload.data), null, 4);
