@@ -17,7 +17,7 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     private final Integer repositoryId;
     private final Consumer<OaiRecord> onOaiRecord;
 
-    private OaiRecord currentOaiRecord = null;
+    private OaiRecord currentOaiRecord = new OaiRecord();
 
     private boolean inResumptionToken = false;
     private boolean inDateStamp = false;
