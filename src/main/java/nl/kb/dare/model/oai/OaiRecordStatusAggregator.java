@@ -7,12 +7,6 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
 import java.util.Map;
-/*
-    @SqlQuery("select count(*) as count, oai_records.oai_status as oai_status, oai_records.process_status as process_status, repositories.oai_set as oai_set " +
-            "from oai_records, repositories " +
-            "where repositories.id = oai_records.repository_id " +
-            "group by repository_id, process_status, oai_status")
- */
 public class OaiRecordStatusAggregator {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
