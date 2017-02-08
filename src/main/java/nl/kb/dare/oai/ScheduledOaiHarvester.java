@@ -70,7 +70,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     }
 
     private OaiRecordErrorReport getOaiRecordErrorReport(OaiRecord oaiRecord, String message) {
-        return new OaiRecordErrorReport(message,"",Instant.now().toString(),"",oaiRecord.getIdentifier());
+        return new OaiRecordErrorReport(message,"", Instant.now().toString(),"", oaiRecord.getIdentifier());
     }
 
     private void saveErrorReport(ErrorReport errorReport, Integer repositoryId) {

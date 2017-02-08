@@ -12,8 +12,7 @@ VALUES (1, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'uu:dare', NUL
   (8, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'uva:withfulltext:yes', NULL),
   (9, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'uvt:withfulltext:yes', NULL),
   (10, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'vu', NULL),
-  (11, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'wur:publickb', NULL)
-/*!40000 ALTER TABLE `repositories`
-  ENABLE KEYS */;
+  (11, 'http://oai.gharvester.dans.knaw.nl/', 'nl_didl_norm', 'wur:publickb', NULL);
+/*!40000 ALTER TABLE `repositories` ENABLE KEYS */;
 UNLOCK TABLES;
 

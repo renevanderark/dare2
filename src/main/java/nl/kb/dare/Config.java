@@ -7,6 +7,13 @@ import io.dropwizard.db.DataSourceFactory;
 class Config extends Configuration {
     private DataSourceFactory database;
 
+    @JsonProperty
+    private String appTitle;
+    @JsonProperty
+    private String hostName;
+    @JsonProperty
+    private String wsProtocol;
+
     @JsonProperty("database")
     DataSourceFactory getDataSourceFactory() {
         return database;
@@ -16,4 +23,18 @@ class Config extends Configuration {
     void setDataSourceFactory(DataSourceFactory dataSourceFactory) {
         this.database = dataSourceFactory;
     }
+
+
+    String getAppTitle() {
+        return appTitle;
+    }
+
+    String getHostName() {
+        return hostName;
+    }
+
+    String getWsProtocol() {
+        return wsProtocol;
+    }
+
 }

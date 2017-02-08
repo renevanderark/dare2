@@ -34,3 +34,6 @@ database:
   # the JDBC URL 127.0.0.1:3306
   url: jdbc:mysql://127.0.0.1:3306/dare?verifyServerCertificate=false&useSSL=false
 
+appTitle: "Dare dash"
+hostName: localhost:8080
+wsProtocol: ws

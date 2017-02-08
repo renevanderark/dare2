@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title><%= APP_TITLE %></title>
+</head>
+
+<body>
+<div id='app'>
+    <pre id="status">
+
+    </pre>
+</div>
+
+<script type="text/javascript">
+    <%= JS_ENVIRONMENT %>
+</script>
+<script type="text/javascript">
+    console.log(globals);
+
+    var webSocket = new WebSocket(globals.env.wsProtocol + "://" + globals.env.hostname + "/status-socket");
+
+    webSocket.onmessage = function (payload) {
+        document.getElementById("status").innerHTML = JSON.stringify(JSON.parse(payload.data), null, 4);
+    };
+
+    function pingWs() {
+        webSocket.send("* ping! *");
+        window.setTimeout(pingWs, 8000);
+    }
+
+    webSocket.onopen = pingWs;
+
+</script>
+</body>
+</html>

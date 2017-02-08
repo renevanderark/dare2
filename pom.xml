@@ -57,6 +57,13 @@
             <version>5.1.39</version>
         </dependency>
 
+        <!-- jetty websocket server -->
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
 
         <!-- JUnit -->
         <dependency>
