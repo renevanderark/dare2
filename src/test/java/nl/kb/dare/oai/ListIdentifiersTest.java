@@ -1,8 +1,6 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
@@ -13,11 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Consumer;
@@ -35,23 +31,6 @@ public class ListIdentifiersTest {
     private InputStream withoutResumptionToken;
     private InputStream withResumptionToken2;
     private InputStream corruptXml;
-
-    private class MockHttpFetcher implements HttpFetcher {
-
-        int count = 0;
-        private final InputStream[] mockResponses;
-
-        private MockHttpFetcher(InputStream... mockResponses) {
-            this.mockResponses = mockResponses;
-        }
-
-        @Override
-        public void execute(URL url, HttpResponseHandler responseHandler) {
-            responseHandler.onResponseData(Response.Status.ACCEPTED, mockResponses[count++]);
-        }
-
-    }
-
 
 
     @Before
