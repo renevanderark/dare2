@@ -9,11 +9,13 @@ import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.HarvesterErrorReport;
+import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,13 +60,21 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         if (existingRecord == null) {
             oaiRecordDao.insert(oaiRecord);
         } else if (!existingRecord.equals(oaiRecord)) {
+            if (oaiRecord.getOaiStatus().equals("deleted")) {
+                errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(oaiRecord, "record was deleted by provider after first encounter"));
+            } else {
+                errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(oaiRecord, "record was updated by provider after first encounter"));
+            }
             oaiRecordDao.update(oaiRecord);
         }
     }
 
+    private OaiRecordErrorReport getOaiRecordErrorReport(OaiRecord oaiRecord, String message) {
+        return new OaiRecordErrorReport(message,"",Instant.now().toString(),"",oaiRecord.getIdentifier());
+    }
+
     private void saveErrorReport(ErrorReport errorReport, Integer repositoryId) {
         LOG.error("Oai Harvester error", errorReport.getException());
-        errorReportDao.removeHarvesterErrorsForRepositoryWithId(repositoryId);
         errorReportDao.insertHarvesterError(new HarvesterErrorReport(errorReport, repositoryId));
     }
 
