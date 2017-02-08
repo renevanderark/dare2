@@ -12,10 +12,12 @@ public class OaiRecordMapper implements ResultSetMapper<OaiRecord> {
     public OaiRecord map(int index, ResultSet resultSet, StatementContext ctx) throws SQLException {
 
         final String identifier = resultSet.getString("identifier");
-        final String status = resultSet.getString("status");
+        final String oaiStatus = resultSet.getString("oai_status");
         final String dateStamp = resultSet.getString("datestamp");
         final Integer repositoryId = resultSet.getInt("repository_id");
-        return new OaiRecord(identifier, dateStamp, status, repositoryId);
+        final String processStatus = resultSet.getString("process_status");
+
+        return new OaiRecord(identifier, dateStamp, oaiStatus, repositoryId, processStatus);
 
     }
 }

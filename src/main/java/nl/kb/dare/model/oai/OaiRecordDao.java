@@ -12,12 +12,12 @@ public interface OaiRecordDao {
     @SqlQuery("select * from oai_records where identifier = :identifier")
     OaiRecord findByIdentifier(@Bind("identifier") String identifier);
 
-    @SqlUpdate("insert into oai_records (identifier, datestamp, status, repository_id) " +
-            "values (:oaiRecord.identifier, :oaiRecord.dateStamp, :oaiRecord.status, :oaiRecord.repositoryId)")
+    @SqlUpdate("insert into oai_records (identifier, datestamp, oai_status, repository_id, process_status) " +
+            "values (:oaiRecord.identifier, :oaiRecord.dateStamp, :oaiRecord.oaiStatus, :oaiRecord.repositoryId, :oaiRecord.processStatus)")
     void insert(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
     @SqlUpdate("update oai_records " +
-            "set datestamp = :oaiRecord.dateStamp, status = :oaiRecord.status, repository_id = :oaiRecord.repositoryId " +
+            "set datestamp = :oaiRecord.dateStamp, oai_status = :oaiRecord.oaiStatus, repository_id = :oaiRecord.repositoryId, :oaiRecord.processStatus " +
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 }

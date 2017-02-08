@@ -129,9 +129,11 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
         currentOaiRecord.setRepositoryId(repositoryId);
         final String statusAttr = attributes.getValue("status");
         if (statusAttr != null && statusAttr.equalsIgnoreCase("deleted")) {
-            currentOaiRecord.setStatus("deleted");
+            currentOaiRecord.setOaiStatus("deleted");
+            currentOaiRecord.setProcessStatus("skip");
         } else {
-            currentOaiRecord.setStatus("pending");
+            currentOaiRecord.setOaiStatus("");
+            currentOaiRecord.setProcessStatus("pending");
         }
     }
 
