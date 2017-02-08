@@ -3,6 +3,7 @@ package nl.kb.dare;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
+import nl.kb.dare.endpoints.OaiRecordsEndpoint;
 import nl.kb.dare.endpoints.RepositoriesEndpoint;
 import nl.kb.dare.endpoints.RootEndpoint;
 import nl.kb.dare.endpoints.StatusWebsocketServlet;
@@ -43,6 +44,7 @@ public class App extends Application<Config> {
 
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
+        register(environment, new OaiRecordsEndpoint(oaiRecordDao));
         register(environment, new RepositoriesEndpoint(repositoryDao, new RepositoryValidator(httpFetcher, responseHandlerFactory)));
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));
 
