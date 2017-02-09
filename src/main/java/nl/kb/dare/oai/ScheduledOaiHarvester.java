@@ -12,6 +12,7 @@ import nl.kb.dare.model.reporting.HarvesterErrorReport;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.slf4j.Logger;
@@ -79,10 +80,12 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
                 case PROCESSED: // in this case we can set the status to deleted|updated after processing
                     if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
-                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(newOaiRecord, "record was deleted by provider after first encounter"));
+                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
+                                newOaiRecord, ErrorStatus.DELETED_AFTER_PROCESSING));
                         newOaiRecord.setProcessStatus(ProcessStatus.DELETED_AFTER_PROCESSING);
                     } else {
-                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(newOaiRecord, "record was updated by provider after first encounter"));
+                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
+                                newOaiRecord, ErrorStatus.UPDATED_AFTER_PROCESSING));
                         newOaiRecord.setProcessStatus(ProcessStatus.UPDATED_AFTER_PROCESSING);
                     }
                     oaiRecordDao.update(newOaiRecord);
@@ -91,10 +94,12 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                 case PROCESSING:
                 default: // in all other cases the record is already being processed, so log the error. (maybe add pending status to be set after processing is finished?)
                     if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
-                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(newOaiRecord, "record was deleted by provider after first encounter"));
+                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
+                                newOaiRecord, ErrorStatus.DELETED_AFTER_PROCESSING));
                         // TODO? newOaiRecord.setPendingStatus(ProcessStatus.DELETED_AFTER_PROCESSING)
                     } else {
-                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(newOaiRecord, "record was updated by provider after first encounter"));
+                        errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
+                                newOaiRecord, ErrorStatus.UPDATED_AFTER_PROCESSING));
                         // TODO? newOaiRecord.setPendingStatus(ProcessStatus.UPDATED_AFTER_PROCESSING)
                     }
                     // TODO? oaiRecordDao.update(newOaiRecord);
@@ -103,8 +108,14 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         }
     }
 
-    private OaiRecordErrorReport getOaiRecordErrorReport(OaiRecord oaiRecord, String message) {
-        return new OaiRecordErrorReport(message,"", Instant.now().toString(),"", oaiRecord.getIdentifier());
+    private OaiRecordErrorReport getOaiRecordErrorReport(OaiRecord oaiRecord, ErrorStatus errorStatus) {
+        return new OaiRecordErrorReport(
+                errorStatus.getStatus(),
+                "",
+                Instant.now().toString(),
+                "",
+                errorStatus,
+                oaiRecord.getIdentifier());
     }
 
     private void saveErrorReport(ErrorReport errorReport, Integer repositoryId) {

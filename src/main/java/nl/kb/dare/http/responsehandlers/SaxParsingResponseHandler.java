@@ -3,6 +3,7 @@ package nl.kb.dare.http.responsehandlers;
 import com.google.common.collect.Lists;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -86,8 +87,8 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
     @Override
     public List<ErrorReport> getExceptions() {
         return Stream.concat(
-            ioExceptions.stream().map(ex -> new ErrorReport(ex, url)),
-            saxExceptions.stream().map(ex -> new ErrorReport(ex, url))
+            ioExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.IO_EXCEPTION)),
+            saxExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.XML_PARSING_ERROR))
         ).collect(toList());
     }
 }

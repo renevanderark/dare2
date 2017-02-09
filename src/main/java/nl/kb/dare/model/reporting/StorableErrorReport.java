@@ -1,8 +1,10 @@
 package nl.kb.dare.model.reporting;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 
 public class StorableErrorReport {
+    private ErrorStatus errorStatus;
     private String url;
     private String dateStamp;
     private String filteredStackTrace;
@@ -13,13 +15,15 @@ public class StorableErrorReport {
         this.filteredStackTrace = errorReport.getFilteredStackTrace();
         this.dateStamp = errorReport.getDateStamp();
         this.url = errorReport.getUrl();
+        this.errorStatus = errorReport.getErrorStatus();
     }
 
-    StorableErrorReport(String message, String filteredStackTrace, String dateStamp, String url) {
+    StorableErrorReport(String message, String filteredStackTrace, String dateStamp, String url, ErrorStatus errorStatus) {
         this.message = message;
         this.filteredStackTrace = filteredStackTrace;
         this.dateStamp = dateStamp;
         this.url = url;
+        this.errorStatus = errorStatus;
     }
 
     @JsonProperty
@@ -56,5 +60,13 @@ public class StorableErrorReport {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public ErrorStatus getErrorStatus() {
+        return errorStatus;
+    }
+
+    public Integer getErrorStatusCode() {
+        return errorStatus.getCode();
     }
 }

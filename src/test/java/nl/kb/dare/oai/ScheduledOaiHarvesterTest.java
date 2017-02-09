@@ -8,6 +8,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.junit.After;
@@ -135,8 +136,11 @@ public class ScheduledOaiHarvesterTest {
 
         instance.runOneIteration();
 
-        verify(errorReportDao).insertOaiRecordError(argThat(
-                hasProperty("message", is("record was updated by provider after first encounter"))));
+        verify(errorReportDao).insertOaiRecordError(argThat(allOf(
+                hasProperty("message", is(ErrorStatus.UPDATED_AFTER_PROCESSING.getStatus())),
+                hasProperty("errorStatus", is(ErrorStatus.UPDATED_AFTER_PROCESSING)),
+                hasProperty("recordIdentifier", is(UPDATED_IDENTIFIER))
+        )));
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
                 hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
@@ -165,8 +169,11 @@ public class ScheduledOaiHarvesterTest {
 
         instance.runOneIteration();
 
-        verify(errorReportDao).insertOaiRecordError(argThat(
-                hasProperty("message", is("record was deleted by provider after first encounter"))));
+        verify(errorReportDao).insertOaiRecordError(argThat(allOf(
+                hasProperty("message", is(ErrorStatus.DELETED_AFTER_PROCESSING.getStatus())),
+                hasProperty("errorStatus", is(ErrorStatus.DELETED_AFTER_PROCESSING)),
+                hasProperty("recordIdentifier", is(DELETED_IDENTIFIER))
+        )));
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
                 hasProperty("processStatus", is(ProcessStatus.DELETED_AFTER_PROCESSING)),

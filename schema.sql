@@ -30,7 +30,9 @@ CREATE TABLE `harvester_errors` (
   `message` varchar(255) DEFAULT NULL,
   `stacktrace` text,
   `datestamp` varchar(50) DEFAULT NULL,
-  KEY `harvester_error_index` (`datestamp`,`repository_id`)
+  `status_code` int(11) DEFAULT NULL,
+  KEY `harvester_error_index` (`datestamp`,`repository_id`),
+  KEY `harvester_error_index1` (`status_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -47,7 +49,9 @@ CREATE TABLE `oai_record_errors` (
   `message` varchar(255) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `stacktrace` text,
-  KEY `oai_record_error_index` (`datestamp`,`record_identifier`)
+  `status_code` int(11) DEFAULT NULL,
+  KEY `oai_record_error_index` (`datestamp`,`record_identifier`),
+  KEY `oai_error_index1` (`status_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -97,4 +101,4 @@ CREATE TABLE `repositories` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-09  9:13:00
+-- Dump completed on 2017-02-09 12:34:08
