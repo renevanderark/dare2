@@ -85,7 +85,7 @@ public class LenientHttpFetcherTest {
     }
 
     @Test
-    public void executeShouldInvokeOnRequestErrorWhenIOExceptionIsThrownByGetInputStream() throws IOException {
+    public void executeShouldInvokeOnResponseErrorWhenIOExceptionIsThrownByGetInputStream() throws IOException {
         final LenientHttpFetcher instance = new LenientHttpFetcher(false);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final InputStream responseData = mock(InputStream.class);
@@ -96,9 +96,9 @@ public class LenientHttpFetcherTest {
 
         instance.execute(url, responseHandler);
 
-        verify(responseHandler).onRequestError(ioException);
+        verify(responseHandler).onResponseError(any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());
-        verify(responseHandler, never()).onResponseError(any(), any());
+        verify(responseHandler, never()).onRequestError(any());
         verify(responseHandler, never()).onResponseData(any(), any());
     }
 
@@ -113,7 +113,7 @@ public class LenientHttpFetcherTest {
 
         instance.execute(url, responseHandler);
 
-        verify(responseHandler).onResponseError(Response.Status.INTERNAL_SERVER_ERROR, responseData);
+        verify(responseHandler).onResponseError(Response.Status.INTERNAL_SERVER_ERROR, null);
         verify(responseHandler, never()).onRequestError(any());
         verify(responseHandler, never()).onResponseData(any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());

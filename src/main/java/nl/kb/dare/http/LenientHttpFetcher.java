@@ -29,8 +29,12 @@ public class LenientHttpFetcher implements HttpFetcher {
         final Optional<Integer> responseCode = getResponseCode(connection, responseHandler);
         if (!responseCode.isPresent()) { return; }
 
-
         final Integer statusCode = responseCode.get();
+        if (statusCode < 200 || statusCode >= 400) {
+            responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), null);
+            return;
+        }
+
         final Optional<InputStream> responseDataOpt = getResponseData(connection, responseHandler);
         if (!responseDataOpt.isPresent()) { return; }
 
@@ -53,8 +57,6 @@ public class LenientHttpFetcher implements HttpFetcher {
                 responseHandler.onRequestError(e);
             }
 
-        } else {
-            responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), responseData);
         }
 
     }

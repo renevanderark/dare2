@@ -1,6 +1,7 @@
 package nl.kb.dare.http.responsehandlers;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
@@ -32,6 +33,7 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
 
     private final List<SAXException> saxExceptions = Lists.newArrayList();
     private final List<IOException> ioExceptions = Lists.newArrayList();
+    private final List<HttpResponseException> httpResponseExceptions = Lists.newArrayList();
 
     private final DefaultHandler xmlHandler;
 
@@ -52,16 +54,15 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
 
     @Override
     public void onResponseError(Response.Status status, InputStream responseData) {
-        final String message = String.format("Url responded with status %d - %s: %s",
-                status.getStatusCode(), status.getReasonPhrase(), url);
+        final String message = String.format("Url responded with status %d - %s",
+                status.getStatusCode(), status.getReasonPhrase());
 
-        ioExceptions.add(new IOException(message));
+        httpResponseExceptions.add(new HttpResponseException(message, ErrorStatus.forCode(status.getStatusCode())));
     }
 
     @Override
     public void onRequestError(Exception exception) {
-
-        ioExceptions.add(new IOException(exception));
+        ioExceptions.add(new IOException("Request error", exception));
     }
 
     @Override
@@ -86,9 +87,13 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
 
     @Override
     public List<ErrorReport> getExceptions() {
-        return Stream.concat(
+        final Stream<ErrorReport> errorReportStream = Stream.concat(
             ioExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.IO_EXCEPTION)),
             saxExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.XML_PARSING_ERROR))
+        );
+
+        return Stream.concat(errorReportStream,
+            httpResponseExceptions.stream().map(ex -> new ErrorReport(ex, url, ex.getErrorStatus()))
         ).collect(toList());
     }
 }
