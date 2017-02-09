@@ -3,6 +3,9 @@ package nl.kb.dare.model.statuscodes;
 public enum ProcessStatus {
     SKIP(1, "skip"),
     PENDING(10, "pending"),
+    PROCESSING(20, "processing"),
+    FAILED(90, "failure"),
+    PROCESSED(100, "processed"),
     UPDATED_AFTER_PROCESSING(1001, "record was updated after processing"),
     DELETED_AFTER_PROCESSING(1002, "record was deleted after processing");
 

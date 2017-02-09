@@ -113,7 +113,7 @@ public class ScheduledOaiHarvesterTest {
     }
 
     @Test
-    public void itShouldLogAnErrorWhenARecordIsUpdatedThatIsAlreadyThere() throws Exception {
+    public void itShouldLogAnErrorForARecordThatIsUpdatedByTheDataProviderWhenTheExistingRecordIsAlreadyProcessed() throws Exception {
         final RepositoryDao repositoryDao = mock(RepositoryDao.class);
         final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
@@ -127,7 +127,7 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/161841";
-        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PENDING);
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
@@ -135,7 +135,10 @@ public class ScheduledOaiHarvesterTest {
 
         verify(errorReportDao).insertOaiRecordError(argThat(
                 hasProperty("message", is("record was updated by provider after first encounter"))));
-        verify(oaiRecordDao).update(argThat(hasProperty("identifier", is(duplicateIdentifier))));
+        verify(oaiRecordDao).update(argThat(allOf(
+                hasProperty("identifier", is(duplicateIdentifier)),
+                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING))
+        )));
     }
 
     @Test
@@ -153,7 +156,7 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/162859";
-        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PENDING);
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
@@ -161,7 +164,10 @@ public class ScheduledOaiHarvesterTest {
 
         verify(errorReportDao).insertOaiRecordError(argThat(
                 hasProperty("message", is("record was deleted by provider after first encounter"))));
-        verify(oaiRecordDao).update(argThat(hasProperty("identifier", is(duplicateIdentifier))));
+        verify(oaiRecordDao).update(argThat(allOf(
+                hasProperty("identifier", is(duplicateIdentifier)),
+                hasProperty("processStatus", is(ProcessStatus.DELETED_AFTER_PROCESSING))
+        )));
     }
 
 }
