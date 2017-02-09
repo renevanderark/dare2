@@ -34,6 +34,8 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class ScheduledOaiHarvesterTest {
 
+    public static final String DELETED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/162859";
+    public static final String UPDATED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/161841";
     private InputStream withResumptionToken;
     private InputStream withoutResumptionToken;
     private InputStream corruptXml;
@@ -78,10 +80,10 @@ public class ScheduledOaiHarvesterTest {
         verify(oaiRecordDao, times(5)).insert(oaiRecordArgumentCaptor.capture());
         assertThat(oaiRecordArgumentCaptor.getAllValues(), containsInAnyOrder(
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162830")),
-            hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162859")),
+            hasProperty("identifier", is(DELETED_IDENTIFIER)),
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162526")),
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/161830")),
-            hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/161841"))
+            hasProperty("identifier", is(UPDATED_IDENTIFIER))
         ));
     }
 
@@ -126,7 +128,7 @@ public class ScheduledOaiHarvesterTest {
         );
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
-        final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/161841";
+        final String duplicateIdentifier = UPDATED_IDENTIFIER;
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
@@ -137,12 +139,13 @@ public class ScheduledOaiHarvesterTest {
                 hasProperty("message", is("record was updated by provider after first encounter"))));
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
-                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING))
+                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
+                hasProperty("oaiStatus", is(OaiStatus.AVAILABLE))
         )));
     }
 
     @Test
-    public void itShouldLogAnErrorWhenARecordIsDeletedThatIsAlreadyThere() throws Exception {
+    public void itShouldLogAnErrorForARecordThatIsDeletedByTheDataProviderWhenTheExistingRecordIsAlreadyProcessed() throws Exception {
         final RepositoryDao repositoryDao = mock(RepositoryDao.class);
         final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
@@ -155,7 +158,7 @@ public class ScheduledOaiHarvesterTest {
         );
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
-        final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/162859";
+        final String duplicateIdentifier = DELETED_IDENTIFIER;
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
@@ -166,8 +169,60 @@ public class ScheduledOaiHarvesterTest {
                 hasProperty("message", is("record was deleted by provider after first encounter"))));
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
-                hasProperty("processStatus", is(ProcessStatus.DELETED_AFTER_PROCESSING))
+                hasProperty("processStatus", is(ProcessStatus.DELETED_AFTER_PROCESSING)),
+                hasProperty("oaiStatus", is(OaiStatus.DELETED))
         )));
     }
 
+    @Test
+    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing1() throws Exception {
+        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.PENDING, OaiStatus.DELETED, ProcessStatus.SKIP, DELETED_IDENTIFIER);
+    }
+
+    @Test
+    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing2() throws Exception {
+        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.FAILED, OaiStatus.DELETED, ProcessStatus.SKIP, DELETED_IDENTIFIER);
+    }
+
+    @Test
+    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing3() throws Exception {
+        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.FAILED, OaiStatus.AVAILABLE, ProcessStatus.PENDING, UPDATED_IDENTIFIER);
+    }
+
+    @Test
+    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing4() throws Exception {
+        verifyStatusUpdate(OaiStatus.DELETED, ProcessStatus.SKIP, OaiStatus.AVAILABLE, ProcessStatus.PENDING, UPDATED_IDENTIFIER);
+    }
+
+    private void verifyStatusUpdate(
+            OaiStatus oaiStatusBefore,
+            ProcessStatus processStatusBefore,
+            OaiStatus oaiStatusAfter,
+            ProcessStatus processStatusAfter, String forIdentifier) throws Exception {
+
+        final RepositoryDao repositoryDao = mock(RepositoryDao.class);
+        final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
+        final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
+        final ScheduledOaiHarvester instance = new ScheduledOaiHarvester(
+                repositoryDao,
+                errorReportDao,
+                oaiRecordDao,
+                new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
+                new ResponseHandlerFactory()
+        );
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
+        when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
+        final String duplicateIdentifier = forIdentifier;
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", oaiStatusBefore, 123, processStatusBefore);
+        when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
+                .thenReturn(existingRecord);
+
+        instance.runOneIteration();
+
+        verify(oaiRecordDao).update(argThat(allOf(
+                hasProperty("identifier", is(duplicateIdentifier)),
+                hasProperty("oaiStatus", is(oaiStatusAfter)),
+                hasProperty("processStatus", is(processStatusAfter))
+        )));
+    }
 }
