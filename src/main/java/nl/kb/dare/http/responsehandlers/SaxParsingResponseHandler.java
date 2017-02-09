@@ -5,6 +5,7 @@ import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -13,6 +14,8 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.util.List;
 import java.util.stream.Stream;
@@ -44,7 +47,9 @@ class SaxParsingResponseHandler implements HttpResponseHandler {
     @Override
     public void onResponseData(Response.Status status, InputStream responseData) {
         try {
-            saxParser.parse(responseData, xmlHandler);
+            final Reader reader = new InputStreamReader(responseData,"UTF-8");
+            final InputSource inputSource = new InputSource(reader);
+            saxParser.parse(inputSource, xmlHandler);
         } catch (SAXException e) {
             saxExceptions.add(e);
         } catch (IOException e) {
