@@ -1,19 +1,20 @@
 package nl.kb.dare.model.oai;
 
 import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.dare.model.statuscodes.ProcessStatus;
 
 public class OaiRecord {
     private String identifier;
     private String dateStamp;
     private OaiStatus oaiStatus;
     private Integer repositoryId;
-    private String processStatus;
+    private ProcessStatus processStatus;
 
     public OaiRecord() {
 
     }
 
-    public OaiRecord(String identifier, String dateStamp, OaiStatus oaiStatus, Integer repositoryId, String processStatus) {
+    public OaiRecord(String identifier, String dateStamp, OaiStatus oaiStatus, Integer repositoryId, ProcessStatus processStatus) {
         this.identifier = identifier;
         this.dateStamp = dateStamp;
         this.oaiStatus = oaiStatus;
@@ -37,7 +38,7 @@ public class OaiRecord {
         this.repositoryId = repositoryId;
     }
 
-    public void setProcessStatus(String processStatus) {
+    public void setProcessStatus(ProcessStatus processStatus) {
         this.processStatus = processStatus;
     }
 
@@ -57,12 +58,13 @@ public class OaiRecord {
         return repositoryId;
     }
 
-    public String getProcessStatus() {
+    public ProcessStatus getProcessStatus() {
         return processStatus;
     }
 
     public Integer getOaiStatusCode() { return oaiStatus.getCode(); }
 
+    public Integer getProcessStatusCode() { return processStatus.getCode(); }
 
     @Override
     public boolean equals(Object o) {

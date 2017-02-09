@@ -7,6 +7,7 @@ import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
 import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -131,13 +132,13 @@ public class ListIdentifiersTest {
             hasProperty("dateStamp", is("2017-01-13T01:05:49Z")),
             hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
             hasProperty("repositoryId", is(123)),
-            hasProperty("processStatus", is("pending"))
+            hasProperty("processStatus", is(ProcessStatus.PENDING))
         ));
 
         // Value taken from second record in ListIdentifiersWithResumptionToken.xml
         assertThat(oaiRecords.get(1), allOf(
             hasProperty("oaiStatus", is(OaiStatus.DELETED)),
-            hasProperty("processStatus", is("skip"))
+            hasProperty("processStatus", is(ProcessStatus.SKIP))
         ));
 
         // Value taken from last record in ListIdentifiersWithoutResumptionToken.xml
@@ -146,7 +147,7 @@ public class ListIdentifiersTest {
             hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
             hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
             hasProperty("repositoryId", is(123)),
-            hasProperty("processStatus", is("pending"))
+            hasProperty("processStatus", is(ProcessStatus.PENDING))
         ));
 
     }

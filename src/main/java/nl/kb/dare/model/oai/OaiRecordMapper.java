@@ -1,6 +1,7 @@
 package nl.kb.dare.model.oai;
 
 import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -16,9 +17,9 @@ public class OaiRecordMapper implements ResultSetMapper<OaiRecord> {
         final Integer oaiStatusCode = resultSet.getInt("oai_status_code");
         final String dateStamp = resultSet.getString("datestamp");
         final Integer repositoryId = resultSet.getInt("repository_id");
-        final String processStatus = resultSet.getString("process_status");
+        final Integer processStatusCode = resultSet.getInt("process_status_code");
 
-        return new OaiRecord(identifier, dateStamp, OaiStatus.forCode(oaiStatusCode), repositoryId, processStatus);
+        return new OaiRecord(identifier, dateStamp, OaiStatus.forCode(oaiStatusCode), repositoryId, ProcessStatus.forCode(processStatusCode));
 
     }
 }

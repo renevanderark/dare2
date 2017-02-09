@@ -3,10 +3,14 @@ package nl.kb.dare.oai;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.endpoints.websocket.StatusSocketRegistrations;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
 public class StatusUpdater extends AbstractScheduledService {
+    private static final Logger LOG = LoggerFactory.getLogger(StatusUpdater.class);
+
     private final OaiRecordStatusAggregator oaiRecordStatusAggregator;
 
     public StatusUpdater(OaiRecordStatusAggregator oaiRecordStatusAggregator) {
@@ -20,7 +24,11 @@ public class StatusUpdater extends AbstractScheduledService {
 
 
         if (registrations.hasMembers()) {
-            registrations.broadcast(oaiRecordStatusAggregator.getStatus());
+            try {
+                registrations.broadcast(oaiRecordStatusAggregator.getStatus());
+            } catch (Exception e) {
+                LOG.error("Status broadcast failed", e);
+            }
         }
     }
 

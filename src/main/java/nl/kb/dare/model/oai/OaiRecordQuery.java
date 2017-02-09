@@ -2,15 +2,16 @@ package nl.kb.dare.model.oai;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.dare.model.statuscodes.ProcessStatus;
 
 public class OaiRecordQuery {
     private final Integer repositoryId;
     private final Integer offset;
     private final Integer limit;
-    private final String processStatus;
+    private final ProcessStatus processStatus;
     private final OaiStatus oaiStatus;
 
-    public OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, String processStatus, OaiStatus oaiStatus) {
+    public OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus, OaiStatus oaiStatus) {
 
         this.repositoryId = repositoryId;
         this.offset = offset;
@@ -36,11 +37,11 @@ public class OaiRecordQuery {
 
     @JsonProperty
     public String getProcessStatus() {
-        return processStatus;
+        return processStatus != null ? processStatus.getStatus() : "<< no supported parameter defined >>";
     }
 
     @JsonProperty
     public String getOaiStatus() {
-        return oaiStatus != null ? oaiStatus.getStatus() : "";
+        return oaiStatus != null ? oaiStatus.getStatus() : "<< no supported parameter defined >>";
     }
 }
