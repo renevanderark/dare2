@@ -21,7 +21,8 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Subclasses are guaranteed that the life cycle methods (runOneIteration(), startUp() and shutDown()) will never run concurrently
+ * Subclasses of AbstractScheduledService are guaranteed that the life cycle methods
+ * (runOneIteration(), startUp() and shutDown()) will never run concurrently
  */
 public class ScheduledOaiHarvester extends AbstractScheduledService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiHarvester.class);
