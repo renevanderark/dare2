@@ -14,12 +14,12 @@ public interface OaiRecordDao {
     @SqlQuery("select * from oai_records where identifier = :identifier")
     OaiRecord findByIdentifier(@Bind("identifier") String identifier);
 
-    @SqlUpdate("insert into oai_records (identifier, datestamp, oai_status, repository_id, process_status) " +
-            "values (:oaiRecord.identifier, :oaiRecord.dateStamp, :oaiRecord.oaiStatus, :oaiRecord.repositoryId, :oaiRecord.processStatus)")
+    @SqlUpdate("insert into oai_records (identifier, datestamp, oai_status_code, repository_id, process_status) " +
+            "values (:oaiRecord.identifier, :oaiRecord.dateStamp, :oaiRecord.oaiStatusCode, :oaiRecord.repositoryId, :oaiRecord.processStatus)")
     void insert(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
     @SqlUpdate("update oai_records " +
-            "set datestamp = :oaiRecord.dateStamp, oai_status = :oaiRecord.oaiStatus, repository_id = :oaiRecord.repositoryId " +
+            "set datestamp = :oaiRecord.dateStamp, oai_status_code = :oaiRecord.oaiStatusCode, repository_id = :oaiRecord.repositoryId " +
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
@@ -30,13 +30,13 @@ public interface OaiRecordDao {
             @Bind("limit") Integer limit);
 
     @SqlQuery("select * from oai_records " +
-            "where repository_id = :repositoryId and oai_status = :oai_status " +
+            "where repository_id = :repositoryId and oai_status_code = :oai_status_code " +
             "limit :limit offset :offset")
     List<OaiRecord> listWithOaiStatus(
             @Bind("repositoryId") Integer repositoryId,
             @Bind("offset") Integer offset,
             @Bind("limit") Integer limit,
-            @Bind("oai_status") String oaiStatus);
+            @Bind("oai_status_code") Integer oaiStatusCode);
 
     @SqlQuery("select * from oai_records " +
             "where repository_id = :repositoryId and process_status = :process_status " +
@@ -48,25 +48,24 @@ public interface OaiRecordDao {
             @Bind("process_status") String processStatus);
 
     @SqlQuery("select * from oai_records " +
-            "where repository_id = :repositoryId and process_status = :process_status and oai_status = :oai_status " +
+            "where repository_id = :repositoryId and process_status = :process_status and oai_status_code = :oai_status_code " +
             "limit :limit offset :offset")
     List<OaiRecord> listWithProcessStatusAndOaiStatus(
             @Bind("repositoryId") Integer repositoryId,
             @Bind("offset") Integer offset,
             @Bind("limit") Integer limit,
             @Bind("process_status") String processStatus,
-            @Bind("oai_status") String oaiStatus);
+            @Bind("oai_status_code") Integer oaiStatusCode);
 
 
     @SqlQuery("select count(*) from oai_records where repository_id = :repositoryId")
-    Long count(
-            @Bind("repositoryId") Integer repositoryId);
+    Long count(@Bind("repositoryId") Integer repositoryId);
 
     @SqlQuery("select count(*) from oai_records " +
-            "where repository_id = :repositoryId and oai_status = :oai_status ")
+            "where repository_id = :repositoryId and oai_status_code = :oai_status_code ")
     Long countWithOaiStatus(
             @Bind("repositoryId") Integer repositoryId,
-            @Bind("oai_status") String oaiStatus);
+            @Bind("oai_status_code") Integer oaiStatusCode);
 
     @SqlQuery("select count(*) from oai_records " +
             "where repository_id = :repositoryId and process_status = :process_status ")
@@ -75,9 +74,9 @@ public interface OaiRecordDao {
             @Bind("process_status") String processStatus);
 
     @SqlQuery("select count(*) from oai_records " +
-            "where repository_id = :repositoryId and process_status = :process_status and oai_status = :oai_status ")
+            "where repository_id = :repositoryId and process_status = :process_status and oai_status_code = :oai_status_code ")
     Long countWithProcessStatusAndOaiStatus(
             @Bind("repositoryId") Integer repositoryId,
             @Bind("process_status") String processStatus,
-            @Bind("oai_status") String oaiStatus);
+            @Bind("oai_status_code") Integer oaiStatusCode);
 }

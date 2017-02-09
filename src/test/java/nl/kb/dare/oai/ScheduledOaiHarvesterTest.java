@@ -8,6 +8,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,7 +126,7 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/161841";
-        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", "", 123, "pending");
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, "pending");
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
@@ -151,7 +152,7 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = "ru:oai:repository.ubn.ru.nl:2066/162859";
-        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", "", 123, "pending");
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, "pending");
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 

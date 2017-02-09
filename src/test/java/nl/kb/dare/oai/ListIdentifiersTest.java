@@ -6,6 +6,7 @@ import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,14 +129,14 @@ public class ListIdentifiersTest {
         assertThat(oaiRecords.get(0), allOf(
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/162830")),
             hasProperty("dateStamp", is("2017-01-13T01:05:49Z")),
-            hasProperty("oaiStatus", is("")),
+            hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
             hasProperty("repositoryId", is(123)),
             hasProperty("processStatus", is("pending"))
         ));
 
         // Value taken from second record in ListIdentifiersWithResumptionToken.xml
         assertThat(oaiRecords.get(1), allOf(
-            hasProperty("oaiStatus", is("deleted")),
+            hasProperty("oaiStatus", is(OaiStatus.DELETED)),
             hasProperty("processStatus", is("skip"))
         ));
 
@@ -143,7 +144,7 @@ public class ListIdentifiersTest {
         assertThat(oaiRecords.get(4), allOf(
             hasProperty("identifier", is("ru:oai:repository.ubn.ru.nl:2066/161841")),
             hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
-            hasProperty("oaiStatus", is("")),
+            hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
             hasProperty("repositoryId", is(123)),
             hasProperty("processStatus", is("pending"))
         ));

@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import nl.kb.dare.model.oai.OaiRecord;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -129,10 +130,10 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
         currentOaiRecord.setRepositoryId(repositoryId);
         final String statusAttr = attributes.getValue("status");
         if (statusAttr != null && statusAttr.equalsIgnoreCase("deleted")) {
-            currentOaiRecord.setOaiStatus("deleted");
+            currentOaiRecord.setOaiStatus(OaiStatus.DELETED);
             currentOaiRecord.setProcessStatus("skip");
         } else {
-            currentOaiRecord.setOaiStatus("");
+            currentOaiRecord.setOaiStatus(OaiStatus.AVAILABLE);
             currentOaiRecord.setProcessStatus("pending");
         }
     }

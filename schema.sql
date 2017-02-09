@@ -1,5 +1,3 @@
-# noinspection SqlNoDataSourceInspectionForFile
-
 -- MySQL dump 10.13  Distrib 5.7.17, for Linux (x86_64)
 --
 -- Host: localhost    Database: dare
@@ -61,12 +59,13 @@ DROP TABLE IF EXISTS `oai_records`;
 CREATE TABLE `oai_records` (
   `identifier` varchar(128) NOT NULL,
   `datestamp` varchar(50) DEFAULT NULL,
-  `oai_status` varchar(10) DEFAULT NULL,
   `repository_id` int(11) DEFAULT NULL,
   `process_status` varchar(10) DEFAULT NULL,
+  `oai_status_code` int(11) DEFAULT NULL,
   PRIMARY KEY (`identifier`),
-  KEY `oai_record_index` (`datestamp`,`oai_status`,`repository_id`),
-  KEY `oai_record_index1` (`process_status`)
+  KEY `oai_record_index` (`datestamp`,`repository_id`),
+  KEY `oai_record_index1` (`process_status`),
+  KEY `oai_record_index2` (`oai_status_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -96,4 +95,4 @@ CREATE TABLE `repositories` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-02-08 10:09:59
+-- Dump completed on 2017-02-09  8:34:18

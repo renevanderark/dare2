@@ -12,6 +12,7 @@ import nl.kb.dare.model.reporting.HarvesterErrorReport;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         if (existingRecord == null) {
             oaiRecordDao.insert(oaiRecord);
         } else if (!existingRecord.equals(oaiRecord)) {
-            if (oaiRecord.getOaiStatus().equals("deleted")) {
+            if (oaiRecord.getOaiStatus() == OaiStatus.DELETED) {
                 errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(oaiRecord, "record was deleted by provider after first encounter"));
             } else {
                 errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(oaiRecord, "record was updated by provider after first encounter"));

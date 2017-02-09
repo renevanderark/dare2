@@ -1,5 +1,6 @@
 package nl.kb.dare.model.oai;
 
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
@@ -12,12 +13,12 @@ public class OaiRecordMapper implements ResultSetMapper<OaiRecord> {
     public OaiRecord map(int index, ResultSet resultSet, StatementContext ctx) throws SQLException {
 
         final String identifier = resultSet.getString("identifier");
-        final String oaiStatus = resultSet.getString("oai_status");
+        final Integer oaiStatusCode = resultSet.getInt("oai_status_code");
         final String dateStamp = resultSet.getString("datestamp");
         final Integer repositoryId = resultSet.getInt("repository_id");
         final String processStatus = resultSet.getString("process_status");
 
-        return new OaiRecord(identifier, dateStamp, oaiStatus, repositoryId, processStatus);
+        return new OaiRecord(identifier, dateStamp, OaiStatus.forCode(oaiStatusCode), repositoryId, processStatus);
 
     }
 }

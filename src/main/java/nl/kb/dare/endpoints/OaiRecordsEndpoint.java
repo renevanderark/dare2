@@ -5,6 +5,7 @@ import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
 import nl.kb.dare.model.oai.OaiRecordResult;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -32,12 +33,12 @@ public class OaiRecordsEndpoint {
             @QueryParam("offset") Integer offsetParam,
             @QueryParam("limit") Integer limitParam,
             @QueryParam("processStatus") String processStatus,
-            @QueryParam("oaiStatus") String oaiStatus) {
+            @QueryParam("oaiStatus") String oaiStatusParam) {
 
         final Integer offset = offsetParam == null ? 0 : offsetParam;
         final Integer limit = limitParam == null ? 10 : limitParam;
 
-
+        final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
         final OaiRecordResult result = new OaiRecordResult(
                 new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus),
                 getResult(repositoryId, offset, limit, processStatus, oaiStatus),
@@ -47,25 +48,25 @@ public class OaiRecordsEndpoint {
         return Response.ok(result).build();
     }
 
-    private Long getCount(Integer repositoryId, String processStatus, String oaiStatus) {
+    private Long getCount(Integer repositoryId, String processStatus, OaiStatus oaiStatus) {
         if (processStatus != null && oaiStatus != null) {
-            return oaiRecordDao.countWithProcessStatusAndOaiStatus(repositoryId, processStatus, oaiStatus);
+            return oaiRecordDao.countWithProcessStatusAndOaiStatus(repositoryId, processStatus, oaiStatus.getCode());
         } else if (processStatus != null) {
             return oaiRecordDao.countWithProcessStatus(repositoryId, processStatus);
         } else if (oaiStatus != null) {
-            return oaiRecordDao.countWithOaiStatus(repositoryId, oaiStatus);
+            return oaiRecordDao.countWithOaiStatus(repositoryId, oaiStatus.getCode());
         } else {
             return oaiRecordDao.count(repositoryId);
         }
     }
 
-    private List<OaiRecord> getResult(@PathParam("repositoryId") Integer repositoryId, Integer offset, Integer limit, String processStatus, String oaiStatus) {
+    private List<OaiRecord> getResult(Integer repositoryId, Integer offset, Integer limit, String processStatus, OaiStatus oaiStatus) {
         if (processStatus != null && oaiStatus != null) {
-            return oaiRecordDao.listWithProcessStatusAndOaiStatus(repositoryId, offset, limit, processStatus, oaiStatus);
+            return oaiRecordDao.listWithProcessStatusAndOaiStatus(repositoryId, offset, limit, processStatus, oaiStatus.getCode());
         } else if (processStatus != null) {
             return oaiRecordDao.listWithProcessStatus(repositoryId, offset, limit, processStatus);
         } else if (oaiStatus != null) {
-            return oaiRecordDao.listWithOaiStatus(repositoryId, offset, limit, oaiStatus);
+            return oaiRecordDao.listWithOaiStatus(repositoryId, offset, limit, oaiStatus.getCode());
         } else {
             return oaiRecordDao.list(repositoryId, offset, limit);
         }
