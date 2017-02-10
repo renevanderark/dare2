@@ -64,6 +64,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         if (existingRecord == null) {
             oaiRecordDao.insert(newOaiRecord);
         } else if (!existingRecord.equals(newOaiRecord)) {
+            // preferably we do not alter the record if the processing thread is using the dao
             synchronized (oaiRecordDao) {
                 // The data provider has updated the record since our last encounter during harvest.
 
