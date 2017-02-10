@@ -35,10 +35,13 @@ class LocalFileStorageHandle implements FileStorageHandle {
 
     static LocalFileStorageHandle getInstance(OaiRecord oaiRecord, String basePath) {
         final String filePath = getFilePath(oaiRecord, basePath);
-        return instances.putIfAbsent(filePath, new LocalFileStorageHandle(filePath));
+        if (!instances.containsKey(filePath)) {
+            instances.put(filePath, new LocalFileStorageHandle(filePath));
+        }
+        return instances.get(filePath);
     }
 
-    private static String getFilePath(OaiRecord oaiRecord, String basePath) {
+    static String getFilePath(OaiRecord oaiRecord, String basePath) {
         final Integer repositoryId = oaiRecord.getRepositoryId();
         final String dateStampPart = oaiRecord.getDateStamp().substring(0, 13);
         final String idPart = (new HexBinaryAdapter()).marshal((md5.digest(oaiRecord.getIdentifier().getBytes())));
