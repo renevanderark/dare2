@@ -87,4 +87,15 @@ public class OaiRecord {
         result = 31 * result + (repositoryId != null ? repositoryId.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "OaiRecord{" +
+                "identifier='" + identifier + '\'' +
+                ", dateStamp='" + dateStamp + '\'' +
+                ", oaiStatus=" + oaiStatus +
+                ", repositoryId=" + repositoryId +
+                ", processStatus=" + processStatus +
+                '}';
+    }
 }

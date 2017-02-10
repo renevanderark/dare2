@@ -17,6 +17,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
+import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
 import nl.kb.dare.taskmanagers.ManagedPeriodicTask;
 import org.skife.jdbi.v2.DBI;
@@ -40,8 +41,11 @@ public class App extends Application<Config> {
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
         final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
+        final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(oaiRecordDao);
 
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
+
+        environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiHarvester));
 
