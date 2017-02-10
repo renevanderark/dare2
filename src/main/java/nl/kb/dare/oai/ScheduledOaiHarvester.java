@@ -129,6 +129,6 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 1, TimeUnit.HOURS);
+        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 1, TimeUnit.HOURS);
     }
 }
