@@ -3,9 +3,11 @@ package nl.kb.dare;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
+import nl.kb.dare.files.FileStorageFactory;
 
 class Config extends Configuration {
     private DataSourceFactory database;
+    private FileStorageFactory fileStorageFactory;
 
     @JsonProperty
     private String appTitle;
@@ -24,7 +26,6 @@ class Config extends Configuration {
         this.database = dataSourceFactory;
     }
 
-
     String getAppTitle() {
         return appTitle;
     }
@@ -37,4 +38,13 @@ class Config extends Configuration {
         return wsProtocol;
     }
 
+    @JsonProperty("fileStorage")
+    public FileStorageFactory getFileStorageFactory() {
+        return fileStorageFactory;
+    }
+
+    @JsonProperty("fileStorage")
+    public void setFileStorageFactory(FileStorageFactory fileStorageFactory) {
+        this.fileStorageFactory = fileStorageFactory;
+    }
 }

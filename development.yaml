@@ -37,3 +37,7 @@ database:
 appTitle: "Dare dash"
 hostName: localhost:8080
 wsProtocol: ws
+
+fileStorage:
+  storageType: local
+  storageDir: ../dare2-files
