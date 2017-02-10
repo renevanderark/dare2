@@ -1,5 +1,6 @@
 package nl.kb.dare.oai;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
@@ -10,6 +11,7 @@ import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ErrorReportDao;
+import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
@@ -26,12 +28,23 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
+    private static final MessageDigest md5;
+
+    static {
+        try {
+            md5 = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
     private final SAXParser saxParser;
     {
         try {
@@ -67,40 +80,76 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     @Override
     protected void runOneIteration() throws Exception {
 
-        // We do not want to free the dao until processing updates are finished on the record
-        synchronized (oaiRecordDao) {
 
-            final Optional<OaiRecord> oaiRecordOptional = fetchNextRecord();
-            if (!oaiRecordOptional.isPresent()) { return; }
+        final Optional<OaiRecord> oaiRecordOptional = fetchNextRecord();
+        if (!oaiRecordOptional.isPresent()) { return; }
 
-            final OaiRecord oaiRecord = oaiRecordOptional.get();
-            final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
-            if (repositoryConfig == null) {
-                LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
-                // TODO error report
-                return;
-            }
+        final OaiRecord oaiRecord = oaiRecordOptional.get();
+        final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
+        if (repositoryConfig == null) {
+            LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
+            // TODO error report
+            finishRecord(oaiRecord, ProcessStatus.FAILED);
+            return;
+        }
 
-            downloadRecordMetadata(oaiRecord, repositoryConfig);
+        final Optional<FileStorageHandle> fileStorageHandle = getFileStorageHandle(oaiRecord);
+        if (!fileStorageHandle.isPresent()) {
+            finishRecord(oaiRecord, ProcessStatus.FAILED);
+            return;
+        }
 
-            finishRecord(oaiRecord);
+        final boolean success = downloadMetadata(oaiRecord, repositoryConfig, fileStorageHandle.get());
+        if (!success) {
+            finishRecord(oaiRecord, ProcessStatus.FAILED);
+            return;
+        }
+
+
+        final boolean allResourcesDownloaded = downloadResources(oaiRecord, repositoryConfig, fileStorageHandle.get());
+        if (!allResourcesDownloaded) {
+            finishRecord(oaiRecord, ProcessStatus.FAILED);
+            return;
+        }
+
+        finishRecord(oaiRecord, ProcessStatus.PROCESSED);
+
+    }
+
+    private Optional<FileStorageHandle> getFileStorageHandle(OaiRecord oaiRecord) {
+        try {
+            return Optional.of(fileStorage.create(oaiRecord));
+        } catch (IOException e) {
+            LOG.error("Failed to create file storage location", e);
+            // TODO
+            return Optional.empty();
         }
     }
 
-    private void downloadRecordMetadata(OaiRecord oaiRecord, Repository repository) {
+
+    private boolean downloadMetadata(OaiRecord oaiRecord, Repository repository, FileStorageHandle fileStorageHandle) {
         try {
             final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
-            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
             LOG.info("fetching record: {}", urlStr);
             final HttpResponseHandler responseHandler = responseHandlerFactory.getXsltTransformingHandler(new StreamResult(out), xsltTransformer);
-
             httpFetcher.execute(new URL(urlStr), responseHandler);
-            responseHandler.throwAnyException();
-
+            responseHandler.getExceptions().forEach(errorReport -> this.saveErrorReport(errorReport, oaiRecord));
             fileStorageHandle.syncFile(out);
+
+            return responseHandler.getExceptions().isEmpty();
+        } catch (IOException e) {
+            LOG.error("Failed to download metadata", e);
+            // TODO
+            return false;
+        }
+    }
+
+    private boolean downloadResources(OaiRecord oaiRecord, Repository repository, FileStorageHandle fileStorageHandle) {
+        try {
+
             final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
             saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
 
@@ -108,28 +157,34 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             if (objectFiles.isEmpty()) {
                 LOG.error("No object files provided");
                 // TODO error report
+                return false;
             }
+            final List<ErrorReport> errorReports = Lists.newArrayList();
             for (String objectFile : objectFiles) {
-                final URL objectUrl = new URL(URLDecoder.decode(objectFile, "UTF8"));
+                final URL objectUrl = new URL(objectFile);
 
-                final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", FilenameUtils.getName(objectUrl.getPath()));
-                final HttpResponseHandler respHandler = responseHandlerFactory.getStreamCopyingResponseHandler(objectOut);
-                httpFetcher.execute(objectUrl, respHandler);
-                for (ErrorReport errorReport : respHandler.getExceptions()) {
-                    LOG.error("Error handling object download.", errorReport.getException());
-                    // TODO error report
-                }
+                final String filename = FilenameUtils.getName(objectUrl.getPath());
+                final String checksumFileName = filename + ".checksum";
+                final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
+                final OutputStream checksumOut = fileStorageHandle.getOutputStream("resources", checksumFileName);
+                final HttpResponseHandler responseHandler = responseHandlerFactory.getStreamCopyingResponseHandler(objectOut, checksumOut);
+                httpFetcher.execute(objectUrl, responseHandler);
+                errorReports.addAll(responseHandler.getExceptions());
             }
-
+            errorReports.forEach(errorReport -> this.saveErrorReport(errorReport, oaiRecord));
+            return errorReports.isEmpty();
         } catch (MalformedURLException e) {
             LOG.error("Url is malformed", e);
             // TODO error report
+            return false;
         } catch (IOException e) {
             LOG.error("I/O exception", e);
             // TODO error report
+            return false;
         } catch (SAXException e) {
             LOG.error("XML parsing error", e);
             // TODO error report
+            return false;
         }
 
     }
@@ -145,11 +200,15 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     }
 
 
-    private void finishRecord(OaiRecord oaiRecord) {
-        oaiRecord.setProcessStatus(ProcessStatus.PROCESSED);
+    private void finishRecord(OaiRecord oaiRecord, ProcessStatus processStatus) {
+        oaiRecord.setProcessStatus(processStatus);
         oaiRecordDao.update(oaiRecord);
     }
 
+    private void saveErrorReport(ErrorReport errorReport, OaiRecord oaiRecord) {
+        LOG.error("Failed to process record {}", oaiRecord.getIdentifier() ,errorReport.getException());
+        errorReportDao.insertOaiRecordError(new OaiRecordErrorReport(errorReport, oaiRecord));
+    }
 
     @Override
     protected Scheduler scheduler() {
