@@ -31,15 +31,15 @@ public class App extends Application<Config> {
     @Override
     public void run(Config config, Environment environment) throws Exception {
         final DBIFactory factory = new DBIFactory();
-        final DBI jdbi = factory.build(environment, config.getDataSourceFactory(), "mysql");
+        final DBI db = factory.build(environment, config.getDataSourceFactory(), "datasource");
 
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
-        final RepositoryDao repositoryDao = jdbi.onDemand(RepositoryDao.class);
-        final ErrorReportDao errorReportDao = jdbi.onDemand(ErrorReportDao.class);
-        final OaiRecordDao oaiRecordDao = jdbi.onDemand(OaiRecordDao.class);
+        final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
+        final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
+        final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(jdbi));
+        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
 
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
 
