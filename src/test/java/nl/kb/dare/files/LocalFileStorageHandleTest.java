@@ -8,8 +8,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -20,13 +22,17 @@ public class LocalFileStorageHandleTest {
     private static final int REPOSITORY_ID = 1;
     private static final String DATE_STAMP = "2015-01-01T01:02:05Z";
     private static final String BASE_PATH = "./test";
-    private MessageDigest md5;
+    private LocalFileStorageHandle instance;
+    private OaiRecord oaiRecord;
 
     @Before
-    public void setup() throws NoSuchAlgorithmException {
-        md5 = MessageDigest.getInstance("MD5");
+    public void setUp() {
+        oaiRecord = new OaiRecord();
+        oaiRecord.setRepositoryId(REPOSITORY_ID);
+        oaiRecord.setIdentifier(IDENTIFIER);
+        oaiRecord.setDateStamp(DATE_STAMP);
+        instance = LocalFileStorageHandle.getInstance(oaiRecord, BASE_PATH);
     }
-
     @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(new File(BASE_PATH));
@@ -34,11 +40,7 @@ public class LocalFileStorageHandleTest {
 
     @Test
     public void createShouldCreateANewDirectory() throws IOException {
-        final OaiRecord oaiRecord = new OaiRecord();
-        oaiRecord.setRepositoryId(REPOSITORY_ID);
-        oaiRecord.setIdentifier(IDENTIFIER);
-        oaiRecord.setDateStamp(DATE_STAMP);
-        final LocalFileStorageHandle instance = LocalFileStorageHandle.getInstance(oaiRecord, BASE_PATH);
+
 
         instance.create();
 
@@ -50,11 +52,6 @@ public class LocalFileStorageHandleTest {
 
     @Test
     public void clearShouldRecursivelyDeleteContents() throws IOException {
-        final OaiRecord oaiRecord = new OaiRecord();
-        oaiRecord.setRepositoryId(REPOSITORY_ID);
-        oaiRecord.setIdentifier(IDENTIFIER);
-        oaiRecord.setDateStamp(DATE_STAMP);
-        final LocalFileStorageHandle instance = LocalFileStorageHandle.getInstance(oaiRecord, BASE_PATH);
 
         instance.create();
 
@@ -70,4 +67,36 @@ public class LocalFileStorageHandleTest {
         assertThat(new File(testFilePath).exists(), is(false));
         assertThat(new File(testSubdirPath).exists(), is(false));
     }
+
+    @Test
+    public void getOutputStreamPointsToTheRequestedFile() throws IOException {
+        final OutputStream outputStream = instance.create().getOutputStream("test.foo");
+        final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF8")));
+        final String filePath = LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH);
+
+        printWriter.print("testing");
+        printWriter.flush();
+        printWriter.close();
+
+        final String data = FileUtils.readFileToString(new File(String.format("%s/%s", filePath, "test.foo")), Charset.forName("UTF8"));
+
+        assertThat(data, is("testing"));
+    }
+
+    @Test
+    public void getOutputStreamPointsToTheRequestedFileAndSubdir() throws IOException {
+        final OutputStream outputStream = instance.create().getOutputStream("sub/dir","test.foo");
+        final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF8")));
+
+        final String filePath = LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH);
+
+        printWriter.print("testing");
+        printWriter.flush();
+        printWriter.close();
+
+        final String data = FileUtils.readFileToString(new File(String.format("%s/sub/dir/%s", filePath, "test.foo")), Charset.forName("UTF8"));
+
+        assertThat(data, is("testing"));
+    }
+
 }

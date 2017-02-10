@@ -5,7 +5,9 @@ import org.apache.commons.io.FileUtils;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
@@ -34,7 +36,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
         this.fileDir = fileDir;
     }
 
-    static LocalFileStorageHandle getInstance(OaiRecord oaiRecord, String basePath) {
+    static synchronized LocalFileStorageHandle getInstance(OaiRecord oaiRecord, String basePath) {
         final String filePath = getFilePath(oaiRecord, basePath);
         if (!instances.containsKey(filePath)) {
             instances.put(filePath, new LocalFileStorageHandle(filePath));
@@ -65,6 +67,21 @@ class LocalFileStorageHandle implements FileStorageHandle {
     public FileStorageHandle clear() throws IOException {
         FileUtils.cleanDirectory(new File(fileDir));
         return this;
+    }
+
+    @Override
+    public OutputStream getOutputStream(String filename) throws IOException {
+        return new FileOutputStream(new File(String.format("%s/%s", fileDir, filename)));
+    }
+
+    @Override
+    public OutputStream getOutputStream(String path, String filename) throws IOException {
+        final String filePath = String.format("%s/%s", fileDir, path);
+        final boolean mkdirsSucceeded = new File(filePath).mkdirs();
+        if (!mkdirsSucceeded) {
+            throw new IOException("could not create local directory: " + filePath);
+        }
+        return new FileOutputStream(new File(String.format("%s/%s", filePath, filename)));
     }
 
 }
