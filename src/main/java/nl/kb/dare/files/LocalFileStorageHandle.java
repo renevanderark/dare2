@@ -54,12 +54,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
     @Override
     public FileStorageHandle create() throws IOException {
         final File fileDirF = new File(fileDir);
-        if (!fileDirF.exists()) {
-            final boolean mkdirSucceeded = fileDirF.mkdirs();
-            if (!mkdirSucceeded) {
-                throw new IOException("could not create local directory: " + fileDir);
-            }
-        }
+        FileUtils.forceMkdir(new File(fileDir));
         return this;
     }
 
@@ -77,16 +72,18 @@ class LocalFileStorageHandle implements FileStorageHandle {
     @Override
     public OutputStream getOutputStream(String path, String filename) throws IOException {
         final String filePath = String.format("%s/%s", fileDir, path);
-        final boolean mkdirsSucceeded = new File(filePath).mkdirs();
-        if (!mkdirsSucceeded) {
-            throw new IOException("could not create local directory: " + filePath);
-        }
+        FileUtils.forceMkdir(new File(filePath));
         return new FileOutputStream(new File(String.format("%s/%s", filePath, filename)));
     }
 
     @Override
     public File getFile(String filename) {
         return new File(String.format("%s/%s", fileDir, filename));
+    }
+
+    @Override
+    public void syncFile(OutputStream out) throws IOException {
+        ((FileOutputStream) out).getFD().sync();
     }
 
 }

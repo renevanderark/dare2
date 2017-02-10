@@ -14,4 +14,6 @@ public interface FileStorageHandle {
     OutputStream getOutputStream(String path, String filename) throws IOException;
 
     File getFile(String filename);
+
+    void syncFile(OutputStream out) throws IOException;
 }

@@ -8,11 +8,13 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.xslt.XsltTransformer;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -24,6 +26,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -95,6 +99,27 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
             responseHandler.throwAnyException();
+
+            fileStorageHandle.syncFile(out);
+            final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
+            saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
+
+            final List<String> objectFiles = metsXmlHandler.getObjectFiles();
+            if (objectFiles.isEmpty()) {
+                LOG.error("No object files provided");
+                // TODO error report
+            }
+            for (String objectFile : objectFiles) {
+                final URL objectUrl = new URL(URLDecoder.decode(objectFile, "UTF8"));
+
+                final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", FilenameUtils.getName(objectUrl.getPath()));
+                final HttpResponseHandler respHandler = responseHandlerFactory.getStreamCopyingResponseHandler(objectOut);
+                httpFetcher.execute(objectUrl, respHandler);
+                for (ErrorReport errorReport : respHandler.getExceptions()) {
+                    LOG.error("Error handling object download.", errorReport.getException());
+                    // TODO error report
+                }
+            }
 
         } catch (MalformedURLException e) {
             LOG.error("Url is malformed", e);
