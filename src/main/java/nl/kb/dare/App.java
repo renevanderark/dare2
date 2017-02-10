@@ -20,9 +20,11 @@ import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
 import nl.kb.dare.taskmanagers.ManagedPeriodicTask;
+import nl.kb.dare.xslt.PipedXsltTransformer;
 import org.skife.jdbi.v2.DBI;
 
 import javax.servlet.Servlet;
+import javax.xml.transform.stream.StreamSource;
 
 public class App extends Application<Config> {
     public static void main(String[] args) throws Exception {
@@ -41,12 +43,16 @@ public class App extends Application<Config> {
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
+        final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
+        // TODO: from database, reloadable
+        final StreamSource didlToMetsXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl2mets-experimental-version.xsl"));
 
+        final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToMetsXslt);
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
                 repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
-                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage);
+                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer);
         final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
 
 

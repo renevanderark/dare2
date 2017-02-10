@@ -2,6 +2,7 @@ package nl.kb.dare.oai;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.files.FileStorage;
+import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
@@ -11,18 +12,32 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.dare.xslt.XsltTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
+    private final SAXParser saxParser;
+    {
+        try {
+            saxParser = SAXParserFactory.newInstance().newSAXParser();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize sax parser", e);
+        }
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiRecordFetcher.class);
 
     private final OaiRecordDao oaiRecordDao;
@@ -31,9 +46,11 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
     private final FileStorage fileStorage;
+    private final XsltTransformer xsltTransformer;
 
     public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
-                                     HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, FileStorage fileStorage) {
+                                     HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                                     FileStorage fileStorage, XsltTransformer xsltTransformer) {
 
         this.oaiRecordDao = oaiRecordDao;
         this.repositoryDao = repositoryDao;
@@ -41,6 +58,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
         this.fileStorage = fileStorage;
+        this.xsltTransformer = xsltTransformer;
     }
 
     @Override
@@ -71,10 +89,13 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
-            final OutputStream out = fileStorage.create(oaiRecord).getOutputStream("metadata.xml");
+            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
+            final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
+            final PipedInputStream pipe = new PipedInputStream();
             LOG.info("fetching record: {}", urlStr);
 
-            final HttpResponseHandler responseHandler = responseHandlerFactory.getStreamCopyingResponseHandler(out);
+            final HttpResponseHandler responseHandler = responseHandlerFactory.getXsltTransformingHandler(new StreamResult(out), xsltTransformer);
+
             httpFetcher.execute(new URL(urlStr), responseHandler);
             responseHandler.throwAnyException();
 

@@ -84,4 +84,9 @@ class LocalFileStorageHandle implements FileStorageHandle {
         return new FileOutputStream(new File(String.format("%s/%s", filePath, filename)));
     }
 
+    @Override
+    public File getFile(String filename) {
+        return new File(String.format("%s/%s", fileDir, filename));
+    }
+
 }
