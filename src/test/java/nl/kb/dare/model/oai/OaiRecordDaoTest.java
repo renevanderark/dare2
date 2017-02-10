@@ -1,5 +1,6 @@
 package nl.kb.dare.model.oai;
 
+import com.google.common.collect.Lists;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -9,11 +10,17 @@ import org.junit.Test;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 
 public class OaiRecordDaoTest {
 
@@ -61,6 +68,27 @@ public class OaiRecordDaoTest {
         assertThat(result.get("oai_status_code"), is(OaiStatus.AVAILABLE.getCode()));
         assertThat(result.get("repository_id"), is(123));
         assertThat(result.get("process_status_code"), is(ProcessStatus.PENDING.getCode()));
+    }
+
+    @Test
+    public void deleteForRepositoryShouldRemoveAllRecordsForTheRepositoryId() {
+        Stream.of(1, 1, 2, 1, 2, 3).map(repoId -> new OaiRecord(
+                UUID.randomUUID().toString(),
+                "2017-01-01T00:00:00Z",
+                OaiStatus.AVAILABLE,
+                repoId,
+                ProcessStatus.PENDING
+        )).forEach(oaiRecordDao::insert);
+
+        oaiRecordDao.removeForRepository(1);
+
+        final List<Integer> repoIds = Lists.newArrayList();
+        for (Map<String, Object> result : handle.createQuery("select repository_id from oai_records")) {
+            repoIds.add((Integer) result.get("repository_id"));
+        }
+
+        assertThat(repoIds, not(hasItem(1)));
+        assertThat(repoIds, containsInAnyOrder(2, 2, 3));
     }
 
     @Test

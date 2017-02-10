@@ -23,6 +23,9 @@ public interface OaiRecordDao {
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
+    @SqlUpdate("delete from oai_records where repository_id = :repositoryId")
+    void removeForRepository(@Bind("repositoryId") Integer repositoryId);
+
     @SqlQuery("select * from oai_records where repository_id = :repositoryId limit :limit offset :offset")
     List<OaiRecord> list(
             @Bind("repositoryId") Integer repositoryId,

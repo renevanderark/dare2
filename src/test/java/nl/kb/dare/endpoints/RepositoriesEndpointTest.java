@@ -1,6 +1,7 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
@@ -23,7 +24,7 @@ public class RepositoriesEndpointTest {
     @Test
     public void createShouldCreateANewRpository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         final Integer id = 123;
         when(dao.insert(repositoryConfig)).thenReturn(id);
@@ -37,21 +38,23 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void deleteShouldDeleteTheRepository() {
+    public void deleteShouldDeleteTheRepositoryAndItsRecords() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, oaiRecordDao, mock(RepositoryValidator.class));
         final Integer id = 123;
 
         final Response response = instance.delete(id);
 
         verify(dao).remove(id);
+        verify(oaiRecordDao).removeForRepository(id);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
 
     @Test
     public void getShouldReturnTheRepository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(repositoryConfig);
@@ -65,7 +68,7 @@ public class RepositoriesEndpointTest {
     @Test
     public void getShouldReturnNotFoundWhenRepositoryIsNotFound() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(null);
 
@@ -79,7 +82,7 @@ public class RepositoriesEndpointTest {
     @Test
     public void updateShouldUpdateTheRepository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         final Integer id = 123;
 
@@ -93,7 +96,7 @@ public class RepositoriesEndpointTest {
     @Test
     public void indexShouldRespondWithAListOfRepositories() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Repository repositoryConfig1 = new Repository("http://example.com", "prefix", "setname", "123", 1);
         final Repository repositoryConfig2 = new Repository("http://example.com", "prefix", "setname", "123", 2);
         final List<Repository> repositories = Lists.newArrayList(repositoryConfig1, repositoryConfig2);
@@ -110,7 +113,7 @@ public class RepositoriesEndpointTest {
     public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator);
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         final Integer id = 123;
         final RepositoryValidator.ValidationResult validationResult = validator.new ValidationResult();
@@ -125,7 +128,7 @@ public class RepositoriesEndpointTest {
     @Test
     public void validateShouldReturnNotFoundWhenRepositoryIsNotFound() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(RepositoryValidator.class));
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(null);
 
@@ -141,7 +144,7 @@ public class RepositoriesEndpointTest {
     public void validateShouldHandleSAXException() throws IOException, SAXException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator);
         final Integer id = 123;
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         when(dao.findById(id)).thenReturn(repositoryConfig);
@@ -158,7 +161,7 @@ public class RepositoriesEndpointTest {
     public void validateShouldHandleIOException() throws IOException, SAXException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, validator);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator);
         final Integer id = 123;
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "setname", "123");
         when(dao.findById(id)).thenReturn(repositoryConfig);

@@ -1,5 +1,6 @@
 package nl.kb.dare.endpoints;
 
+import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryValidator;
@@ -22,11 +23,13 @@ import java.util.List;
 @Path("/repositories")
 public class RepositoriesEndpoint {
     private RepositoryDao dao;
+    private final OaiRecordDao oaiRecordDao;
     private RepositoryValidator validator;
 
-    public RepositoriesEndpoint(RepositoryDao dao, RepositoryValidator validator) {
+    public RepositoriesEndpoint(RepositoryDao dao, OaiRecordDao oaiRecordDao, RepositoryValidator validator) {
 
         this.dao = dao;
+        this.oaiRecordDao = oaiRecordDao;
         this.validator = validator;
     }
 
@@ -99,7 +102,7 @@ public class RepositoriesEndpoint {
     public Response delete(@PathParam("id") Integer id) {
 
         dao.remove(id);
-
+        oaiRecordDao.removeForRepository(id);
         return Response.ok().build();
     }
 
