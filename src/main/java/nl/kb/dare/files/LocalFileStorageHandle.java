@@ -1,6 +1,7 @@
 package nl.kb.dare.files;
 
 import nl.kb.dare.model.oai.OaiRecord;
+import org.apache.commons.io.FileUtils;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
@@ -48,7 +49,8 @@ class LocalFileStorageHandle implements FileStorageHandle {
         return String.format("%s/%d/%s/%s", basePath, repositoryId, dateStampPart, idPart);
     }
 
-    FileStorageHandle create() throws IOException {
+    @Override
+    public FileStorageHandle create() throws IOException {
         final File fileDirF = new File(fileDir);
         if (!fileDirF.exists()) {
             final boolean mkdirSucceeded = fileDirF.mkdirs();
@@ -58,4 +60,11 @@ class LocalFileStorageHandle implements FileStorageHandle {
         }
         return this;
     }
+
+    @Override
+    public FileStorageHandle clear() throws IOException {
+        FileUtils.cleanDirectory(new File(fileDir));
+        return this;
+    }
+
 }

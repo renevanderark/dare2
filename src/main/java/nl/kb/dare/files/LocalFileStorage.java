@@ -13,6 +13,7 @@ class LocalFileStorage implements FileStorage {
 
     @Override
     public FileStorageHandle create(OaiRecord oaiRecord) throws IOException {
-        return LocalFileStorageHandle.getInstance(oaiRecord, storageDir).create();
+        return LocalFileStorageHandle.getInstance(oaiRecord, storageDir)
+                .create().clear();
     }
 }
