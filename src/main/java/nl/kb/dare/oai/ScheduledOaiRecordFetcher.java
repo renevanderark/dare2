@@ -22,7 +22,6 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
@@ -91,9 +90,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
             final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
-            final PipedInputStream pipe = new PipedInputStream();
             LOG.info("fetching record: {}", urlStr);
-
             final HttpResponseHandler responseHandler = responseHandlerFactory.getXsltTransformingHandler(new StreamResult(out), xsltTransformer);
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
