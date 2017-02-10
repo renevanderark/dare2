@@ -1,20 +1,46 @@
 package nl.kb.dare.oai;
 
 import com.google.common.util.concurrent.AbstractScheduledService;
+import nl.kb.dare.files.FileStorage;
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.reporting.ErrorReportDao;
+import nl.kb.dare.model.repository.Repository;
+import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
+    private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiRecordFetcher.class);
 
     private final OaiRecordDao oaiRecordDao;
+    private final RepositoryDao repositoryDao;
+    private final ErrorReportDao errorReportDao;
+    private final HttpFetcher httpFetcher;
+    private final ResponseHandlerFactory responseHandlerFactory;
+    private final FileStorage fileStorage;
 
-    public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao) {
+    public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
+                                     HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, FileStorage fileStorage) {
 
         this.oaiRecordDao = oaiRecordDao;
+        this.repositoryDao = repositoryDao;
+        this.errorReportDao = errorReportDao;
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
+        this.fileStorage = fileStorage;
     }
 
     @Override
@@ -24,19 +50,45 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         synchronized (oaiRecordDao) {
 
             final Optional<OaiRecord> oaiRecordOptional = fetchNextRecord();
+            if (!oaiRecordOptional.isPresent()) { return; }
 
-            if (!oaiRecordOptional.isPresent()) {
+            final OaiRecord oaiRecord = oaiRecordOptional.get();
+            final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
+            if (repositoryConfig == null) {
+                LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
+                // TODO error report
                 return;
             }
-            final OaiRecord oaiRecord = oaiRecordOptional.get();
 
-            System.out.println(oaiRecord);
-
-            // mimic some downloads
-            Thread.sleep(3000);
+            downloadRecordMetadata(oaiRecord, repositoryConfig);
 
             finishRecord(oaiRecord);
         }
+    }
+
+    private void downloadRecordMetadata(OaiRecord oaiRecord, Repository repository) {
+        try {
+            final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
+                    repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
+
+            final OutputStream out = fileStorage.create(oaiRecord).getOutputStream("metadata.xml");
+            LOG.info("fetching record: {}", urlStr);
+
+            final HttpResponseHandler responseHandler = responseHandlerFactory.getStreamCopyingResponseHandler(out);
+            httpFetcher.execute(new URL(urlStr), responseHandler);
+            responseHandler.throwAnyException();
+
+        } catch (MalformedURLException e) {
+            LOG.error("Url is malformed", e);
+            // TODO error report
+        } catch (IOException e) {
+            LOG.error("I/O exception", e);
+            // TODO error report
+        } catch (SAXException e) {
+            LOG.error("XML parsing error", e);
+            // TODO error report
+        }
+
     }
 
     private Optional<OaiRecord> fetchNextRecord() {

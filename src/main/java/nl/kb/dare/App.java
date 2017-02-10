@@ -36,14 +36,19 @@ public class App extends Application<Config> {
 
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
+
         final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
-        final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
-        final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(oaiRecordDao);
-
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
+
+
+        final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
+                repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
+        final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
+                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage);
+        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
+
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
 
