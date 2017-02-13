@@ -28,22 +28,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
-    private static final MessageDigest md5;
-
-    static {
-        try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+    private static final Integer WORKERS = 20;
 
     private final SAXParser saxParser;
     {
@@ -81,38 +71,47 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     protected void runOneIteration() throws Exception {
 
 
-        final Optional<OaiRecord> oaiRecordOptional = fetchNextRecord();
-        if (!oaiRecordOptional.isPresent()) { return; }
+        final List<OaiRecord> pendingRecords = fetchNextRecords();
+        final List<Thread> workers = Lists.newArrayList();
 
-        final OaiRecord oaiRecord = oaiRecordOptional.get();
-        final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
-        if (repositoryConfig == null) {
-            LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
-            // TODO error report
-            finishRecord(oaiRecord, ProcessStatus.FAILED);
-            return;
+        for (OaiRecord oaiRecord : pendingRecords) {
+            final Thread worker = new Thread(() -> {
+                final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
+                if (repositoryConfig == null) {
+                    LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
+                    // TODO error report
+                    finishRecord(oaiRecord, ProcessStatus.FAILED);
+                    return;
+                }
+
+                final Optional<FileStorageHandle> fileStorageHandle = getFileStorageHandle(oaiRecord);
+                if (!fileStorageHandle.isPresent()) {
+                    finishRecord(oaiRecord, ProcessStatus.FAILED);
+                    return;
+                }
+
+                final boolean success = downloadMetadata(oaiRecord, repositoryConfig, fileStorageHandle.get());
+                if (!success) {
+                    finishRecord(oaiRecord, ProcessStatus.FAILED);
+                    return;
+                }
+
+
+                final boolean allResourcesDownloaded = downloadResources(oaiRecord, repositoryConfig, fileStorageHandle.get());
+                if (!allResourcesDownloaded) {
+                    finishRecord(oaiRecord, ProcessStatus.FAILED);
+                    return;
+                }
+
+                finishRecord(oaiRecord, ProcessStatus.PROCESSED);
+            });
+            workers.add(worker);
+            worker.start();
         }
 
-        final Optional<FileStorageHandle> fileStorageHandle = getFileStorageHandle(oaiRecord);
-        if (!fileStorageHandle.isPresent()) {
-            finishRecord(oaiRecord, ProcessStatus.FAILED);
-            return;
+        for (Thread worker : workers) {
+            worker.join();
         }
-
-        final boolean success = downloadMetadata(oaiRecord, repositoryConfig, fileStorageHandle.get());
-        if (!success) {
-            finishRecord(oaiRecord, ProcessStatus.FAILED);
-            return;
-        }
-
-
-        final boolean allResourcesDownloaded = downloadResources(oaiRecord, repositoryConfig, fileStorageHandle.get());
-        if (!allResourcesDownloaded) {
-            finishRecord(oaiRecord, ProcessStatus.FAILED);
-            return;
-        }
-
-        finishRecord(oaiRecord, ProcessStatus.PROCESSED);
 
     }
 
@@ -151,7 +150,9 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         try {
 
             final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
-            saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
+            synchronized (saxParser) {
+                saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
+            }
 
             final List<String> objectFiles = metsXmlHandler.getObjectFiles();
             if (objectFiles.isEmpty()) {
@@ -189,14 +190,8 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     }
 
-    private Optional<OaiRecord> fetchNextRecord() {
-        final OaiRecord oaiRecord = oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode());
-        if (oaiRecord == null) {
-            return Optional.empty();
-        }
-        oaiRecord.setProcessStatus(ProcessStatus.PROCESSING);
-        oaiRecordDao.update(oaiRecord);
-        return Optional.of(oaiRecord);
+    private List<OaiRecord> fetchNextRecords() {
+        return oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode(), WORKERS);
     }
 
 
