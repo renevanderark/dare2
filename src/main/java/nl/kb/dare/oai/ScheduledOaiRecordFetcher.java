@@ -85,6 +85,11 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             worker.start();
             runningWorkers.getAndIncrement();
         }
+
+        for (Thread worker : workers) {
+            worker.join();
+        }
+
     }
 
     private List<OaiRecord> fetchNextRecords(int limit) {
