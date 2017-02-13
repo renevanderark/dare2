@@ -5,8 +5,11 @@ import org.apache.commons.io.FileUtils;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,8 +80,8 @@ class LocalFileStorageHandle implements FileStorageHandle {
     }
 
     @Override
-    public File getFile(String filename) {
-        return new File(String.format("%s/%s", fileDir, filename));
+    public InputStream getFile(String filename) throws FileNotFoundException {
+        return new FileInputStream(new File(String.format("%s/%s", fileDir, filename)));
     }
 
     @Override

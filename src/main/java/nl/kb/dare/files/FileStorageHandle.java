@@ -1,7 +1,8 @@
 package nl.kb.dare.files;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public interface FileStorageHandle {
@@ -13,7 +14,7 @@ public interface FileStorageHandle {
     OutputStream getOutputStream(String filename) throws IOException;
     OutputStream getOutputStream(String path, String filename) throws IOException;
 
-    File getFile(String filename);
+    InputStream getFile(String filename) throws FileNotFoundException;
 
     void syncFile(OutputStream out) throws IOException;
 }
