@@ -52,7 +52,8 @@ public class App extends Application<Config> {
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
                 repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
-                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer);
+                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
+                config.getInSampleMode());
         final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
 
 

@@ -15,6 +15,8 @@ class Config extends Configuration {
     private String hostName;
     @JsonProperty
     private String wsProtocol;
+    @JsonProperty
+    private Boolean inSampleMode = false;
 
     @JsonProperty("database")
     DataSourceFactory getDataSourceFactory() {
@@ -38,6 +40,10 @@ class Config extends Configuration {
         return wsProtocol;
     }
 
+    Boolean getInSampleMode() {
+        return inSampleMode;
+    }
+
     @JsonProperty("fileStorage")
     public FileStorageFactory getFileStorageFactory() {
         return fileStorageFactory;
@@ -47,4 +53,5 @@ class Config extends Configuration {
     public void setFileStorageFactory(FileStorageFactory fileStorageFactory) {
         this.fileStorageFactory = fileStorageFactory;
     }
+
 }

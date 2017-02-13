@@ -89,4 +89,8 @@ class LocalFileStorageHandle implements FileStorageHandle {
         ((FileOutputStream) out).getFD().sync();
     }
 
+    @Override
+    public void deleteFiles() throws IOException {
+        FileUtils.deleteDirectory(new File(fileDir));
+    }
 }

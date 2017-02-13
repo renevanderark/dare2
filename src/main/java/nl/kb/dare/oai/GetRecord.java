@@ -36,6 +36,7 @@ class GetRecord {
 
 
     private final SAXParser saxParser;
+
     {
         try {
             saxParser = SAXParserFactory.newInstance().newSAXParser();
@@ -47,14 +48,16 @@ class GetRecord {
     private final OaiRecord oaiRecord;
     private final Repository repositoryConfig;
     private final Consumer<ErrorReport> onError;
-    private FileStorage fileStorage;
-    private HttpFetcher httpFetcher;
-    private ResponseHandlerFactory responseHandlerFactory;
-    private XsltTransformer xsltTransformer;
+    private final FileStorage fileStorage;
+    private final HttpFetcher httpFetcher;
+    private final ResponseHandlerFactory responseHandlerFactory;
+    private final XsltTransformer xsltTransformer;
+    private final boolean inSampleMode;
 
     GetRecord(OaiRecord oaiRecord, Repository repositoryConfig, FileStorage fileStorage,
               HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-              XsltTransformer xsltTransformer, Consumer<ErrorReport> onError) {
+              XsltTransformer xsltTransformer, Consumer<ErrorReport> onError,
+              boolean inSampleMode) {
 
         this.oaiRecord = oaiRecord;
         this.repositoryConfig = repositoryConfig;
@@ -63,6 +66,7 @@ class GetRecord {
         this.responseHandlerFactory = responseHandlerFactory;
         this.xsltTransformer = xsltTransformer;
         this.onError = onError;
+        this.inSampleMode = inSampleMode;
     }
 
     ProcessStatus fetch() {
@@ -80,6 +84,13 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
+        if (inSampleMode) {
+            try {
+                fileStorageHandle.get().deleteFiles();
+            } catch (IOException e) {
+                LOG.error("Failure trying to delete downloaded files while in sample mode", e);
+            }
+        }
         return ProcessStatus.PROCESSED;
     }
 

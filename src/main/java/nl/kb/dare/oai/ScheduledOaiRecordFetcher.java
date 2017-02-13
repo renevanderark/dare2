@@ -36,10 +36,11 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private final ResponseHandlerFactory responseHandlerFactory;
     private final FileStorage fileStorage;
     private final XsltTransformer xsltTransformer;
+    private final boolean inSampleMode;
 
     public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
                                      HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-                                     FileStorage fileStorage, XsltTransformer xsltTransformer) {
+                                     FileStorage fileStorage, XsltTransformer xsltTransformer, boolean inSampleMode) {
 
         this.oaiRecordDao = oaiRecordDao;
         this.repositoryDao = repositoryDao;
@@ -48,6 +49,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         this.responseHandlerFactory = responseHandlerFactory;
         this.fileStorage = fileStorage;
         this.xsltTransformer = xsltTransformer;
+        this.inSampleMode = inSampleMode;
     }
 
     @Override
@@ -72,7 +74,8 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                         oaiRecord,
                         repositoryConfig,
                         fileStorage, httpFetcher, responseHandlerFactory, xsltTransformer,
-                        (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord) // on Error
+                        (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord), // on Error
+                        inSampleMode
                 ).fetch();
                 finishRecord(oaiRecord, result, timer.elapsed(TimeUnit.SECONDS));
                 try { Thread.sleep(100L); } catch (InterruptedException ignored) { }
