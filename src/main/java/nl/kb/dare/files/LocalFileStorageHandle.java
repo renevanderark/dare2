@@ -57,7 +57,6 @@ class LocalFileStorageHandle implements FileStorageHandle {
 
     @Override
     public FileStorageHandle create() throws IOException {
-        final File fileDirF = new File(fileDir);
         FileUtils.forceMkdir(new File(fileDir));
         return this;
     }

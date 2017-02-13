@@ -31,7 +31,8 @@ public enum ErrorStatus {
     UPDATED_AFTER_PROCESSING(1001, "record was updated by provider after processing"),
     DELETED_AFTER_PROCESSING(1002, "record was deleted by provider after processing"),
     XML_PARSING_ERROR(1003, "failed to parse XML"),
-    IO_EXCEPTION(1004, "I/O exception occurred");
+    IO_EXCEPTION(1004, "I/O exception occurred"),
+    NO_RESOURCES(1005, "record ships no object files");
 
     private final int code;
     private final String status;

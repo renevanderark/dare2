@@ -24,6 +24,10 @@ public class ErrorReport {
         this.dateStamp = Instant.now().toString();
     }
 
+    public ErrorReport(Exception exception, ErrorStatus errorStatus) {
+        this(exception, null, errorStatus);
+    }
+
     public String getFilteredStackTrace() {
         final StringBuilder sb = new StringBuilder();
         for (StackTraceElement element : exception.getStackTrace()) {
