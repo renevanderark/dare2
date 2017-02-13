@@ -4,7 +4,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
@@ -25,7 +24,7 @@ public class LenientHttpFetcher implements HttpFetcher {
         if (proactivelyClosing) {
             connection.setRequestProperty("Connection", "close");
         }
-
+        connection.setInstanceFollowRedirects(true);
         final Optional<Integer> responseCode = getResponseCode(connection, responseHandler);
         if (!responseCode.isPresent()) { return; }
 
@@ -33,30 +32,26 @@ public class LenientHttpFetcher implements HttpFetcher {
         if (statusCode < 200 || statusCode >= 400) {
             responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), null);
             return;
+        } else if (statusCode >= 300 && statusCode < 400) {
+            final String redirectLocation = connection.getHeaderField("Location") == null ?
+                    connection.getHeaderField("location") :
+                    connection.getHeaderField("Location") ;
+            responseHandler.onRedirect(url.toString(), redirectLocation);
+
+            try {
+                execute(new URL(redirectLocation), responseHandler);
+            } catch (Exception e) {
+                responseHandler.onRequestError(e);
+            }
+            return;
         }
 
         final Optional<InputStream> responseDataOpt = getResponseData(connection, responseHandler);
         if (!responseDataOpt.isPresent()) { return; }
 
-
         final InputStream responseData = responseDataOpt.get();
         if (statusCode >= 200 && statusCode < 300 ) {
             responseHandler.onResponseData(Response.Status.fromStatusCode(statusCode), responseData);
-        } else if (statusCode >= 300 && statusCode < 400) {
-            final String redirectLocation = connection.getHeaderField("Location");
-            responseHandler.onRedirect(url.toString(), redirectLocation);
-
-            if (redirectLocation == null) {
-                responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), responseData);
-                return;
-            }
-
-            try {
-                execute(new URL(redirectLocation), responseHandler);
-            } catch (MalformedURLException e) {
-                responseHandler.onRequestError(e);
-            }
-
         }
 
     }
