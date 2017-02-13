@@ -20,8 +20,30 @@
 
     var webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
 
+    function getTotals(data) {
+        var recordTotals = {};
+
+        for (var k in data) {
+            if (data.hasOwnProperty(k)) {
+                for (var status in data[k]) {
+                    recordTotals[status] = recordTotals[status] || 0;
+                    recordTotals[status] += data[k][status];
+                }
+            }
+        }
+        return recordTotals;
+    }
     webSocket.onmessage = function (payload) {
-        document.getElementById("status").innerHTML = JSON.stringify(JSON.parse(payload.data), null, 4);
+        var data = JSON.parse(payload.data);
+        var recordTotals = getTotals(data.recordStatus);
+        var errorTotals = getTotals(data.errorStatus);
+        document.getElementById("status").innerHTML = JSON.stringify({
+            status : data,
+            totals : {
+                records: recordTotals,
+                errors: errorTotals
+            }
+        }, null, 4);
     };
 
     function pingWs() {
