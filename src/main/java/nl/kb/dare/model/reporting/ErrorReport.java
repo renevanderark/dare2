@@ -38,7 +38,7 @@ public class ErrorReport {
         return sb.toString();
     }
 
-    String getUrl() {
+    public String getUrl() {
         return url == null ? "" : url.toString();
     }
 

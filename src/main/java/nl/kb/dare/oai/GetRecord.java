@@ -22,7 +22,11 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -137,17 +141,29 @@ class GetRecord {
 
             final List<ErrorReport> errorReports = Lists.newArrayList();
             for (String objectFile : objectFiles) {
-                LOG.info("Fetching resource: {}", objectFile);
-                final URL objectUrl = new URL(objectFile);
+                final String preparedUrl = prepareUrl(objectFile);
 
-                final String filename = FilenameUtils.getName(objectUrl.getPath());
+                final String filename = FilenameUtils.getName(new URL(objectFile).getPath());
                 final String checksumFileName = filename + ".checksum";
                 final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
                 final OutputStream checksumOut = fileStorageHandle.getOutputStream("resources", checksumFileName);
+
+
                 final HttpResponseHandler responseHandler = responseHandlerFactory
                         .getStreamCopyingResponseHandler(objectOut, checksumOut);
+                final URL objectUrl = new URL(preparedUrl);
                 httpFetcher.execute(objectUrl, responseHandler);
-                errorReports.addAll(responseHandler.getExceptions());
+                if (!responseHandler.getExceptions().isEmpty()) {
+                    final HttpResponseHandler responseHandler2 = responseHandlerFactory
+                            .getStreamCopyingResponseHandler(objectOut, checksumOut);
+                    final URL objectUrl2 = new URL(preparedUrl.replaceAll("\\+", "%20"));
+                    httpFetcher.execute(objectUrl2, responseHandler2);
+
+                    if (!responseHandler2.getExceptions().isEmpty()) {
+                        errorReports.addAll(responseHandler.getExceptions());
+                        errorReports.addAll(responseHandler2.getExceptions());
+                    }
+                }
                 LOG.info("Fetched resource: {}", objectFile);
             }
             errorReports.forEach(onError);
@@ -159,5 +175,13 @@ class GetRecord {
             onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
             return false;
         }
+    }
+
+    private String prepareUrl(String rawUrl) throws UnsupportedEncodingException, MalformedURLException {
+        final String name = FilenameUtils.getName(rawUrl);
+        final String path = FilenameUtils.getPath(rawUrl);
+        return name.equals(URLDecoder.decode(name, "UTF8")) ?
+                path + URLEncoder.encode(name, "UTF8") :
+                path + URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
     }
 }

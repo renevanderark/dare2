@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.util.stream.Collectors.toList;
+
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiRecordFetcher.class);
-    private static final Integer MAX_WORKERS = 20;
+    private static final Integer MAX_WORKERS = 40;
     private static AtomicInteger runningWorkers = new AtomicInteger(0);
 
     private final OaiRecordDao oaiRecordDao;
@@ -73,6 +75,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                         (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord) // on Error
                 ).fetch();
                 finishRecord(oaiRecord, result, timer.elapsed(TimeUnit.SECONDS));
+                try { Thread.sleep(100L); } catch (InterruptedException ignored) { }
                 runningWorkers.getAndDecrement();
             });
             workers.add(worker);
@@ -83,7 +86,24 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     }
 
     private List<OaiRecord> fetchNextRecords(int limit) {
-        return oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode(), limit);
+        final List<OaiRecord> result = Lists.newArrayList();
+        final List<Integer> repositoryIds = repositoryDao.list().stream().map(Repository::getId).collect(toList());
+        final int limitPerRepo = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
+
+        for (Integer repositoryId : repositoryIds) {
+            result.addAll(oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
+                    ProcessStatus.PENDING.getCode(),
+                    limitPerRepo,
+                    repositoryId
+            ));
+            limit -= limitPerRepo;
+            if (limit <= 0) {
+                return result;
+            }
+        }
+
+        result.addAll(oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode(), limit));
+        return result;
     }
 
     private void startRecord(OaiRecord oaiRecord) {
@@ -98,12 +118,12 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     }
 
     private void saveErrorReport(ErrorReport errorReport, OaiRecord oaiRecord) {
-        LOG.error("Failed to process record {}", oaiRecord.getIdentifier(), errorReport.getException());
+        LOG.error("Failed to process record {} ({})", oaiRecord.getIdentifier(), errorReport.getUrl(), errorReport.getException());
         errorReportDao.insertOaiRecordError(new OaiRecordErrorReport(errorReport, oaiRecord));
     }
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 10, TimeUnit.SECONDS);
+        return AbstractScheduledService.Scheduler.newFixedRateSchedule(50, 20, TimeUnit.MILLISECONDS);
     }
 }

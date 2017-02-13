@@ -19,6 +19,12 @@ public interface OaiRecordDao {
             @Bind("process_status_code") Integer processStatusCode,
             @Bind("limit") Integer limit);
 
+    @SqlQuery("select * from oai_records where process_status_code = :process_status_code AND repository_id = :repository_id LIMIT :limit")
+    List<OaiRecord> fetchNextWithProcessStatusByRepositoryId(
+            @Bind("process_status_code") Integer processStatusCode,
+            @Bind("limit") Integer limit,
+            @Bind("repository_id") Integer repositoryId);
+
     @SqlUpdate("insert into oai_records (identifier, datestamp, oai_status_code, repository_id, process_status_code) " +
             "values (:oaiRecord.identifier, :oaiRecord.dateStamp, :oaiRecord.oaiStatusCode, :oaiRecord.repositoryId, :oaiRecord.processStatusCode)")
     void insert(@BindBean("oaiRecord") OaiRecord oaiRecord);
