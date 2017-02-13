@@ -3,7 +3,6 @@ package nl.kb.dare.files;
 import nl.kb.dare.model.oai.OaiRecord;
 import org.apache.commons.io.FileUtils;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,6 +14,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static nl.kb.dare.checksum.ChecksumUtil.getChecksumString;
 
 class LocalFileStorageHandle implements FileStorageHandle {
     private static final int MAX_ENTRIES = 10_000;
@@ -50,7 +51,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
     static String getFilePath(OaiRecord oaiRecord, String basePath) {
         final Integer repositoryId = oaiRecord.getRepositoryId();
         final String dateStampPart = oaiRecord.getDateStamp().substring(0, 13);
-        final String idPart = (new HexBinaryAdapter()).marshal((md5.digest(oaiRecord.getIdentifier().getBytes())));
+        final String idPart = getChecksumString(md5.digest(oaiRecord.getIdentifier().getBytes()));
         return String.format("%s/%d/%s/%s", basePath, repositoryId, dateStampPart, idPart);
     }
 

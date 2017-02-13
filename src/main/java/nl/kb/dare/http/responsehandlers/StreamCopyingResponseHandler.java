@@ -1,11 +1,11 @@
 package nl.kb.dare.http.responsehandlers;
 
+import nl.kb.dare.checksum.ChecksumUtil;
+
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -42,18 +42,10 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
             } while (numRead != -1);
             responseData.close();
             outputStream.close();
-
-            final byte[] digest = md5.digest();
-            final StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < digest.length; i++) {
-                sb.append(Integer.toString((digest[i] & 0xff) + 0x100, 16).substring(1));
-            }
-            final PrintWriter pw = new PrintWriter(new OutputStreamWriter(checksumOut));
-            pw.write(sb.toString());
-            pw.close();
-            checksumOut.close();
+            ChecksumUtil.saveChecksumString(checksumOut, md5.digest());
         } catch (IOException e) {
             ioExceptions.add(e);
         }
     }
+
 }
