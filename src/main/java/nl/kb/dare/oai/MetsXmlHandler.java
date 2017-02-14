@@ -9,16 +9,28 @@ import java.util.List;
 
 public class MetsXmlHandler extends DefaultHandler {
 
-    private final List<String> objectFiles = Lists.newArrayList();
+
+    private ObjectResource currentResource = new ObjectResource();
+    private final List<ObjectResource> objectResources = Lists.newArrayList();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (qName.equals("mets:FLocat")) {
-           objectFiles.add(attributes.getValue("xlink:href"));
+        if (qName.equals("mets:file")) {
+            currentResource = new ObjectResource();
+            currentResource.setId(attributes.getValue("ID"));
+        } else if (qName.equals("mets:FLocat")) {
+            currentResource.setXlinkHref(attributes.getValue("xlink:href"));
         }
     }
 
-    public List<String> getObjectFiles() {
-        return objectFiles;
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (qName.equals("mets:file")) {
+            objectResources.add(currentResource);
+        }
+    }
+
+    public List<ObjectResource> getObjectResources() {
+        return objectResources;
     }
 }

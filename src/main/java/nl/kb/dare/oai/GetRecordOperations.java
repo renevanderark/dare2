@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static java.util.stream.Collectors.toList;
+
 class GetRecordOperations {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecordOperations.class);
 
@@ -101,6 +103,7 @@ class GetRecordOperations {
     }
 
 
+
     boolean downloadResources(FileStorageHandle fileStorageHandle) {
         try {
 
@@ -110,9 +113,9 @@ class GetRecordOperations {
                 saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
             }
 
-            final List<String> objectFiles = metsXmlHandler.getObjectFiles();
+            final List<ObjectResource> objectResources = metsXmlHandler.getObjectResources();
 
-            if (objectFiles.isEmpty()) {
+            if (objectResources.isEmpty()) {
                 onError.accept(new ErrorReport(
                         new IllegalArgumentException("No object files provided"),
                         ErrorStatus.NO_RESOURCES)
@@ -121,7 +124,7 @@ class GetRecordOperations {
             }
 
             final List<ErrorReport> errorReports = Lists.newArrayList();
-            for (String objectFile : objectFiles) {
+            for (String objectFile : objectResources.stream().map(ObjectResource::getXlinkHref).collect(toList())) {
                 final String preparedUrl = prepareUrl(objectFile);
 
                 final String filename = FilenameUtils.getName(new URL(objectFile).getPath());

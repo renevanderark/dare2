@@ -30,7 +30,11 @@
     </xsl:template>
 
     <xsl:template match="/didl:DIDL/didl:Item/didl:Item/didl:Descriptor/didl:Statement/rdf:type[@rdf:resource='info:eu-repo/semantics/objectFile']">
+        <xsl:variable name="count" select="position()" />
         <mets:file>
+            <xsl:attribute name="ID">
+                <xsl:value-of select="concat('FILE_', format-number($count, '0000'))" />
+            </xsl:attribute>
             <xsl:attribute name="MIMETYPE">
                 <xsl:value-of select="../../../didl:Component/didl:Resource/@mimeType" />
             </xsl:attribute>
