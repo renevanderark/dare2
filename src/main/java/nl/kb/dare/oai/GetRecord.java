@@ -34,10 +34,8 @@ import java.util.function.Consumer;
 class GetRecord {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecord.class);
 
-
-    private final SAXParser saxParser;
-
-    {
+    private static final SAXParser saxParser;
+    static {
         try {
             saxParser = SAXParserFactory.newInstance().newSAXParser();
         } catch (Exception e) {
