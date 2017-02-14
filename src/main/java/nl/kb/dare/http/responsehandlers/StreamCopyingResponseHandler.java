@@ -10,14 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
-    private static final MessageDigest md5;
-    static {
-        try {
-            md5 = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
+
     private final OutputStream outputStream;
     private final OutputStream checksumOut;
 
@@ -31,8 +24,8 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
         try {
 
             byte[] buffer = new byte[1024];
-
             int numRead;
+            final MessageDigest md5 = MessageDigest.getInstance("MD5");
             do {
                 numRead = responseData.read(buffer);
                 if (numRead > 0) {
@@ -45,6 +38,8 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
             ChecksumUtil.saveChecksumString(checksumOut, md5.digest());
         } catch (IOException e) {
             ioExceptions.add(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Severe!!", e);
         }
     }
 
