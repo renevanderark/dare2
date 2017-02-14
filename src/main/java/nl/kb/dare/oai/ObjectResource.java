@@ -21,6 +21,11 @@ class ObjectResource {
         this.xlinkHref = xlinkHref;
     }
 
-    ObjectResource() {
+    @Override
+    public String toString() {
+        return "ObjectResource{" +
+                "id='" + id + '\'' +
+                ", xlinkHref='" + xlinkHref + '\'' +
+                '}';
     }
 }

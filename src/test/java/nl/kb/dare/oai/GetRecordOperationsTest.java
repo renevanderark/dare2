@@ -11,10 +11,12 @@ import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import javax.xml.transform.stream.StreamResult;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
@@ -67,6 +70,43 @@ public class GetRecordOperationsTest {
         final Optional<FileStorageHandle> result = instance.getFileStorageHandle(oaiRecord);
 
         assertThat(result.isPresent(), is(false));
+    }
+
+    @Test
+    public void collectResourcesShouldReturnTheListOfObjectResourcesInXml() throws FileNotFoundException {
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                (errorReport) -> {});
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml"));
+        
+        final List<ObjectResource> objectResources = instance.collectResources(handle);
+
+        assertThat(objectResources.get(0).getXlinkHref(), is("https://openaccess.leidenuniv.nl/bitstream/1887/20432/3/Stellingen%205.pdf"));
+        assertThat(objectResources.get(1).getXlinkHref(), is("https://openaccess.leidenuniv.nl/bitstream/1887/20432/4/back.pdf"));
+        assertThat(objectResources.get(2).getXlinkHref(), is("https://openaccess.leidenuniv.nl/bitstream/1887/20432/5/samenvatting.pdf"));
+        assertThat(objectResources.get(0).getId(), is("FILE_0001"));
+        assertThat(objectResources.get(1).getId(), is("FILE_0002"));
+        assertThat(objectResources.get(2).getId(), is("FILE_0003"));
+    }
+
+    @Test
+    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenTheListOfResourcesIsEmpty")
+    public void collectResourcesShouldLogAnErrorWhenTheListOfResourcesIsEmpty() {
+        fail("yet to be implemented");
+    }
+
+    @Test
+    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenASaxExceptionIsCaught")
+    public void collectResourcesShouldLogAnErrorWhenASaxExceptionIsCaught() {
+        fail("yet to be implemented");
+    }
+
+    @Test
+    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenAnIOExceptionIsCaught")
+    public void collectResourcesShouldLogAnErrorWhenAnIOExceptionIsCaught() {
+        fail("yet to be implemented");
     }
 
     @Test
