@@ -8,7 +8,6 @@ import javax.xml.transform.Result;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 
 public class XsltTransformingResponseHandler extends ErrorReportingResponseHandler {
 
@@ -26,8 +25,8 @@ public class XsltTransformingResponseHandler extends ErrorReportingResponseHandl
             xsltTransformer.transform(responseData, out);
         } catch (TransformerException e) {
             saxExceptions.add(new SAXException("failed to transform xml data with xslt", e));
-        } catch (UnsupportedEncodingException e) {
-            ioExceptions.add(new IOException("unsupported encoding", e));
+        }  catch (IOException e) {
+            ioExceptions.add(new IOException("I/O exception", e));
         }
     }
 }
