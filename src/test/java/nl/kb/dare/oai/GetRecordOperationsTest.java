@@ -41,7 +41,10 @@ public class GetRecordOperationsTest {
     public void getFileStorageHandleShouldReturnAHandleIfAvailable() throws IOException {
         final FileStorage fileStorage = mock(FileStorage.class);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
-        final GetRecordOperations instance = new GetRecordOperations(fileStorage, mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(fileStorage, mock(HttpFetcher.class),
+                mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenReturn(handle);
 
@@ -54,7 +57,10 @@ public class GetRecordOperationsTest {
     @Test
     public void getFileStorageHandleShouldEmptyOptionalWhenIOExceptionIsCaught() throws IOException {
         final FileStorage fileStorage = mock(FileStorage.class);
-        final GetRecordOperations instance = new GetRecordOperations(fileStorage, mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(
+                fileStorage, mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenThrow(IOException.class);
 
@@ -71,14 +77,16 @@ public class GetRecordOperationsTest {
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher, responseHandlerFactory, mock(XsltTransformer.class), (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher,
+                responseHandlerFactory, mock(XsltTransformer.class), repository,
+                (errorReport) -> {});
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
 
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
 
-        instance.downloadMetadata(repository, mock(FileStorageHandle.class), oaiRecord);
+        instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
 
         verify(httpFetcher).execute(argThat(allOf(
                 hasProperty("host", is("example.com")),
@@ -96,7 +104,9 @@ public class GetRecordOperationsTest {
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher, responseHandlerFactory, xsltTransformer, (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class),
+                httpFetcher, responseHandlerFactory, xsltTransformer, repository,
+                (errorReport) -> {});
 
         when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(out);
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
@@ -104,7 +114,7 @@ public class GetRecordOperationsTest {
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
 
-        instance.downloadMetadata(repository, fileStorageHandle, oaiRecord);
+        instance.downloadMetadata(fileStorageHandle, oaiRecord);
 
         final InOrder inOrder = inOrder(fileStorageHandle, responseHandlerFactory, httpFetcher, fileStorageHandle);
         inOrder.verify(fileStorageHandle).getOutputStream("metadata.xml");
@@ -129,7 +139,10 @@ public class GetRecordOperationsTest {
         final List<ErrorReport> returnedReports = Lists.newArrayList(errorReport, errorReport2);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class), onError);
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
+                repository,
+                onError);
 
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(responseHandler.getExceptions()).thenReturn(returnedReports);
@@ -137,7 +150,7 @@ public class GetRecordOperationsTest {
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
 
-        instance.downloadMetadata(repository, mock(FileStorageHandle.class), oaiRecord);
+        instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
 
         assertThat(reports, containsInAnyOrder(
                 allOf(
@@ -156,14 +169,17 @@ public class GetRecordOperationsTest {
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class), (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
+                repository,
+                (errorReport) -> {});
 
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
 
-        final boolean result = instance.downloadMetadata(repository, mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
 
         assertThat(result, is(true));
     }
@@ -174,7 +190,9 @@ public class GetRecordOperationsTest {
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class), (errorReport) -> {});
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                responseHandlerFactory, mock(XsltTransformer.class), repository,
+                (errorReport) -> {});
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
@@ -182,7 +200,7 @@ public class GetRecordOperationsTest {
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
 
-        final boolean result = instance.downloadMetadata(repository, mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
 
         assertThat(result, is(false));
     }
@@ -195,12 +213,13 @@ public class GetRecordOperationsTest {
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
-        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class), onError);
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                responseHandlerFactory, mock(XsltTransformer.class), repository, onError);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
 
-        final boolean result = instance.downloadMetadata(repository, mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
 
         assertThat(result, is(false));
         assertThat(reports.get(0), hasProperty("exception", is(instanceOf(IOException.class))));

@@ -46,18 +46,21 @@ class GetRecordOperations {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
     private final XsltTransformer xsltTransformer;
+    private final Repository repository;
     private final Consumer<ErrorReport> onError;
 
     GetRecordOperations(FileStorage fileStorage,
                         HttpFetcher httpFetcher,
                         ResponseHandlerFactory responseHandlerFactory,
                         XsltTransformer xsltTransformer,
+                        Repository repository,
                         Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
         this.xsltTransformer = xsltTransformer;
+        this.repository = repository;
         this.onError = onError;
     }
 
@@ -73,7 +76,7 @@ class GetRecordOperations {
         }
     }
 
-    boolean downloadMetadata(Repository repository, FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
+    boolean downloadMetadata(FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
         try {
             final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
