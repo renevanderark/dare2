@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 class GetRecord {
@@ -30,18 +31,23 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
-        if (!getRecordOperations.downloadMetadata(fileStorageHandle.get(), oaiRecord)) {
+        final FileStorageHandle handle = fileStorageHandle.get();
+        if (!getRecordOperations.downloadMetadata(handle, oaiRecord)) {
             return ProcessStatus.FAILED;
         }
 
-        final boolean allResourcesDownloaded = getRecordOperations.downloadResources(fileStorageHandle.get());
-        if (!allResourcesDownloaded) {
+        final List<ObjectResource> objectResources = getRecordOperations.collectResources(handle);
+        if (objectResources.isEmpty()) {
+            return ProcessStatus.FAILED;
+        }
+
+        if (!getRecordOperations.downloadResources(handle, objectResources)) {
             return ProcessStatus.FAILED;
         }
 
         if (inSampleMode) {
             try {
-                fileStorageHandle.get().deleteFiles();
+                handle.deleteFiles();
             } catch (IOException e) {
                 LOG.error("Failure trying to delete downloaded files while in sample mode", e);
             }

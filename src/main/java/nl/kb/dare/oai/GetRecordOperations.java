@@ -102,17 +102,12 @@ class GetRecordOperations {
         }
     }
 
-
-
-    boolean downloadResources(FileStorageHandle fileStorageHandle) {
+    List<ObjectResource> collectResources(FileStorageHandle fileStorageHandle) {
         try {
-
             final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
-
             synchronized (saxParser) {
                 saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
             }
-
             final List<ObjectResource> objectResources = metsXmlHandler.getObjectResources();
 
             if (objectResources.isEmpty()) {
@@ -120,9 +115,20 @@ class GetRecordOperations {
                         new IllegalArgumentException("No object files provided"),
                         ErrorStatus.NO_RESOURCES)
                 );
-                return false;
             }
 
+            return objectResources;
+        } catch (SAXException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
+            return Lists.newArrayList();
+        } catch (IOException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
+            return Lists.newArrayList();
+        }
+    }
+
+    boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources) {
+        try {
             final List<ErrorReport> errorReports = Lists.newArrayList();
             for (String objectFile : objectResources.stream().map(ObjectResource::getXlinkHref).collect(toList())) {
                 final String preparedUrl = prepareUrl(objectFile);
@@ -155,9 +161,6 @@ class GetRecordOperations {
             return errorReports.isEmpty();
         } catch (IOException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
-            return false;
-        } catch (SAXException e) {
-            onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
             return false;
         }
     }
