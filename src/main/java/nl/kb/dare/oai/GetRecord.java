@@ -68,7 +68,9 @@ class GetRecord {
     }
 
     ProcessStatus fetch() {
-        final Optional<FileStorageHandle> fileStorageHandle = getFileStorageHandle(oaiRecord);
+        final GetRecordOperations getRecordOperations = new GetRecordOperations(fileStorage, onError);
+
+        final Optional<FileStorageHandle> fileStorageHandle = getRecordOperations.getFileStorageHandle(oaiRecord);
         if (!fileStorageHandle.isPresent()) {
             return ProcessStatus.FAILED;
         }
@@ -90,18 +92,6 @@ class GetRecord {
             }
         }
         return ProcessStatus.PROCESSED;
-    }
-
-    private Optional<FileStorageHandle> getFileStorageHandle(OaiRecord oaiRecord) {
-        try {
-            return Optional.of(fileStorage.create(oaiRecord));
-        } catch (IOException e) {
-            onError.accept(new ErrorReport(
-                new IOException("Failed to create storage location for record " + oaiRecord.getIdentifier(), e),
-                ErrorStatus.IO_EXCEPTION)
-            );
-            return Optional.empty();
-        }
     }
 
     private boolean downloadMetadata(Repository repository, FileStorageHandle fileStorageHandle) {
