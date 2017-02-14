@@ -26,8 +26,8 @@ DROP TABLE IF EXISTS `harvester_errors`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `harvester_errors` (
   `repository_id` int(11) DEFAULT NULL,
-  `url` varchar(255) DEFAULT NULL,
-  `message` varchar(255) DEFAULT NULL,
+  `url` varchar(1024) DEFAULT NULL,
+  `message` varchar(1024) DEFAULT NULL,
   `stacktrace` text,
   `datestamp` varchar(50) DEFAULT NULL,
   `status_code` int(11) DEFAULT NULL,
