@@ -85,11 +85,7 @@ class ListIdentifiers {
                 } else {
                     break;
                 }
-                try {
-                    Thread.sleep(200L);
-                } catch (InterruptedException ignored) {
 
-                }
             }
 
             repositoryConfig.setDateStamp(lastDateStamp);
