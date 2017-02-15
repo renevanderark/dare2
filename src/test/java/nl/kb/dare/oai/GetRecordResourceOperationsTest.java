@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
@@ -111,6 +112,28 @@ public class GetRecordResourceOperationsTest {
         // ..  return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));
         // }
+    }
+
+    @Test
+    public void itShouldReturnAllTheErrorReportsOfBothFailedAttempts() throws IOException {
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
+        final ObjectResource objectResource = getObjectResource(FULL_URL);
+        final HttpFetcher httpFetcher = mock(HttpFetcher.class);
+        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any()))
+                .thenReturn(responseHandler);
+        final ErrorReport report1 = mock(ErrorReport.class);
+        final ErrorReport report2 = mock(ErrorReport.class);
+        when(responseHandler.getExceptions())
+                .thenReturn(Lists.newArrayList(report1))
+                .thenReturn(Lists.newArrayList(report2));
+
+        final List<ErrorReport> errorReports = instance.downloadResource(objectResource, fileStorageHandle);
+
+        assertThat(errorReports.size(), is(2));
+        assertThat(errorReports, containsInAnyOrder(report1, report2));
     }
 
     private ObjectResource getObjectResource(String url) {
