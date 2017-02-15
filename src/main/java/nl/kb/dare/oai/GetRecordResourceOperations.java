@@ -40,6 +40,7 @@ class GetRecordResourceOperations {
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
 
+        // First try to fetch the resource by encoding the url name one way (whitespace as '+')
         final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
 
         if (firstAttemptErrors.isEmpty()) {
@@ -47,6 +48,7 @@ class GetRecordResourceOperations {
             return Lists.newArrayList();
         }
 
+        // Then try to fetch the resource by encoding the url name another way (whitespace as '%20')
         final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
 
         if (secondAttemptErrors.isEmpty()) {
@@ -87,10 +89,10 @@ class GetRecordResourceOperations {
     }
 
     private String encodeName(String name, boolean plusToPercent) throws UnsupportedEncodingException {
-        final String encodedName = name.equals(URLDecoder.decode(name, "UTF8")) ?
-                URLEncoder.encode(name, "UTF8") :
-                URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
+        final String encodedName = name.equals(URLDecoder.decode(name, "UTF8"))
+                ? URLEncoder.encode(name, "UTF8")
+                : URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
 
-        return plusToPercent ? encodedName.replaceAll("\\+", "%20"): encodedName;
+        return plusToPercent ? encodedName.replaceAll("\\+", "%20") : encodedName;
     }
 }

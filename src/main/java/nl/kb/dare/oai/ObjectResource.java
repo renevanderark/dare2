@@ -1,5 +1,6 @@
 package nl.kb.dare.oai;
 
+// Represents a file node in Mets, used to download and ship files with
 class ObjectResource {
 
     private String id;
