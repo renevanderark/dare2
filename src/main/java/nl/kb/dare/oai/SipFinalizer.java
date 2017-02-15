@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 
-public class SipFinalizer {
+class SipFinalizer {
 
     private static final DocumentBuilder docBuilder;
     private static final TransformerFactory transformerFactory;
@@ -40,7 +40,7 @@ public class SipFinalizer {
     static final String METS_NS = "http://www.loc.gov/METS/";
     static final String XLINK_NS = "http://www.w3.org/1999/xlink";
 
-    public void writeResourcesToSip(List<ObjectResource> objectResources, Reader metadata, Writer sip)
+    void writeResourcesToSip(List<ObjectResource> objectResources, Reader metadata, Writer sip)
             throws IOException, SAXException, TransformerException {
 
         synchronized (docBuilder) {

@@ -60,6 +60,7 @@ class GetRecordOperations {
     private final Repository repository;
     private final Consumer<ErrorReport> onError;
     private final GetRecordResourceOperations resourceOperations;
+    private final SipFinalizer sipFinalizer;
 
     GetRecordOperations(FileStorage fileStorage,
                         HttpFetcher httpFetcher,
@@ -67,7 +68,7 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        Consumer<ErrorReport> onError) {
+                        SipFinalizer sipFinalizer, Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
@@ -75,6 +76,7 @@ class GetRecordOperations {
         this.xsltTransformer = xsltTransformer;
         this.repository = repository;
         this.resourceOperations = resourceOperations;
+        this.sipFinalizer = sipFinalizer;
         this.onError = onError;
     }
 
@@ -165,7 +167,7 @@ class GetRecordOperations {
             final Reader metadata = new InputStreamReader(in,"UTF-8");
             final Writer sip = new OutputStreamWriter(out, "UTF-8");
 
-            new SipFinalizer().writeResourcesToSip(objectResources, metadata, sip);
+            sipFinalizer.writeResourcesToSip(objectResources, metadata, sip);
 
             return true;
         } catch (IOException e) {
