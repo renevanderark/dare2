@@ -11,21 +11,21 @@ import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
@@ -103,22 +103,46 @@ public class GetRecordOperationsTest {
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(mets);
 
-        instance.collectResources(handle);
+        final List<ObjectResource> objectResources = instance.collectResources(handle);
 
+        assertThat(objectResources.isEmpty(), is(true));
         assertThat(errorReports.isEmpty(), is(false));
         assertThat(errorReports.get(0), hasProperty("errorStatus", is(ErrorStatus.NO_RESOURCES)));
     }
 
     @Test
-    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenASaxExceptionIsCaught")
-    public void collectResourcesShouldLogAnErrorWhenASaxExceptionIsCaught() {
-        fail("yet to be implemented");
+    public void collectResourcesShouldLogAnErrorWhenASaxExceptionIsCaught() throws FileNotFoundException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final InputStream badXml = new ByteArrayInputStream("<invalid></".getBytes(StandardCharsets.UTF_8));
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                errorReports::add);
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(badXml);
+
+        final List<ObjectResource> objectResources = instance.collectResources(handle);
+
+        assertThat(objectResources.isEmpty(), is(true));
+        assertThat(errorReports.isEmpty(), is(false));
+        assertThat(errorReports.get(0), hasProperty("errorStatus", is(ErrorStatus.XML_PARSING_ERROR)));
     }
 
     @Test
-    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenAnIOExceptionIsCaught")
-    public void collectResourcesShouldLogAnErrorWhenAnIOExceptionIsCaught() {
-        fail("yet to be implemented");
+    public void collectResourcesShouldLogAnErrorWhenAnIOExceptionIsCaught() throws FileNotFoundException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                errorReports::add);
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenThrow(IOException.class);
+
+        final List<ObjectResource> objectResources = instance.collectResources(handle);
+
+        assertThat(objectResources.isEmpty(), is(true));
+        assertThat(errorReports.isEmpty(), is(false));
+        assertThat(errorReports.get(0), hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION)));
     }
 
     @Test
