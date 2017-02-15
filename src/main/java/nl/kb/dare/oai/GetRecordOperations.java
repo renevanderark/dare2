@@ -15,11 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +34,16 @@ class GetRecordOperations {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecordOperations.class);
 
     private static final SAXParser saxParser;
+    private static final DocumentBuilder docBuilder;
+    private static final TransformerFactory transformerFactory;
+
     static {
         try {
+            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
+            docBuilder = documentBuilderFactory.newDocumentBuilder();
             saxParser = SAXParserFactory.newInstance().newSAXParser();
+            transformerFactory = TransformerFactory.newInstance();
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize sax parser", e);
         }
@@ -80,10 +92,11 @@ class GetRecordOperations {
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
+            final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
             LOG.info("fetching record: {}", urlStr);
 
             final HttpResponseHandler responseHandler = responseHandlerFactory
-                    .getXsltTransformingHandler(new StreamResult(out), xsltTransformer);
+                    .getXsltTransformingHandler(new StreamResult(outputStreamWriter), xsltTransformer);
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 

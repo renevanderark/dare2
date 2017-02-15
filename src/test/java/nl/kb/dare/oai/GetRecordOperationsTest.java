@@ -16,6 +16,7 @@ import org.mockito.InOrder;
 
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +82,7 @@ public class GetRecordOperationsTest {
                 mock(GetRecordResourceOperations.class), (errorReport) -> {});
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml"));
-        
+
         final List<ObjectResource> objectResources = instance.collectResources(handle);
 
         assertThat(objectResources.get(0).getXlinkHref(), is("https://openaccess.leidenuniv.nl/bitstream/1887/20432/3/Stellingen%205.pdf"));
@@ -146,23 +147,24 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadMetdataShouldFetchTheMetadataRecord() {
+    public void downloadMetdataShouldFetchTheMetadataRecord() throws IOException {
 
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final Repository repository = mock(Repository.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher,
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
                 mock(GetRecordResourceOperations.class), (errorReport) -> {});
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
-
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
+        when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
-        instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
+        instance.downloadMetadata(fileStorageHandle, oaiRecord);
 
         verify(httpFetcher).execute(argThat(allOf(
                 hasProperty("host", is("example.com")),
@@ -176,7 +178,7 @@ public class GetRecordOperationsTest {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final XsltTransformer xsltTransformer = mock(XsltTransformer.class);
-        final OutputStream out = mock(OutputStream.class);
+        final OutputStream out = new ByteArrayOutputStream();
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
@@ -195,17 +197,14 @@ public class GetRecordOperationsTest {
         final InOrder inOrder = inOrder(fileStorageHandle, responseHandlerFactory, httpFetcher, fileStorageHandle);
         inOrder.verify(fileStorageHandle).getOutputStream("metadata.xml");
         inOrder.verify(responseHandlerFactory).getXsltTransformingHandler(
-                argThat(is(allOf(
-                        instanceOf(StreamResult.class),
-                        hasProperty("outputStream", is(out))
-                ))), argThat(is(xsltTransformer)));
+                argThat(is(instanceOf(StreamResult.class))), argThat(is(xsltTransformer)));
 
         inOrder.verify(httpFetcher).execute(argThat(is(instanceOf(URL.class))), argThat(is(responseHandler)));
         inOrder.verify(fileStorageHandle).syncFile(out);
     }
 
     @Test
-    public void downloadMetadataShouldLogAnyExceptionsFromTheResponseHandler() {
+    public void downloadMetadataShouldLogAnyExceptionsFromTheResponseHandler() throws IOException {
         final List<ErrorReport> reports = Lists.newArrayList();
         final Consumer<ErrorReport> onError = reports::add;
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
@@ -215,6 +214,7 @@ public class GetRecordOperationsTest {
         final List<ErrorReport> returnedReports = Lists.newArrayList(errorReport, errorReport2);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
@@ -225,8 +225,9 @@ public class GetRecordOperationsTest {
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
+        when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
-        instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
+        instance.downloadMetadata(fileStorageHandle, oaiRecord);
 
         assertThat(reports, containsInAnyOrder(
                 allOf(
@@ -240,11 +241,12 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadMetadataShouldReturnTrueWhenThereWereNoExceptionsFromTheResponseHandler() {
+    public void downloadMetadataShouldReturnTrueWhenThereWereNoExceptionsFromTheResponseHandler() throws IOException {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
@@ -254,14 +256,15 @@ public class GetRecordOperationsTest {
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
+        when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
-        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(fileStorageHandle, oaiRecord);
 
         assertThat(result, is(true));
     }
 
     @Test
-    public void downloadMetadataShouldReturnFalseWhenThereWereExceptionsFromTheResponseHandler() {
+    public void downloadMetadataShouldReturnFalseWhenThereWereExceptionsFromTheResponseHandler() throws IOException {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
@@ -269,33 +272,37 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
                 mock(GetRecordResourceOperations.class), (errorReport) -> {});
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
+        when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
-        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(fileStorageHandle, oaiRecord);
 
         assertThat(result, is(false));
     }
 
     @Test
-    public void downloadMetdataShouldLogAnyCaughtIOExceptionAndThenReturnFalse() {
+    public void downloadMetdataShouldLogAnyCaughtIOExceptionAndThenReturnFalse() throws IOException {
         final List<ErrorReport> reports = Lists.newArrayList();
         final Consumer<ErrorReport> onError = reports::add;
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
+        final FileStorageHandle storageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 responseHandlerFactory, mock(XsltTransformer.class), repository, mock(GetRecordResourceOperations.class), onError);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
+        when(storageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
-        final boolean result = instance.downloadMetadata(mock(FileStorageHandle.class), oaiRecord);
+        final boolean result = instance.downloadMetadata(storageHandle, oaiRecord);
 
         assertThat(result, is(false));
         assertThat(reports.get(0), hasProperty("exception", is(instanceOf(IOException.class))));
