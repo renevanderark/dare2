@@ -1,9 +1,13 @@
 package nl.kb.dare.oai;
 
+// Represents a file node in Mets, used to download and ship files with
 class ObjectResource {
 
     private String id;
     private String xlinkHref;
+    private String checksum;
+    private String checksumType;
+    private String localFilename;
 
     public String getId() {
         return id;
@@ -21,11 +25,27 @@ class ObjectResource {
         this.xlinkHref = xlinkHref;
     }
 
-    @Override
-    public String toString() {
-        return "ObjectResource{" +
-                "id='" + id + '\'' +
-                ", xlinkHref='" + xlinkHref + '\'' +
-                '}';
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public void setChecksumType(String checksumType) {
+        this.checksumType = checksumType;
+    }
+
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public String getChecksumType() {
+        return checksumType;
+    }
+
+    public void setLocalFilename(String localFilename) {
+        this.localFilename = localFilename;
+    }
+
+    public String getLocalFilename() {
+        return localFilename;
     }
 }
