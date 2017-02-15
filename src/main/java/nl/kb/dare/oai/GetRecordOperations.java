@@ -11,7 +11,6 @@ import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -19,14 +18,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -49,12 +43,14 @@ class GetRecordOperations {
     private final XsltTransformer xsltTransformer;
     private final Repository repository;
     private final Consumer<ErrorReport> onError;
+    private final GetRecordResourceOperations resourceOperations;
 
     GetRecordOperations(FileStorage fileStorage,
                         HttpFetcher httpFetcher,
                         ResponseHandlerFactory responseHandlerFactory,
                         XsltTransformer xsltTransformer,
                         Repository repository,
+                        GetRecordResourceOperations resourceOperations,
                         Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
@@ -62,6 +58,7 @@ class GetRecordOperations {
         this.responseHandlerFactory = responseHandlerFactory;
         this.xsltTransformer = xsltTransformer;
         this.repository = repository;
+        this.resourceOperations = resourceOperations;
         this.onError = onError;
     }
 
@@ -131,20 +128,9 @@ class GetRecordOperations {
             final List<ErrorReport> errorReports = Lists.newArrayList();
 
             for (ObjectResource objectResource : objectResources) {
-                final String fileLocation = objectResource.getXlinkHref();
-                final String filename = createFilename(fileLocation);
-                final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
-                final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
 
-                final HttpResponseHandler responseHandler = responseHandlerFactory
-                        .getStreamCopyingResponseHandler(objectOut, checksumOut);
+                errorReports.addAll(resourceOperations.downloadResource(objectResource, fileStorageHandle));
 
-                downloadFile(errorReports, fileLocation, objectOut, checksumOut, responseHandler);
-
-                objectResource.setChecksum(checksumOut.toString("UTF8"));
-                objectResource.setChecksumType("MD5");
-                LOG.info("Fetched resource: {}\nfilename: {}\nchecksum: {}",
-                        fileLocation, filename, objectResource.getChecksum());
             }
             errorReports.forEach(onError);
             return errorReports.isEmpty();
@@ -154,33 +140,6 @@ class GetRecordOperations {
         }
     }
 
-    private void downloadFile(List<ErrorReport> errorReports, String fileLocation, OutputStream objectOut, ByteArrayOutputStream checksumOut, HttpResponseHandler responseHandler) throws UnsupportedEncodingException, MalformedURLException {
-        final String preparedUrl = prepareUrl(fileLocation);
-        final URL objectUrl = new URL(preparedUrl);
-        httpFetcher.execute(objectUrl, responseHandler);
-        if (!responseHandler.getExceptions().isEmpty()) {
-            final HttpResponseHandler responseHandler2 = responseHandlerFactory
-                    .getStreamCopyingResponseHandler(objectOut, checksumOut);
-            final URL objectUrl2 = new URL(preparedUrl.replaceAll("\\+", "%20"));
-            httpFetcher.execute(objectUrl2, responseHandler2);
 
-            if (!responseHandler2.getExceptions().isEmpty()) {
-                errorReports.addAll(responseHandler.getExceptions());
-                errorReports.addAll(responseHandler2.getExceptions());
-            }
-        }
-    }
 
-    private String createFilename(String objectFile) throws MalformedURLException, UnsupportedEncodingException {
-        final String decodedFilename = URLDecoder.decode(new URL(objectFile).getPath(), "UTF8");
-        return FilenameUtils.getName(decodedFilename);
-    }
-
-    private String prepareUrl(String rawUrl) throws UnsupportedEncodingException, MalformedURLException {
-        final String name = FilenameUtils.getName(rawUrl);
-        final String path = FilenameUtils.getPath(rawUrl);
-        return name.equals(URLDecoder.decode(name, "UTF8")) ?
-                path + URLEncoder.encode(name, "UTF8") :
-                path + URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
-    }
 }
