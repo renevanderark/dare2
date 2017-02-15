@@ -300,4 +300,96 @@ public class GetRecordOperationsTest {
         assertThat(result, is(false));
         assertThat(reports.get(0), hasProperty("exception", is(instanceOf(IOException.class))));
     }
+
+    @Test
+    public void downloadResourcesShouldDownloadAllObjectResourcesAndReturnTrueUponSuccess() throws IOException {
+        final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
+                resourceOperations,
+                errorReport -> {});
+        final ObjectResource objectResource1 = new ObjectResource();
+        final ObjectResource objectResource2 = new ObjectResource();
+        final List<ObjectResource> objectResources = Lists.newArrayList(
+                objectResource1, objectResource2
+        );
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        when(resourceOperations.downloadResource(any(), any())).thenReturn(Lists.newArrayList());
+
+        final boolean success = instance.downloadResources(fileStorageHandle, objectResources);
+
+        verify(resourceOperations).downloadResource(objectResource1, fileStorageHandle);
+        verify(resourceOperations).downloadResource(objectResource2, fileStorageHandle);
+        assertThat(success, is(true));
+    }
+
+    @Test
+    public void downloadResourcesShouldReturnFalseUponAnyError() throws IOException {
+        final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
+                resourceOperations,
+                errorReport -> {});
+        final ObjectResource objectResource1 = new ObjectResource();
+        final ObjectResource objectResource2 = new ObjectResource();
+        final List<ObjectResource> objectResources = Lists.newArrayList(
+                objectResource1, objectResource2
+        );
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        when(resourceOperations.downloadResource(any(), any())).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
+
+        final boolean success = instance.downloadResources(fileStorageHandle, objectResources);
+
+        assertThat(success, is(false));
+    }
+
+    @Test
+    public void downloadResourcesShouldLogAllDownloadErrors() throws IOException {
+        final List<ErrorReport> reports = Lists.newArrayList();
+        final Consumer<ErrorReport> onError = reports::add;
+        final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
+                resourceOperations,
+                onError);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final ErrorReport report1 = mock(ErrorReport.class);
+        final ErrorReport report2 = mock(ErrorReport.class);
+        final List<ErrorReport> reportedErrors = Lists.newArrayList(
+                report1, report2
+        );
+        when(resourceOperations.downloadResource(any(), any())).thenReturn(reportedErrors);
+
+        instance.downloadResources(fileStorageHandle, Lists.newArrayList(new ObjectResource(), new ObjectResource()));
+
+        assertThat(reports.size(), is(4));
+        assertThat(reports.get(0), is(report1));
+        assertThat(reports.get(1), is(report2));
+        assertThat(reports.get(2), is(report1));
+        assertThat(reports.get(3), is(report2));
+    }
+
+    @Test
+    public void downloadResourcesShouldReturnFalseAndLogAnyCaughtIOException() throws IOException {
+        final List<ErrorReport> reports = Lists.newArrayList();
+        final Consumer<ErrorReport> onError = reports::add;
+        final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
+        final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
+                mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
+                resourceOperations,
+                onError);
+
+        when(resourceOperations.downloadResource(any(), any())).thenThrow(IOException.class);
+
+        final boolean success = instance.downloadResources(mock(FileStorageHandle.class), Lists.newArrayList(new ObjectResource()));
+
+
+        assertThat(success, is(false));
+        assertThat(reports.size(), is(1));
+        assertThat(reports.get(0), allOf(
+                hasProperty("exception", is(instanceOf(IOException.class))),
+                hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION))
+        ));
+
+    }
 }
