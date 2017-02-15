@@ -18,6 +18,7 @@ import org.mockito.InOrder;
 import javax.xml.transform.stream.StreamResult;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
@@ -92,9 +93,20 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    @Ignore("TODO: collectResourcesShouldLogAnErrorWhenTheListOfResourcesIsEmpty")
-    public void collectResourcesShouldLogAnErrorWhenTheListOfResourcesIsEmpty() {
-        fail("yet to be implemented");
+    public void collectResourcesShouldLogAnErrorWhenTheListOfResourcesIsEmpty() throws FileNotFoundException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental-no-objects.xml");
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                errorReports::add);
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(mets);
+
+        instance.collectResources(handle);
+
+        assertThat(errorReports.isEmpty(), is(false));
+        assertThat(errorReports.get(0), hasProperty("errorStatus", is(ErrorStatus.NO_RESOURCES)));
     }
 
     @Test
