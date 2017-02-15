@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns="http://i.still.have.a.lot.to.do/ok" xmlns:didl="urn:mpeg:mpeg21:2002:02-DIDL-NS" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <mets:dmdSec ID="dmd1">
+    <mets:mdWrap MDTYPE="MODS">
+      <mets:xmlData>
+        <mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:dii="urn:mpeg:mpeg21:2002:01-DII-NS" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.openarchives.org/OAI/2.0/" version="3.6" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-6.xsd">
+          <mods:identifier type="uri">
+              info:hdl/1887/20432
+            </mods:identifier>
+          <mods:titleInfo xml:lang="en-US">
+            <mods:title>
+                CAOS &amp; TKA. A critical appraisal on computer navigation in total knee arthroplasty
+              </mods:title>
+          </mods:titleInfo>
+          <mods:typeOfResource>text</mods:typeOfResource>
+          <mods:genre>info:eu-repo/semantics/doctoralThesis</mods:genre>
+          <mods:subject xml:lang="en-US">
+            <mods:topic>
+               CAOS
+              </mods:topic>
+            <mods:topic>
+               Navigation
+              </mods:topic>
+            <mods:topic>
+               Knee
+              </mods:topic>
+            <mods:topic>
+               Arthroplasty
+              </mods:topic>
+            <mods:topic>
+               Rotation
+              </mods:topic>
+            <mods:topic>
+               Femoral component
+              </mods:topic>
+            <mods:topic>
+               RSA
+              </mods:topic>
+          </mods:subject>
+          <mods:abstract xml:lang="en-US">
+               In mijn proefschrift heb ik onderzocht wat de invloed
+is van het gebruik van navigatie bij het plaatsen van
+een knieprothese. Hiervoor zijn drie onderzoeksvragen
+opgesteld en beantwoord. Allereerst: leidt CAOS tot
+het nauwkeuriger plaatsen van een TKP? Op basis van
+de door mij gedane studies en analyse van de huidige
+literatuur concludeer ik dat juiste registratie tijdens CAOS
+essentieel is voor het bereiken van een goede stand van
+de TKP. Zolang hier nog onnauwkeurigheden in zitten
+leidt CAOS (nog) niet tot het nauwkeuriger plaatsen van
+de TKP, met name wat betreft de rotatie van de femurcomponent.
+Daarnaast heb ik onderzocht of CAOS leidt
+tot een juiste maatvoering van de TKP en patella tracking.
+Ik kom tot de conclusie dat men uit moet kijken voor het
+plaatsen van met name een te grote femurcomponent. De
+data die verkregen zijn middels het gebruik van de patella
+tracking module worden significant be&#xEF;nvloed door de
+snelheid van bewegen van de knie en de zichtbaarheid van een
+markertree. Tot slot is bekeken wat de klinische en
+radiologische uitkomst is van een TKP geplaatst met
+CAOS. Hoewel er aanwijzingen zijn dat het aantal
+outliers wat betreft het alignment van de TKP met CAOS
+afneemt, kan er geen relatie aangetoond worden met de
+klinische uitkomst van de prothese.
+Momenteel is CAOS een bruikbare techniek voor
+onderzoeksdoeleinden, zoals de chirurgische techniek
+en kinematische analyse, en als onderwijsinstrument.
+Verder onderzoek is nodig om de exacte plaats
+van CAOS bij het plaatsen van TKP te bepalen.
+Tot die tijd moet men kritisch blijven wat betreft de
+toepassing van nieuwe technieken in de Orthopaedische
+Chirurgie, deze gefaseerd invoeren en de vraag stellen of
+iets een &#x2018;tool&#x2019; of een &#x2018;toy&#x2019; is.
+            </mods:abstract>
+          <mods:name type="personal" ID="ref20432LindenvanderZwaagHenricaMariaJannettavander">
+            <mods:namePart type="family">Linden - van der Zwaag</mods:namePart>
+            <mods:namePart type="given">Henrica Maria Jannetta van der</mods:namePart>
+            <mods:affiliation>
+                LUMC
+              </mods:affiliation>
+            <mods:role>
+              <mods:roleTerm type="code" authority="marcrelator">
+                  
+                  
+                  
+                    aut
+                  
+                  
+                  
+                </mods:roleTerm>
+            </mods:role>
+            <mods:nameIdentifier type="dai-nl" typeURI="info:eu-repo/dai/nl">353830844</mods:nameIdentifier>
+          </mods:name>
+          <mods:originInfo>
+            <mods:publisher>
+                Department of Orthopedic Surgery, Faculty of Medicine, Leiden University Medical Center (LUMC), Leiden University
+              </mods:publisher>
+            <mods:dateIssued encoding="w3cdtf">2013-01-17</mods:dateIssued>
+          </mods:originInfo>
+          <mods:language>
+            <mods:languageTerm type="code" authority="rcf3066">en</mods:languageTerm>
+          </mods:language>
+        </mods:mods>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:fileSec USE="storage/preservation">
+    <mets:fileGrp>
+    </mets:fileGrp>
+  </mets:fileSec>
+</mets:mets>
