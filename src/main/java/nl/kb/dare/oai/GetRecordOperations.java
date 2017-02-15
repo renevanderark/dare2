@@ -141,5 +141,7 @@ class GetRecordOperations {
     }
 
 
-
+    boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
+        return true;
+    }
 }

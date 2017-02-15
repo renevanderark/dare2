@@ -45,6 +45,10 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
+        if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources)) {
+            return ProcessStatus.FAILED;
+        }
+
         if (inSampleMode) {
             try {
                 handle.deleteFiles();
