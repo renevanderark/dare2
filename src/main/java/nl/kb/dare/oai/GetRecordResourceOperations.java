@@ -93,6 +93,8 @@ class GetRecordResourceOperations {
                 ? URLEncoder.encode(name, "UTF8")
                 : URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
 
-        return plusToPercent ? encodedName.replaceAll("\\+", "%20") : encodedName;
+        return plusToPercent
+                ? encodedName.replaceAll("\\+", "%20")
+                : encodedName;
     }
 }

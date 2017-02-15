@@ -30,6 +30,7 @@ public class GetRecordResourceOperationsTest {
     private static final String FULL_URL = BASE_URL + ORIG_ENCODED_FILENAME;
     private static final String EXPECTED_FILENAME = "file 1.ext";
     private static final String TRANSFORMED_ENC_FILE_1 = "file+1.ext";
+    private static final String TRANSFORMED_ENC_FILE_2 = "file%201.ext";
 
     @Test
     public void downloadResourceShouldSaveTheFileAndTheChecksum() throws IOException {
@@ -69,6 +70,45 @@ public class GetRecordResourceOperationsTest {
         inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
 
         // .. return Lists.newArrayList();
+        assertThat(errorReports.isEmpty(), is(true));
+        // }
+    }
+
+    @Test
+    public void downloadResourceShouldSaveTheFileAndTheChecksumAfterSecondAttempt() throws IOException {
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
+        final ObjectResource objectResource = getObjectResource(FULL_URL);
+        final HttpFetcher httpFetcher = mock(HttpFetcher.class);
+        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
+        final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any()))
+                .thenReturn(responseHandler);
+        when(responseHandler.getExceptions())
+                .thenReturn(Lists.newArrayList(mock(ErrorReport.class)))
+                .thenReturn(Lists.newArrayList());
+
+
+        final List<ErrorReport> errorReports = instance.downloadResource(objectResource, fileStorageHandle);
+
+        InOrder inOrder = Mockito.inOrder(httpFetcher, responseHandlerFactory, objectResource);
+
+        // final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
+        inOrder.verify(httpFetcher).execute(any(), any());
+        // final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
+        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any());
+        inOrder.verify(httpFetcher).execute(
+                argThat(allOf(
+                        hasProperty("host", is("example.com")),
+                        hasProperty("file", is("/path/" + TRANSFORMED_ENC_FILE_2))
+                )),
+                argThat(is(responseHandler))
+        );
+        // if (secondAttemptErrors.isEmpty()) {
+        // ..  writeChecksum(objectResource, checksumOut);
+        inOrder.verify(objectResource).setChecksum(argThat(is(instanceOf(String.class))));
+        inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
+        // ..  return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));
         // }
     }
