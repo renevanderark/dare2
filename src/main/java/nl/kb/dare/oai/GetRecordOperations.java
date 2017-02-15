@@ -132,7 +132,6 @@ class GetRecordOperations {
 
             for (ObjectResource objectResource : objectResources) {
                 final String fileLocation = objectResource.getXlinkHref();
-                final String preparedUrl = prepareUrl(fileLocation);
                 final String filename = createFilename(fileLocation);
                 final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
                 final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
@@ -140,21 +139,8 @@ class GetRecordOperations {
                 final HttpResponseHandler responseHandler = responseHandlerFactory
                         .getStreamCopyingResponseHandler(objectOut, checksumOut);
 
-                final URL objectUrl = new URL(preparedUrl);
+                downloadFile(errorReports, fileLocation, objectOut, checksumOut, responseHandler);
 
-
-                httpFetcher.execute(objectUrl, responseHandler);
-                if (!responseHandler.getExceptions().isEmpty()) {
-                    final HttpResponseHandler responseHandler2 = responseHandlerFactory
-                            .getStreamCopyingResponseHandler(objectOut, checksumOut);
-                    final URL objectUrl2 = new URL(preparedUrl.replaceAll("\\+", "%20"));
-                    httpFetcher.execute(objectUrl2, responseHandler2);
-
-                    if (!responseHandler2.getExceptions().isEmpty()) {
-                        errorReports.addAll(responseHandler.getExceptions());
-                        errorReports.addAll(responseHandler2.getExceptions());
-                    }
-                }
                 objectResource.setChecksum(checksumOut.toString("UTF8"));
                 objectResource.setChecksumType("MD5");
                 LOG.info("Fetched resource: {}\nfilename: {}\nchecksum: {}",
@@ -165,6 +151,23 @@ class GetRecordOperations {
         } catch (IOException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
             return false;
+        }
+    }
+
+    private void downloadFile(List<ErrorReport> errorReports, String fileLocation, OutputStream objectOut, ByteArrayOutputStream checksumOut, HttpResponseHandler responseHandler) throws UnsupportedEncodingException, MalformedURLException {
+        final String preparedUrl = prepareUrl(fileLocation);
+        final URL objectUrl = new URL(preparedUrl);
+        httpFetcher.execute(objectUrl, responseHandler);
+        if (!responseHandler.getExceptions().isEmpty()) {
+            final HttpResponseHandler responseHandler2 = responseHandlerFactory
+                    .getStreamCopyingResponseHandler(objectOut, checksumOut);
+            final URL objectUrl2 = new URL(preparedUrl.replaceAll("\\+", "%20"));
+            httpFetcher.execute(objectUrl2, responseHandler2);
+
+            if (!responseHandler2.getExceptions().isEmpty()) {
+                errorReports.addAll(responseHandler.getExceptions());
+                errorReports.addAll(responseHandler2.getExceptions());
+            }
         }
     }
 
