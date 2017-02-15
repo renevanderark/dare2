@@ -19,6 +19,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 class GetRecordResourceOperations {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecordResourceOperations.class);
@@ -31,48 +34,63 @@ class GetRecordResourceOperations {
     }
 
     List<ErrorReport> downloadResource(ObjectResource objectResource, FileStorageHandle fileStorageHandle) throws IOException {
-        final List<ErrorReport> errorReports = Lists.newArrayList();
         final String fileLocation = objectResource.getXlinkHref();
         final String filename = createFilename(fileLocation);
+
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
 
-        final HttpResponseHandler responseHandler = responseHandlerFactory
-                .getStreamCopyingResponseHandler(objectOut, checksumOut);
+        final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
 
-        final String preparedUrl = prepareUrl(fileLocation);
-        final URL objectUrl = new URL(preparedUrl);
-        httpFetcher.execute(objectUrl, responseHandler);
-        if (!responseHandler.getExceptions().isEmpty()) {
-            final HttpResponseHandler responseHandler2 = responseHandlerFactory
-                    .getStreamCopyingResponseHandler(objectOut, checksumOut);
-            final URL objectUrl2 = new URL(preparedUrl.replaceAll("\\+", "%20"));
-            httpFetcher.execute(objectUrl2, responseHandler2);
-
-            if (!responseHandler2.getExceptions().isEmpty()) {
-                errorReports.addAll(responseHandler.getExceptions());
-                errorReports.addAll(responseHandler2.getExceptions());
-            }
+        if (firstAttemptErrors.isEmpty()) {
+            writeChecksum(objectResource, checksumOut);
+            return Lists.newArrayList();
         }
 
-        objectResource.setChecksum(checksumOut.toString("UTF8"));
-        objectResource.setChecksumType("MD5");
-        LOG.info("Fetched resource: {}\nfilename: {}\nchecksum: {}",
-                fileLocation, filename, objectResource.getChecksum());
-        return errorReports;
+        final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
+
+        if (secondAttemptErrors.isEmpty()) {
+            writeChecksum(objectResource, checksumOut);
+            return Lists.newArrayList();
+        }
+
+        return Stream
+                .concat(firstAttemptErrors.stream(), secondAttemptErrors.stream())
+                .collect(toList());
     }
 
+    private void writeChecksum(ObjectResource objectResource, ByteArrayOutputStream checksumOut) throws UnsupportedEncodingException {
+        objectResource.setChecksum(checksumOut.toString("UTF8"));
+        objectResource.setChecksumType("MD5");
+    }
+
+    private List<ErrorReport> attemptDownload(String fileLocation, OutputStream objectOut, OutputStream checksumOut, boolean plusToPercent) throws UnsupportedEncodingException, MalformedURLException {
+        final HttpResponseHandler responseHandler = responseHandlerFactory
+                .getStreamCopyingResponseHandler(objectOut, checksumOut);
+        final URL objectUrl = new URL(prepareUrl(fileLocation, plusToPercent));
+
+        httpFetcher.execute(objectUrl, responseHandler);
+
+        return responseHandler.getExceptions();
+    }
 
     private String createFilename(String objectFile) throws MalformedURLException, UnsupportedEncodingException {
         final String decodedFilename = URLDecoder.decode(new URL(objectFile).getPath(), "UTF8");
         return FilenameUtils.getName(decodedFilename);
     }
 
-    private String prepareUrl(String rawUrl) throws UnsupportedEncodingException, MalformedURLException {
+    private String prepareUrl(String rawUrl, boolean plusToPercent) throws UnsupportedEncodingException {
         final String name = FilenameUtils.getName(rawUrl);
         final String path = FilenameUtils.getPath(rawUrl);
-        return name.equals(URLDecoder.decode(name, "UTF8")) ?
-                path + URLEncoder.encode(name, "UTF8") :
-                path + URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
+
+        return path + encodeName(name, plusToPercent);
+    }
+
+    private String encodeName(String name, boolean plusToPercent) throws UnsupportedEncodingException {
+        final String encodedName = name.equals(URLDecoder.decode(name, "UTF8")) ?
+                URLEncoder.encode(name, "UTF8") :
+                URLEncoder.encode(URLDecoder.decode(name, "UTF8"), "UTF8");
+
+        return plusToPercent ? encodedName.replaceAll("\\+", "%20"): encodedName;
     }
 }
