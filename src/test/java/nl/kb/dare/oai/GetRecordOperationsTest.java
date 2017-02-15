@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static nl.kb.dare.oai.GetRecordOperations.METS_NS;
+import static nl.kb.dare.oai.GetRecordOperations.XLINK_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -432,9 +433,9 @@ public class GetRecordOperationsTest {
         when(handle.getFile("metadata.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
         when(handle.getOutputStream("sip.xml")).thenReturn(sip);
-        final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "");
-        final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "");
-        final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "");
+        final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "test 1.html");
+        final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "test 2.pdf");
+        final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "test 3.txt");
         final ArrayList<ObjectResource> objectResources = Lists.newArrayList(
                 file0001, file0002, file0003
         );
@@ -447,8 +448,10 @@ public class GetRecordOperationsTest {
         final NodeList fileNodes = resultDoc.getElementsByTagNameNS(METS_NS, "file");
         final List<String> checksums = Lists.newArrayList();
         final List<String> checksumTypes = Lists.newArrayList();
+        final List<String> fileUrls = Lists.newArrayList();
         for (int i = 0; i < fileNodes.getLength(); i++) {
             final Node fileNode = fileNodes.item(i);
+            fileUrls.add(getFLocatNode(fileNode).getAttributes().getNamedItemNS(XLINK_NS, "href").getNodeValue());
             checksums.add(fileNode.getAttributes().getNamedItem("CHECKSUM").getNodeValue());
             checksumTypes.add(fileNode.getAttributes().getNamedItem("CHECKSUMTYPE").getNodeValue());
         }
@@ -456,14 +459,32 @@ public class GetRecordOperationsTest {
         assertThat(errorReports.isEmpty(), is(true));
         assertThat(checksums, contains("check-1", "check-2", "check-3"));
         assertThat(checksumTypes, contains("type-1", "type-2", "type-3"));
+        assertThat(fileUrls, contains(
+                "file://./resources/test%201.html",
+                "file://./resources/test%202.pdf",
+                "file://./resources/test%203.txt"
+        ));
     }
 
-    private ObjectResource getObjectResource(String id, String checksum, String checksumType, String xlinkHref) {
+    private ObjectResource getObjectResource(String id, String checksum, String checksumType, String filename) {
         final ObjectResource objectResource = new ObjectResource();
         objectResource.setId(id);
         objectResource.setChecksum(checksum);
         objectResource.setChecksumType(checksumType);
-        objectResource.setXlinkHref(xlinkHref);
+        objectResource.setLocalFilename(filename);
         return objectResource;
+    }
+
+
+    private Node getFLocatNode(Node fileNode) {
+        final NodeList childNodes = fileNode.getChildNodes();
+
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            final Node item = childNodes.item(i);
+            if (item.getLocalName() != null && item.getLocalName().equalsIgnoreCase("flocat")) {
+                return item;
+            }
+        }
+        return null;
     }
 }
