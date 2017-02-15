@@ -47,6 +47,7 @@ class GetRecordOperations {
     private static final SAXParser saxParser;
     private static final DocumentBuilder docBuilder;
     private static final TransformerFactory transformerFactory;
+    static final String METS_NS = "http://www.loc.gov/METS/";
 
     static {
         try {
@@ -174,7 +175,7 @@ class GetRecordOperations {
 
             synchronized (docBuilder) {
                 final Document document = docBuilder.parse(new InputSource(metadata));
-                final NodeList fileNodes = document.getElementsByTagNameNS("http://www.loc.gov/METS/", "file");
+                final NodeList fileNodes = document.getElementsByTagNameNS(METS_NS, "file");
                 final Transformer transformer = transformerFactory.newTransformer();
 
                 for (int i = 0; i < fileNodes.getLength(); i++) {

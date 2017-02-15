@@ -13,13 +13,21 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +36,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import static nl.kb.dare.oai.GetRecordOperations.METS_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
@@ -42,6 +52,16 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class GetRecordOperationsTest {
+    private static final DocumentBuilder docBuilder;
+    static {
+        try {
+            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
+            docBuilder = documentBuilderFactory.newDocumentBuilder();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize sax parser", e);
+        }
+    }
 
     @Test
     public void getFileStorageHandleShouldReturnAHandleIfAvailable() throws IOException {
@@ -401,7 +421,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException {
+    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException, SAXException {
         final List<ErrorReport> errorReports = Lists.newArrayList();
         final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
         final GetRecordOperations instance = new GetRecordOperations(
@@ -412,17 +432,30 @@ public class GetRecordOperationsTest {
         when(handle.getFile("metadata.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
         when(handle.getOutputStream("sip.xml")).thenReturn(sip);
-
         final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "");
         final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "");
         final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "");
         final ArrayList<ObjectResource> objectResources = Lists.newArrayList(
                 file0001, file0002, file0003
         );
-        instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
 
-        errorReports.forEach(errorReport -> errorReport.getException().printStackTrace());
-        System.out.println(sip.toString());
+
+        final boolean result = instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
+
+
+        final Document resultDoc = docBuilder.parse(new InputSource(new InputStreamReader(new ByteArrayInputStream(sip.toByteArray()), "UTF8")));
+        final NodeList fileNodes = resultDoc.getElementsByTagNameNS(METS_NS, "file");
+        final List<String> checksums = Lists.newArrayList();
+        final List<String> checksumTypes = Lists.newArrayList();
+        for (int i = 0; i < fileNodes.getLength(); i++) {
+            final Node fileNode = fileNodes.item(i);
+            checksums.add(fileNode.getAttributes().getNamedItem("CHECKSUM").getNodeValue());
+            checksumTypes.add(fileNode.getAttributes().getNamedItem("CHECKSUMTYPE").getNodeValue());
+        }
+        assertThat(result, is(true));
+        assertThat(errorReports.isEmpty(), is(true));
+        assertThat(checksums, contains("check-1", "check-2", "check-3"));
+        assertThat(checksumTypes, contains("type-1", "type-2", "type-3"));
     }
 
     private ObjectResource getObjectResource(String id, String checksum, String checksumType, String xlinkHref) {
