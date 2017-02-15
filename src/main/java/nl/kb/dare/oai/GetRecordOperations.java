@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static java.util.stream.Collectors.toList;
-
 class GetRecordOperations {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecordOperations.class);
 
@@ -130,10 +128,11 @@ class GetRecordOperations {
     boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources) {
         try {
             final List<ErrorReport> errorReports = Lists.newArrayList();
-            for (String objectFile : objectResources.stream().map(ObjectResource::getXlinkHref).collect(toList())) {
-                final String preparedUrl = prepareUrl(objectFile);
 
-                final String filename = FilenameUtils.getName(new URL(objectFile).getPath());
+            for (ObjectResource objectResource : objectResources) {
+                final String objectFile = objectResource.getXlinkHref();
+                final String preparedUrl = prepareUrl(objectFile);
+                final String filename = FilenameUtils.getName(URLDecoder.decode(new URL(objectFile).getPath()));
                 final String checksumFileName = filename + ".checksum";
                 final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
                 final OutputStream checksumOut = fileStorageHandle.getOutputStream("resources", checksumFileName);
