@@ -35,4 +35,8 @@ class ObjectResource {
     public String getChecksum() {
         return checksum;
     }
+
+    public String getChecksumType() {
+        return checksumType;
+    }
 }

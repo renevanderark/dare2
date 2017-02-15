@@ -13,17 +13,28 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.List;
@@ -155,6 +166,44 @@ class GetRecordOperations {
 
 
     boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
-        return true;
+        try {
+            final InputStream in = handle.getFile("metadata.xml");
+            final OutputStream out = handle.getOutputStream("sip.xml");
+            final Reader metadata = new InputStreamReader(in,"UTF-8");
+            final Writer sip = new OutputStreamWriter(out, "UTF-8");
+
+            synchronized (docBuilder) {
+                final Document document = docBuilder.parse(new InputSource(metadata));
+                final NodeList fileNodes = document.getElementsByTagNameNS("http://www.loc.gov/METS/", "file");
+                final Transformer transformer = transformerFactory.newTransformer();
+
+                for (int i = 0; i < fileNodes.getLength(); i++) {
+                    final NamedNodeMap fileAttributes = fileNodes.item(i).getAttributes();
+                    final Node checksum = document.createAttribute("CHECKSUM");
+                    final Node checksumType = document.createAttribute("CHECKSUMTYPE");
+                    final String fileId = fileAttributes.getNamedItem("ID").getNodeValue();
+                    final Optional<ObjectResource> currentResource = objectResources
+                            .stream().filter(obj -> obj.getId() != null && obj.getId().equals(fileId))
+                            .findAny();
+
+                    if (!currentResource.isPresent()) {
+                        throw new IOException("Expected file resource is not present for metadata.xml: " + fileId);
+                    }
+
+                    checksum.setNodeValue(currentResource.get().getChecksum());
+                    checksumType.setNodeValue(currentResource.get().getChecksumType());
+                    fileAttributes.setNamedItem(checksum);
+                    fileAttributes.setNamedItem(checksumType);
+                }
+                transformer.transform(new DOMSource(document), new StreamResult(sip));
+            }
+            return true;
+        } catch (IOException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
+            return false;
+        } catch (SAXException | TransformerException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
+            return false;
+        }
     }
 }

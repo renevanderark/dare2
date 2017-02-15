@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -397,6 +398,39 @@ public class GetRecordOperationsTest {
                 hasProperty("exception", is(instanceOf(IOException.class))),
                 hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION))
         ));
+    }
 
+    @Test
+    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                mock(GetRecordResourceOperations.class), errorReports::add);
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(mets);
+        final ByteArrayOutputStream sip = new ByteArrayOutputStream();
+        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+
+        final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "");
+        final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "");
+        final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "");
+        final ArrayList<ObjectResource> objectResources = Lists.newArrayList(
+                file0001, file0002, file0003
+        );
+        instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
+
+        errorReports.forEach(errorReport -> errorReport.getException().printStackTrace());
+        System.out.println(sip.toString());
+    }
+
+    private ObjectResource getObjectResource(String id, String checksum, String checksumType, String xlinkHref) {
+        final ObjectResource objectResource = new ObjectResource();
+        objectResource.setId(id);
+        objectResource.setChecksum(checksum);
+        objectResource.setChecksumType(checksumType);
+        objectResource.setXlinkHref(xlinkHref);
+        return objectResource;
     }
 }
