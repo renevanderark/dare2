@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static nl.kb.dare.oai.GetRecordOperations.METS_NS;
-import static nl.kb.dare.oai.GetRecordOperations.XLINK_NS;
+import static nl.kb.dare.oai.SipFinalizer.METS_NS;
+import static nl.kb.dare.oai.SipFinalizer.XLINK_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
