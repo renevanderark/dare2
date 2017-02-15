@@ -44,7 +44,7 @@ class GetRecordResourceOperations {
         final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
 
         if (firstAttemptErrors.isEmpty()) {
-            writeChecksum(objectResource, checksumOut);
+            writeChecksumAndFilename(objectResource, checksumOut, filename);
             return Lists.newArrayList();
         }
 
@@ -52,7 +52,7 @@ class GetRecordResourceOperations {
         final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
 
         if (secondAttemptErrors.isEmpty()) {
-            writeChecksum(objectResource, checksumOut);
+            writeChecksumAndFilename(objectResource, checksumOut, filename);
             return Lists.newArrayList();
         }
 
@@ -61,9 +61,10 @@ class GetRecordResourceOperations {
                 .collect(toList());
     }
 
-    private void writeChecksum(ObjectResource objectResource, ByteArrayOutputStream checksumOut) throws UnsupportedEncodingException {
+    private void writeChecksumAndFilename(ObjectResource objectResource, ByteArrayOutputStream checksumOut, String filename) throws UnsupportedEncodingException {
         objectResource.setChecksum(checksumOut.toString("UTF8"));
         objectResource.setChecksumType("MD5");
+        objectResource.setLocalFilename(filename);
     }
 
     private List<ErrorReport> attemptDownload(String fileLocation, OutputStream objectOut, OutputStream checksumOut, boolean plusToPercent) throws UnsupportedEncodingException, MalformedURLException {

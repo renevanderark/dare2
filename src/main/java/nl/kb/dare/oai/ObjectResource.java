@@ -7,6 +7,7 @@ class ObjectResource {
     private String xlinkHref;
     private String checksum;
     private String checksumType;
+    private String localFilename;
 
     public String getId() {
         return id;
@@ -38,5 +39,13 @@ class ObjectResource {
 
     public String getChecksumType() {
         return checksumType;
+    }
+
+    public void setLocalFilename(String localFilename) {
+        this.localFilename = localFilename;
+    }
+
+    public String getLocalFilename() {
+        return localFilename;
     }
 }

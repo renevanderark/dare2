@@ -69,7 +69,7 @@ public class GetRecordResourceOperationsTest {
         // .. writeChecksum(objectResource, checksumOut);
         inOrder.verify(objectResource).setChecksum(argThat(is(instanceOf(String.class))));
         inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
-
+        inOrder.verify(objectResource).setLocalFilename(EXPECTED_FILENAME);
         // .. return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));
         // }
@@ -109,6 +109,7 @@ public class GetRecordResourceOperationsTest {
         // ..  writeChecksum(objectResource, checksumOut);
         inOrder.verify(objectResource).setChecksum(argThat(is(instanceOf(String.class))));
         inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
+        inOrder.verify(objectResource).setLocalFilename(EXPECTED_FILENAME);
         // ..  return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));
         // }
