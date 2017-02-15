@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -130,17 +131,18 @@ class GetRecordOperations {
             final List<ErrorReport> errorReports = Lists.newArrayList();
 
             for (ObjectResource objectResource : objectResources) {
-                final String objectFile = objectResource.getXlinkHref();
-                final String preparedUrl = prepareUrl(objectFile);
-                final String filename = FilenameUtils.getName(URLDecoder.decode(new URL(objectFile).getPath()));
-                final String checksumFileName = filename + ".checksum";
+                final String fileLocation = objectResource.getXlinkHref();
+                final String preparedUrl = prepareUrl(fileLocation);
+                final String filename = createFilename(fileLocation);
                 final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
-                final OutputStream checksumOut = fileStorageHandle.getOutputStream("resources", checksumFileName);
-
+                final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
 
                 final HttpResponseHandler responseHandler = responseHandlerFactory
                         .getStreamCopyingResponseHandler(objectOut, checksumOut);
+
                 final URL objectUrl = new URL(preparedUrl);
+
+
                 httpFetcher.execute(objectUrl, responseHandler);
                 if (!responseHandler.getExceptions().isEmpty()) {
                     final HttpResponseHandler responseHandler2 = responseHandlerFactory
@@ -153,8 +155,10 @@ class GetRecordOperations {
                         errorReports.addAll(responseHandler2.getExceptions());
                     }
                 }
-
-                LOG.info("Fetched resource: {}", objectFile);
+                objectResource.setChecksum(checksumOut.toString("UTF8"));
+                objectResource.setChecksumType("MD5");
+                LOG.info("Fetched resource: {}\nfilename: {}\nchecksum: {}",
+                        fileLocation, filename, objectResource.getChecksum());
             }
             errorReports.forEach(onError);
             return errorReports.isEmpty();
@@ -162,6 +166,11 @@ class GetRecordOperations {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
             return false;
         }
+    }
+
+    private String createFilename(String objectFile) throws MalformedURLException, UnsupportedEncodingException {
+        final String decodedFilename = URLDecoder.decode(new URL(objectFile).getPath(), "UTF8");
+        return FilenameUtils.getName(decodedFilename);
     }
 
     private String prepareUrl(String rawUrl) throws UnsupportedEncodingException, MalformedURLException {

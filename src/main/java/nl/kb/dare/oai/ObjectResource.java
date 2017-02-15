@@ -4,6 +4,8 @@ class ObjectResource {
 
     private String id;
     private String xlinkHref;
+    private String checksum;
+    private String checksumType;
 
     public String getId() {
         return id;
@@ -21,11 +23,15 @@ class ObjectResource {
         this.xlinkHref = xlinkHref;
     }
 
-    @Override
-    public String toString() {
-        return "ObjectResource{" +
-                "id='" + id + '\'' +
-                ", xlinkHref='" + xlinkHref + '\'' +
-                '}';
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    public void setChecksumType(String checksumType) {
+        this.checksumType = checksumType;
+    }
+
+    public String getChecksum() {
+        return checksum;
     }
 }
