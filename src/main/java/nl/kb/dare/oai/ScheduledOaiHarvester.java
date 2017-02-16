@@ -43,7 +43,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     private List<ListIdentifiers> runningHarvesters = Lists.newArrayList();
 
-    enum RunState {
+    public enum RunState {
         RUNNING, WAITING, DISABLED
     }
 
@@ -133,6 +133,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     }
 
     public void enableAndStart() throws Exception {
+        LOG.info("HARVESTERS ENABLED");
         runState = RunState.WAITING;
         runOneIteration();
     }
@@ -142,7 +143,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         runningHarvesters.forEach(ListIdentifiers::interruptHarvest);
     }
 
-    RunState getRunState() {
+    public RunState getRunState() {
         return runState;
     }
 
