@@ -13,14 +13,9 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,17 +24,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static nl.kb.dare.oai.GetRecordOperations.METS_NS;
-import static nl.kb.dare.oai.GetRecordOperations.XLINK_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.instanceOf;
@@ -49,20 +41,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class GetRecordOperationsTest {
-    private static final DocumentBuilder docBuilder;
-    static {
-        try {
-            final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
-            docBuilder = documentBuilderFactory.newDocumentBuilder();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize sax parser", e);
-        }
-    }
 
     @Test
     public void getFileStorageHandleShouldReturnAHandleIfAvailable() throws IOException {
@@ -71,7 +54,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(fileStorage, mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenReturn(handle);
 
@@ -87,7 +70,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 fileStorage, mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenThrow(IOException.class);
 
@@ -101,7 +84,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml"));
 
@@ -122,7 +105,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), errorReports::add);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(mets);
 
@@ -140,7 +123,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), errorReports::add);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(badXml);
 
@@ -157,7 +140,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), errorReports::add);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenThrow(IOException.class);
 
@@ -179,7 +162,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher,
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
@@ -206,7 +189,7 @@ public class GetRecordOperationsTest {
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class),
                 httpFetcher, responseHandlerFactory, xsltTransformer, repository,
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
 
         when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(out);
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
@@ -240,7 +223,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
-                mock(GetRecordResourceOperations.class), onError);
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), onError);
 
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(responseHandler.getExceptions()).thenReturn(returnedReports);
@@ -272,7 +255,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
 
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
@@ -293,7 +276,7 @@ public class GetRecordOperationsTest {
         final Repository repository = mock(Repository.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
-                mock(GetRecordResourceOperations.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), (errorReport) -> {});
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
@@ -318,7 +301,7 @@ public class GetRecordOperationsTest {
         final Repository repository = mock(Repository.class);
         final FileStorageHandle storageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
-                responseHandlerFactory, mock(XsltTransformer.class), repository, mock(GetRecordResourceOperations.class), onError);
+                responseHandlerFactory, mock(XsltTransformer.class), repository, mock(GetRecordResourceOperations.class), mock(SipFinalizer.class), onError);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
@@ -336,7 +319,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                errorReport -> {});
+                mock(SipFinalizer.class), errorReport -> {});
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
@@ -358,7 +341,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                errorReport -> {});
+                mock(SipFinalizer.class), errorReport -> {});
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
@@ -380,7 +363,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                onError);
+                mock(SipFinalizer.class), onError);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ErrorReport report1 = mock(ErrorReport.class);
         final ErrorReport report2 = mock(ErrorReport.class);
@@ -406,7 +389,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                onError);
+                mock(SipFinalizer.class), onError);
 
         when(resourceOperations.downloadResource(any(), any())).thenThrow(IOException.class);
 
@@ -422,69 +405,37 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException, SAXException {
+    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException, TransformerException, SAXException {
         final List<ErrorReport> errorReports = Lists.newArrayList();
         final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
-        final GetRecordOperations instance = new GetRecordOperations(
-                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
-                mock(Repository.class),
-                mock(GetRecordResourceOperations.class), errorReports::add);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("metadata.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
         when(handle.getOutputStream("sip.xml")).thenReturn(sip);
-        final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "test 1.html");
-        final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "test 2.pdf");
-        final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "test 3.txt");
-        final ArrayList<ObjectResource> objectResources = Lists.newArrayList(
-                file0001, file0002, file0003
-        );
-
+        final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
+        final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                mock(GetRecordResourceOperations.class),
+                sipFinalizer,
+                errorReports::add);
 
         final boolean result = instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
 
+        final InOrder inOrder = inOrder(handle, sipFinalizer);
 
-        final Document resultDoc = docBuilder.parse(new InputSource(new InputStreamReader(new ByteArrayInputStream(sip.toByteArray()), "UTF8")));
-        final NodeList fileNodes = resultDoc.getElementsByTagNameNS(METS_NS, "file");
-        final List<String> checksums = Lists.newArrayList();
-        final List<String> checksumTypes = Lists.newArrayList();
-        final List<String> fileUrls = Lists.newArrayList();
-        for (int i = 0; i < fileNodes.getLength(); i++) {
-            final Node fileNode = fileNodes.item(i);
-            fileUrls.add(getFLocatNode(fileNode).getAttributes().getNamedItemNS(XLINK_NS, "href").getNodeValue());
-            checksums.add(fileNode.getAttributes().getNamedItem("CHECKSUM").getNodeValue());
-            checksumTypes.add(fileNode.getAttributes().getNamedItem("CHECKSUMTYPE").getNodeValue());
-        }
+        inOrder.verify(handle).getFile("metadata.xml");
+        inOrder.verify(handle).getOutputStream("sip.xml");
+        inOrder.verify(sipFinalizer).writeResourcesToSip(
+                argThat(is(objectResources)),
+                argThat(allOf(is(instanceOf(InputStreamReader.class)), hasProperty("encoding", is("UTF8")))),
+                argThat(allOf(is(instanceOf(OutputStreamWriter.class)), hasProperty("encoding", is("UTF8"))))
+        );
+        verifyNoMoreInteractions(sipFinalizer);
+        verifyNoMoreInteractions(handle);
+
         assertThat(result, is(true));
         assertThat(errorReports.isEmpty(), is(true));
-        assertThat(checksums, contains("check-1", "check-2", "check-3"));
-        assertThat(checksumTypes, contains("type-1", "type-2", "type-3"));
-        assertThat(fileUrls, contains(
-                "file://./resources/test%201.html",
-                "file://./resources/test%202.pdf",
-                "file://./resources/test%203.txt"
-        ));
-    }
-
-    private ObjectResource getObjectResource(String id, String checksum, String checksumType, String filename) {
-        final ObjectResource objectResource = new ObjectResource();
-        objectResource.setId(id);
-        objectResource.setChecksum(checksum);
-        objectResource.setChecksumType(checksumType);
-        objectResource.setLocalFilename(filename);
-        return objectResource;
-    }
-
-
-    private Node getFLocatNode(Node fileNode) {
-        final NodeList childNodes = fileNode.getChildNodes();
-
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            final Node item = childNodes.item(i);
-            if (item.getLocalName() != null && item.getLocalName().equalsIgnoreCase("flocat")) {
-                return item;
-            }
-        }
-        return null;
     }
 }
