@@ -18,10 +18,13 @@ public class StatusUpdater extends AbstractScheduledService {
 
     private final OaiRecordStatusAggregator oaiRecordStatusAggregator;
     private final ScheduledOaiHarvester oaiHarvester;
+    private final ScheduledOaiRecordFetcher oaiRecordFetcher;
 
-    public StatusUpdater(OaiRecordStatusAggregator oaiRecordStatusAggregator, ScheduledOaiHarvester oaiHarvester) {
+    public StatusUpdater(OaiRecordStatusAggregator oaiRecordStatusAggregator,
+                         ScheduledOaiHarvester oaiHarvester, ScheduledOaiRecordFetcher oaiRecordFetcher) {
         this.oaiRecordStatusAggregator = oaiRecordStatusAggregator;
         this.oaiHarvester = oaiHarvester;
+        this.oaiRecordFetcher = oaiRecordFetcher;
     }
 
     @Override
@@ -35,11 +38,13 @@ public class StatusUpdater extends AbstractScheduledService {
 
                 final Map<String, Object> harvesterState = Maps.newHashMap();
                 harvesterState.put("nextRunTime", oaiHarvester.getNextRunTime());
-                harvesterState.put("state", oaiHarvester.getRunState());
+                harvesterState.put("harvesterRunState", oaiHarvester.getRunState());
+                harvesterState.put("recordFetcherRunState", oaiRecordFetcher.getRunState());
+
 
                 final Map<String, Object> statusUpdate = Maps.newHashMap();
-                statusUpdate.put("OAI harvesters", harvesterState);
-                statusUpdate.put("record processing", records);
+                statusUpdate.put("harvesterStatus", harvesterState);
+                statusUpdate.put("recordProcessingStatus", records);
 
                 registrations.broadcast(OBJECT_MAPPER.writeValueAsString(statusUpdate));
             } catch (Exception e) {

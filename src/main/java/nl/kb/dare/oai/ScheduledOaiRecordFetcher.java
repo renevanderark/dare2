@@ -130,7 +130,6 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             }
         }
 
-        result.addAll(oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode(), limit));
         return result;
     }
 

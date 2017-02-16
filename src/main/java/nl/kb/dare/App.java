@@ -71,7 +71,7 @@ public class App extends Application<Config> {
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                 config.getInSampleMode());
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db), oaiHarvester);
+        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db), oaiHarvester, oaiRecordFetcher);
 
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
