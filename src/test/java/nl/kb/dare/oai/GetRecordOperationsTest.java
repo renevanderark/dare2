@@ -1,7 +1,6 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import jdk.internal.org.xml.sax.SAXException;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
@@ -14,6 +13,7 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.xml.sax.SAXException;
 
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
@@ -405,7 +405,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException, SAXException, TransformerException, org.xml.sax.SAXException {
+    public void writeFilenamesAndChecksumsToMetadataShouldCreateASipFileFromTheMetadataXML() throws IOException, TransformerException, SAXException {
         final List<ErrorReport> errorReports = Lists.newArrayList();
         final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
         final FileStorageHandle handle = mock(FileStorageHandle.class);
