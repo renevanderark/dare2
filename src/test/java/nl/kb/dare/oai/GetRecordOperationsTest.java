@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -437,5 +438,63 @@ public class GetRecordOperationsTest {
 
         assertThat(result, is(true));
         assertThat(errorReports.isEmpty(), is(true));
+    }
+
+    @Test
+    public void writeFilenamesAndChecksumsToMetadataShouldLogAnyIOException() throws IOException, TransformerException, SAXException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(mets);
+        final ByteArrayOutputStream sip = new ByteArrayOutputStream();
+        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+        final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
+        final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                mock(GetRecordResourceOperations.class),
+                sipFinalizer,
+                errorReports::add);
+
+        doThrow(IOException.class).when(sipFinalizer).writeResourcesToSip(any(), any(), any());
+
+        final boolean result = instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
+
+        assertThat(result, is(false));
+        assertThat(errorReports.isEmpty(), is(false));
+        assertThat(errorReports.get(0), allOf(
+                hasProperty("exception", is(instanceOf(IOException.class))),
+                hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION))
+        ));
+    }
+
+    @Test
+    public void writeFilenamesAndChecksumsToMetadataShouldLogAnySaxException() throws IOException, TransformerException, SAXException {
+        final List<ErrorReport> errorReports = Lists.newArrayList();
+        final InputStream mets = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
+        final FileStorageHandle handle = mock(FileStorageHandle.class);
+        when(handle.getFile("metadata.xml")).thenReturn(mets);
+        final ByteArrayOutputStream sip = new ByteArrayOutputStream();
+        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+        final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
+        final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
+        final GetRecordOperations instance = new GetRecordOperations(
+                mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
+                mock(Repository.class),
+                mock(GetRecordResourceOperations.class),
+                sipFinalizer,
+                errorReports::add);
+
+        doThrow(SAXException.class).when(sipFinalizer).writeResourcesToSip(any(), any(), any());
+
+        final boolean result = instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources);
+
+        assertThat(result, is(false));
+        assertThat(errorReports.isEmpty(), is(false));
+        assertThat(errorReports.get(0), allOf(
+                hasProperty("exception", is(instanceOf(SAXException.class))),
+                hasProperty("errorStatus", is(ErrorStatus.XML_PARSING_ERROR))
+        ));
     }
 }
