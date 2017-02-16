@@ -96,7 +96,9 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     private List<OaiRecord> fetchNextRecords(int limit) {
         final List<OaiRecord> result = Lists.newArrayList();
-        final List<Integer> repositoryIds = repositoryDao.list().stream().map(Repository::getId).collect(toList());
+        final List<Integer> repositoryIds = repositoryDao.list().stream()
+                .filter(Repository::getEnabled)
+                .map(Repository::getId).collect(toList());
         final int limitPerRepo = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
 
         for (Integer repositoryId : repositoryIds) {

@@ -56,6 +56,23 @@ public class RepositoriesEndpoint {
         return Response.ok().build();
     }
 
+    @PUT
+    @Path("/{id}/enable")
+    public Response enable(@PathParam("id") Integer id) {
+        dao.enable(id);
+
+        return Response.ok().build();
+    }
+
+
+    @PUT
+    @Path("/{id}/disable")
+    public Response disable(@PathParam("id") Integer id) {
+        dao.disable(id);
+
+        return Response.ok().build();
+    }
+
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)

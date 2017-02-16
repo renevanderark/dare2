@@ -64,6 +64,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         runState = RunState.RUNNING;
         runningHarvesters = repositoryDao.list()
                 .stream()
+                .filter(Repository::getEnabled)
                 .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
                         this::saveRepositoryStatus, // onHarvestDone
                         errorReport -> saveErrorReport(errorReport, repo.getId()), // onError

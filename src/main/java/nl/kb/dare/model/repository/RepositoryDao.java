@@ -30,4 +30,14 @@ public interface RepositoryDao {
 
     @SqlQuery("select id, url, metadataPrefix, oai_set, datestamp, enabled from repositories")
     List<Repository> list();
+
+    @SqlUpdate("update repositories " +
+            "set enabled = 1 " +
+            "where id = :id")
+    void enable(@Bind("id") Integer id);
+
+    @SqlUpdate("update repositories " +
+            "set enabled = 0 " +
+            "where id = :id")
+    void disable(@Bind("id") Integer id);
 }
