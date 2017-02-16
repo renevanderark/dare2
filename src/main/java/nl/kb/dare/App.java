@@ -1,7 +1,11 @@
 package nl.kb.dare;
 
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jdbi.DBIFactory;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.kb.dare.endpoints.OaiHarvesterEndpoint;
 import nl.kb.dare.endpoints.OaiRecordFetcherEndpoint;
@@ -32,6 +36,17 @@ public class App extends Application<Config> {
     public static void main(String[] args) throws Exception {
         new App().run(args);
     }
+
+    @Override
+    public void initialize(Bootstrap<Config> bootstrap) {
+        bootstrap.addBundle(new AssetsBundle("/assets", "/assets"));
+
+        bootstrap.setConfigurationSourceProvider(
+                new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
+                        new EnvironmentVariableSubstitutor(false))
+        );
+    }
+
 
     @Override
     public void run(Config config, Environment environment) throws Exception {
