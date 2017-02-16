@@ -145,7 +145,7 @@
                 <executions>
                     <execution>
                         <id>Build assets</id>
-                        <phase>generate-sources</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>

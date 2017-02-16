@@ -7,7 +7,7 @@
   },
   "scripts": {
     "devrun": "BUILD_TARGET=../../../../target/classes/assets/javascripts NODE_ENV=development node_modules/.bin/webpack --colors --watch",
-    "build": "NODE_ENV=production node_modules/.bin/webpack --optimize-minimize"
+    "build": "BUILD_TARGET=../../../../target/classes/assets/javascripts NODE_ENV=production node_modules/.bin/webpack --optimize-minimize"
   },
   "dependencies": {
     "react": "^15.4.2",
