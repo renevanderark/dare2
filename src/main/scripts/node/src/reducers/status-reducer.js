@@ -1,6 +1,12 @@
 import ActionTypes from "../action-types";
 
 const initialState = {
+    status: {
+        harvesterStatus: {
+            harvesterRunState: null,
+            recordFetcherRunState: null
+        }
+    }
 };
 
 function getTotals(data) {
@@ -21,8 +27,8 @@ export default function(state=initialState, action) {
             return {
                 status: action.data,
                 totals: {
-                    records: getTotals(action.data["record processing"].recordStatus),
-                    errors: getTotals(action.data["record processing"].errorStatus)
+                    records: getTotals(action.data["recordProcessingStatus"].recordStatus),
+                    errors: getTotals(action.data["recordProcessingStatus"].errorStatus)
                 }
             };
         default:
