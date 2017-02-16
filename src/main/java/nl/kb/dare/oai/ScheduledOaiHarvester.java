@@ -133,9 +133,11 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     }
 
     public void enableAndStart() throws Exception {
-        LOG.info("HARVESTERS ENABLED");
-        runState = RunState.WAITING;
-        runOneIteration();
+        if (runState != RunState.RUNNING) {
+            LOG.info("HARVESTERS STARTED");
+            runState = RunState.WAITING;
+            runOneIteration();
+        }
     }
 
     public void disable() {

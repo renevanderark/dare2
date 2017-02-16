@@ -21,7 +21,7 @@ public class OaiHarvesterEndpoint {
     @PUT
     @Path("/start")
     public Response start() {
-        if (oaiHarvester.getRunState() == ScheduledOaiHarvester.RunState.DISABLED) {
+        if (oaiHarvester.getRunState() != ScheduledOaiHarvester.RunState.RUNNING) {
             new Thread(() -> {
                 try {
                     oaiHarvester.enableAndStart();
