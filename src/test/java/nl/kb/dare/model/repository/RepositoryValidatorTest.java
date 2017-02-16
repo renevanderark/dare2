@@ -52,7 +52,7 @@ public class RepositoryValidatorTest {
     public void validateShouldSucceedWhetherRepositoryConfigIsSupportedByEndpoint() throws Exception {
         final HttpFetcher mockHttpFetcher = getMockHttpFetcher(listSetsXml, mdFormatsXml);
         final RepositoryValidator instance = new RepositoryValidator(mockHttpFetcher, new ResponseHandlerFactory());
-        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null);
+        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null, true);
 
         final RepositoryValidator.ValidationResult validationResult = instance.validate(validConfig);
 
@@ -64,7 +64,7 @@ public class RepositoryValidatorTest {
     public void validateShouldFailWhetherRepositoryConfigIsSupportedByEndpoint() throws Exception {
         final HttpFetcher mockHttpFetcher = getMockHttpFetcher(listSetsXml, mdFormatsXml);
         final RepositoryValidator instance = new RepositoryValidator(mockHttpFetcher, new ResponseHandlerFactory());
-        final Repository validConfig = new Repository("http://example.com", "unsupported_Md", "nonexistent_set", null);
+        final Repository validConfig = new Repository("http://example.com", "unsupported_Md", "nonexistent_set", null, true);
 
         final RepositoryValidator.ValidationResult validationResult = instance.validate(validConfig);
 
@@ -76,7 +76,7 @@ public class RepositoryValidatorTest {
     public void validateShouldThrowWhenXmlParsingFails() throws IOException, SAXException {
         final HttpFetcher mockHttpFetcher = getMockHttpFetcher(corruptXml, mdFormatsXml);
         final RepositoryValidator instance = new RepositoryValidator(mockHttpFetcher, new ResponseHandlerFactory());
-        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null);
+        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null, true);
 
         instance.validate(validConfig);
     }
@@ -84,7 +84,7 @@ public class RepositoryValidatorTest {
     @Test(expected = IOException.class)
     public void validateShouldThrowWhenHttpRequestFails() throws IOException, SAXException {
         final HttpFetcher failingFetcher = (url, responseHandler) -> responseHandler.onRequestError(new Exception("fails"));
-        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null);
+        final Repository validConfig = new Repository("http://example.com", "nl_didl_norm", "uvt:withfulltext:yes", null, true);
         final RepositoryValidator instance = new RepositoryValidator(failingFetcher, new ResponseHandlerFactory());
 
         instance.validate(validConfig);

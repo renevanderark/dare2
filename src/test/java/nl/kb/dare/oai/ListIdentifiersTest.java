@@ -59,7 +59,7 @@ public class ListIdentifiersTest {
 
     @Test
     public void harvestShouldHarvestUntilThereAreNoMoreResumptionTokens() {
-        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", null);
+        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", null, true);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
         final Consumer<Repository> repositoryConsumer = (repoDone) -> { };
         final Consumer<ErrorReport> errorConsumer = (err) -> { };
@@ -74,7 +74,7 @@ public class ListIdentifiersTest {
 
     @Test
     public void harvestShouldInvokeOnHarvestCompleteOnceWithRepoSetToLatestDatestampFromLastHarvestResponse() {
-        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", null);
+        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", null, true);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withResumptionToken2, withoutResumptionToken);
         final List<String> dateStamps = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> dateStamps.add(repoDone.getDateStamp());
@@ -92,7 +92,7 @@ public class ListIdentifiersTest {
     @Test
     public void harvestShouldLogErrorAndTerminateAfterLastSuccesfulResponse() {
         final String orignalDateStamp = "initialDatestampValue";
-        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp);
+        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp, true);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(corruptXml);
         final List<String> dateStamps = Lists.newArrayList();
         final List<ErrorReport> exceptions = Lists.newArrayList();
@@ -114,7 +114,7 @@ public class ListIdentifiersTest {
     @Test
     public void harvestShouldInvokeOnOaiRecordConsumerWithTheOaiRecord() {
         final String orignalDateStamp = "initialDatestampValue";
-        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp, 123);
+        final Repository repositoryConfig = new Repository("http://oai-endpoint.org", "md:pref", "setName", orignalDateStamp, true, 123);
         final MockHttpFetcher httpFetcher = new MockHttpFetcher(withResumptionToken, withoutResumptionToken);
         final List<OaiRecord> oaiRecords = Lists.newArrayList();
         final Consumer<Repository> repositoryConsumer = (repoDone) -> { };

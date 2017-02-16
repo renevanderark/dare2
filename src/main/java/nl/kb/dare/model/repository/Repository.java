@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Repository {
 
+    private Boolean enabled;
     private Integer id;
     private String url;
     private String metadataPrefix;
@@ -14,15 +15,16 @@ public class Repository {
 
     }
 
-    public Repository(String url, String metadataPrefix, String set, String dateStamp) {
+    public Repository(String url, String metadataPrefix, String set, String dateStamp, Boolean enabled) {
         this.url = url;
         this.metadataPrefix = metadataPrefix;
         this.set = set;
         this.dateStamp = dateStamp;
+        this.enabled = enabled;
     }
 
-    public Repository(String url, String metadataPrefix, String set, String dateStamp, Integer id) {
-        this(url, metadataPrefix, set, dateStamp);
+    public Repository(String url, String metadataPrefix, String set, String dateStamp, Boolean enabled, Integer id) {
+        this(url, metadataPrefix, set, dateStamp, enabled);
         this.id = id;
     }
 
@@ -74,5 +76,13 @@ public class Repository {
     @JsonProperty
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 }

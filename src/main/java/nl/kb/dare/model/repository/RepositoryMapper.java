@@ -16,6 +16,7 @@ public class RepositoryMapper implements ResultSetMapper<Repository> {
         final String set = resultSet.getString("oai_set");
         final String dateStamp = resultSet.getString("dateStamp");
         final Integer id = resultSet.getInt("id");
-        return new Repository(url, metadataPrefix, set, dateStamp, id);
+        final Boolean enabled = resultSet.getBoolean("enabled");
+        return new Repository(url, metadataPrefix, set, dateStamp, enabled, id);
     }
 }

@@ -108,7 +108,7 @@ public class ScheduledOaiHarvesterTest {
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory()
         );
-        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
 
         instance.enableAndStart();
@@ -135,7 +135,7 @@ public class ScheduledOaiHarvesterTest {
                 new MockHttpFetcher(corruptXml),
                 new ResponseHandlerFactory()
         );
-        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
 
         instance.enableAndStart();
@@ -163,7 +163,7 @@ public class ScheduledOaiHarvesterTest {
                 new MockHttpFetcher(withoutResumptionToken),
                 new ResponseHandlerFactory()
         );
-        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = UPDATED_IDENTIFIER;
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
@@ -196,7 +196,7 @@ public class ScheduledOaiHarvesterTest {
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory()
         );
-        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = DELETED_IDENTIFIER;
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
@@ -254,7 +254,7 @@ public class ScheduledOaiHarvesterTest {
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory()
         );
-        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, 123);
+        final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
         final String duplicateIdentifier = forIdentifier;
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", oaiStatusBefore, 123, processStatusBefore);
