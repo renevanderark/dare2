@@ -29,11 +29,7 @@ public class OaiHarvesterEndpoint {
     @PUT
     @Path("/disable")
     public Response disable() {
-        try {
-            oaiHarvester.disable();
-            return Response.ok().build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+        oaiHarvester.disable();
+        return Response.ok().build();
     }
 }
