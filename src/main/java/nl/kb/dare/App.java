@@ -3,6 +3,7 @@ package nl.kb.dare;
 import io.dropwizard.Application;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Environment;
+import nl.kb.dare.endpoints.OaiHarvesterEndpoint;
 import nl.kb.dare.endpoints.OaiRecordsEndpoint;
 import nl.kb.dare.endpoints.RepositoriesEndpoint;
 import nl.kb.dare.endpoints.RootEndpoint;
@@ -54,7 +55,7 @@ public class App extends Application<Config> {
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                 config.getInSampleMode());
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db));
+        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db), oaiHarvester);
 
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
@@ -65,6 +66,7 @@ public class App extends Application<Config> {
 
         register(environment, new OaiRecordsEndpoint(oaiRecordDao));
         register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, new RepositoryValidator(httpFetcher, responseHandlerFactory)));
+        register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");

@@ -1,7 +1,6 @@
 package nl.kb.dare.model.oai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
@@ -11,7 +10,6 @@ import org.skife.jdbi.v2.Handle;
 import java.util.Map;
 public class OaiRecordStatusAggregator {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String RECORDS_QUERY =
             "select count(*) as count, " +
                     "oai_records.process_status_code as status_code, " +
@@ -35,7 +33,7 @@ public class OaiRecordStatusAggregator {
         this.db = db;
     }
 
-    public String getStatus() throws JsonProcessingException {
+    public Map<String, Map<String, Map<String, Object>>> getStatus() throws JsonProcessingException {
         final Map<String, Map<String, Map<String, Object>>> resultMap = Maps.newHashMap();
 
         final Map<String, Map<String, Object>> recordsMap = getAggregation(RECORDS_QUERY, true);
@@ -44,7 +42,7 @@ public class OaiRecordStatusAggregator {
         resultMap.put("recordStatus", recordsMap);
         resultMap.put("errorStatus", errorsMap);
 
-        return OBJECT_MAPPER.writeValueAsString(resultMap);
+        return resultMap;
     }
 
 

@@ -35,11 +35,11 @@
     }
     webSocket.onmessage = function (payload) {
         var data = JSON.parse(payload.data);
-        var recordTotals = getTotals(data.recordStatus);
-        var errorTotals = getTotals(data.errorStatus);
+        var recordTotals = getTotals(data["record processing"].recordStatus);
+        var errorTotals = getTotals(data["record processing"].errorStatus);
         document.getElementById("status").innerHTML = JSON.stringify({
-            status : data,
-            totals : {
+            status: data,
+            totals: {
                 records: recordTotals,
                 errors: errorTotals
             }

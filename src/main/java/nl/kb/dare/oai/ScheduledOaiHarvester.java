@@ -18,6 +18,7 @@ import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +35,13 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
 
+    private RunState runState;
+    private Instant lastRunTime = Instant.now();
+
+    enum RunState {
+        RUNNING, WAITING, DISABLED
+    }
+
     public ScheduledOaiHarvester(RepositoryDao repositoryDao, ErrorReportDao errorReportDao, OaiRecordDao oaiRecordDao,
                                  HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
         this.repositoryDao = repositoryDao;
@@ -41,13 +49,14 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         this.oaiRecordDao = oaiRecordDao;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
-
+        this.runState = RunState.DISABLED;
     }
 
     @Override
     protected void runOneIteration() throws Exception {
+        if (runState == RunState.DISABLED) { return; }
         final Stopwatch timer = Stopwatch.createStarted();
-
+        runState = RunState.RUNNING;
         repositoryDao.list()
                 .stream()
                 .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
@@ -57,6 +66,8 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                 )).forEach(ListIdentifiers::harvest);
 
         LOG.info("Harvest finished, time taken: {} seconds", timer.stop().elapsed(TimeUnit.SECONDS));
+        lastRunTime = Instant.now();
+        runState = RunState.WAITING;;
     }
 
     private void saveOaiRecord(OaiRecord newOaiRecord) {
@@ -110,6 +121,28 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
             }
         }
     }
+
+    public void enableAndStart() throws Exception {
+        runState = RunState.WAITING;
+        runOneIteration();
+    }
+
+    public void disable() {
+        runState = RunState.DISABLED;
+        // TODO: send interrupt to running processes
+    }
+
+    RunState getRunState() {
+        return runState;
+    }
+
+    Long getNextRunTime() {
+        if (runState == RunState.WAITING) {
+            return 3_600_000L + Duration.between(Instant.now(), lastRunTime).toMillis();
+        }
+        return 0L;
+    }
+
 
     private OaiRecordErrorReport getOaiRecordErrorReport(OaiRecord oaiRecord, ErrorStatus errorStatus) {
         return new OaiRecordErrorReport(
