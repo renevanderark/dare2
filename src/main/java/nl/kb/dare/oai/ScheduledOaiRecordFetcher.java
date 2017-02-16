@@ -38,6 +38,16 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private final XsltTransformer xsltTransformer;
     private final boolean inSampleMode;
 
+    public RunState getRunState() {
+        return runState;
+    }
+
+
+    public enum RunState {
+        RUNNING, WAITING, DISABLED
+    }
+    private RunState runState;
+
     public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
                                      HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                                      FileStorage fileStorage, XsltTransformer xsltTransformer, boolean inSampleMode) {
@@ -50,10 +60,14 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         this.fileStorage = fileStorage;
         this.xsltTransformer = xsltTransformer;
         this.inSampleMode = inSampleMode;
+        this.runState = RunState.DISABLED;
     }
 
     @Override
     protected void runOneIteration() throws Exception {
+        if (runState == RunState.DISABLED) { return; }
+
+        runState = RunState.RUNNING;
         final List<OaiRecord> pendingRecords = fetchNextRecords(MAX_WORKERS - runningWorkers.get());
         final List<Thread> workers = Lists.newArrayList();
 
@@ -92,6 +106,9 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             worker.join();
         }
 
+        runState = runState == RunState.DISABLED
+                ? RunState.DISABLED
+                : RunState.WAITING;;
     }
 
     private List<OaiRecord> fetchNextRecords(int limit) {
@@ -116,6 +133,19 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         result.addAll(oaiRecordDao.fetchNextWithProcessStatus(ProcessStatus.PENDING.getCode(), limit));
         return result;
     }
+
+    public void enableAndStart() throws Exception {
+        if (runState != RunState.RUNNING) {
+            LOG.info("FETCH RECORDS STARTED");
+            runState = RunState.WAITING;
+            runOneIteration();
+        }
+    }
+
+    public void disable() {
+        runState = RunState.DISABLED;
+    }
+
 
     private void startRecord(OaiRecord oaiRecord) {
         oaiRecord.setProcessStatus(ProcessStatus.PROCESSING);

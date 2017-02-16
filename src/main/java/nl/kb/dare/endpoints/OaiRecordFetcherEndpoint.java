@@ -1,6 +1,6 @@
 package nl.kb.dare.endpoints;
 
-import nl.kb.dare.oai.ScheduledOaiHarvester;
+import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,23 +8,24 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-@Path("/harvesters")
-public class OaiHarvesterEndpoint {
-    private static final Logger LOG = LoggerFactory.getLogger(OaiHarvesterEndpoint.class);
-    private final ScheduledOaiHarvester oaiHarvester;
+@Path("/workers")
+public class OaiRecordFetcherEndpoint {
+    private static final Logger LOG = LoggerFactory.getLogger(OaiRecordFetcherEndpoint.class);
 
-    public OaiHarvesterEndpoint(ScheduledOaiHarvester oaiHarvester) {
+    private final ScheduledOaiRecordFetcher oaiRecordFetcher;
 
-        this.oaiHarvester = oaiHarvester;
+    public OaiRecordFetcherEndpoint(ScheduledOaiRecordFetcher oaiRecordFetcher) {
+
+        this.oaiRecordFetcher = oaiRecordFetcher;
     }
 
     @PUT
     @Path("/start")
     public Response start() {
-        if (oaiHarvester.getRunState() != ScheduledOaiHarvester.RunState.RUNNING) {
+        if (oaiRecordFetcher.getRunState() != ScheduledOaiRecordFetcher.RunState.RUNNING) {
             new Thread(() -> {
                 try {
-                    oaiHarvester.enableAndStart();
+                    oaiRecordFetcher.enableAndStart();
                 } catch (Exception e) {
                     LOG.error("Manually started OAI harvest failed", e);
                 }
@@ -36,7 +37,7 @@ public class OaiHarvesterEndpoint {
     @PUT
     @Path("/disable")
     public Response disable() {
-        oaiHarvester.disable();
+        oaiRecordFetcher.disable();
         return Response.ok().build();
     }
 }

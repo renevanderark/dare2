@@ -1,6 +1,5 @@
 package nl.kb.dare.endpoints;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
@@ -20,7 +19,6 @@ import java.util.List;
 
 @Path("/repositories/{repositoryId}/records")
 public class OaiRecordsEndpoint {
-    private static JsonNodeFactory json = JsonNodeFactory.instance;
     private final OaiRecordDao oaiRecordDao;
 
     public OaiRecordsEndpoint(OaiRecordDao oaiRecordDao) {
