@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
@@ -20,7 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Subclasses of AbstractScheduledService are guaranteed that the life cycle methods
@@ -37,6 +40,8 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     private RunState runState;
     private Instant lastRunTime = Instant.now();
+
+    private List<ListIdentifiers> runningHarvesters = Lists.newArrayList();
 
     enum RunState {
         RUNNING, WAITING, DISABLED
@@ -57,17 +62,22 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         if (runState == RunState.DISABLED) { return; }
         final Stopwatch timer = Stopwatch.createStarted();
         runState = RunState.RUNNING;
-        repositoryDao.list()
+        runningHarvesters = repositoryDao.list()
                 .stream()
                 .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
                         this::saveRepositoryStatus, // onHarvestDone
                         errorReport -> saveErrorReport(errorReport, repo.getId()), // onError
                         this::saveOaiRecord // onOaiRecord
-                )).forEach(ListIdentifiers::harvest);
+                )).collect(Collectors.toList());
+
+        runningHarvesters.forEach(ListIdentifiers::harvest);
+        runningHarvesters = Lists.newArrayList();
 
         LOG.info("Harvest finished, time taken: {} seconds", timer.stop().elapsed(TimeUnit.SECONDS));
         lastRunTime = Instant.now();
-        runState = RunState.WAITING;;
+        runState = runState == RunState.DISABLED
+            ? RunState.DISABLED
+            : RunState.WAITING;;
     }
 
     private void saveOaiRecord(OaiRecord newOaiRecord) {
@@ -129,7 +139,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     public void disable() {
         runState = RunState.DISABLED;
-        // TODO: send interrupt to running processes
+        runningHarvesters.forEach(ListIdentifiers::interruptHarvest);
     }
 
     RunState getRunState() {

@@ -22,7 +22,9 @@ class ListIdentifiers {
     private final ResponseHandlerFactory responseHandlerFactory;
     private final Consumer<Repository> onHarvestComplete;
     private final Consumer<ErrorReport> onException;
-    private Consumer<OaiRecord> onOaiRecord;
+    private final Consumer<OaiRecord> onOaiRecord;
+
+    private boolean interrupted = false;
 
     ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                     Consumer<Repository> onHarvestComplete,
@@ -60,7 +62,7 @@ class ListIdentifiers {
             String resumptionToken = null;
             String lastDateStamp = repositoryConfig.getDateStamp();
 
-            while (resumptionToken == null || resumptionToken.trim().length() > 0) {
+            while (!interrupted && (resumptionToken == null || resumptionToken.trim().length() > 0)) {
                 final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance(repositoryConfig.getId(), onOaiRecord);
                 final HttpResponseHandler responseHandler = responseHandlerFactory.getSaxParsingHandler(xmlHandler);
                 final URL requestUrl = makeRequestUrl(resumptionToken);
@@ -85,7 +87,6 @@ class ListIdentifiers {
                 } else {
                     break;
                 }
-
             }
 
             repositoryConfig.setDateStamp(lastDateStamp);
@@ -95,5 +96,9 @@ class ListIdentifiers {
             // SEVERE!!
             throw new RuntimeException(e);
         }
+    }
+
+    void interruptHarvest() {
+        interrupted = true;
     }
 }
