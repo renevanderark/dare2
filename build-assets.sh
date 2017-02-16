@@ -3,7 +3,7 @@
 rootpath=`pwd`
 cd src/main/scripts/node
 
-npm i --loglevel info
-npm run build
+npm i
+npm run build > /dev/null
 
 cd $rootpath
