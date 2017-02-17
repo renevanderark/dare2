@@ -1,3 +1,5 @@
+import ActionTypes from "./action-types";
+
 import {
     startOaiRecordFetcher,
     disableOaiRecordFetcher,
@@ -10,6 +12,8 @@ export default function actionsMaker(navigateTo, dispatch, webSocket) {
         onStartOaiHarvester: () => dispatch(startOaiHarvester()),
         onDisableOaiHarvester: () => dispatch(disableOaiHarvester()),
         onStartOaiRecordFetcher: () => dispatch(startOaiRecordFetcher()),
-        onDisableOaiRecordFetcher: () => dispatch(disableOaiRecordFetcher())
+        onDisableOaiRecordFetcher: () => dispatch(disableOaiRecordFetcher()),
+
+        onTogglePanelCollapse: (panelId) => dispatch({type: ActionTypes.ON_TOGGLE_PANEL_COLLAPSE, id: panelId})
     };
 }

@@ -7,9 +7,12 @@ import InnerPanelSpacer from "../panels/inner-panel-spacer";
 class Workflow extends React.Component {
 
     render() {
+        // panel actions
+        const { onTogglePanelCollapse } = this.props;
 
         return (
-            <CollapsiblePanel title="Processing status">
+            <CollapsiblePanel id="workflow-panel" collapsed={this.props.collapsed} title="Processing status"
+                              onTogglePanelCollapse={onTogglePanelCollapse}>
                 <InnerPanel>
                     Pending <span className="badge pull-right">{this.props.pending || 0}</span>
                 </InnerPanel>

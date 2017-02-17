@@ -9,9 +9,10 @@ class WorkerControls extends React.Component {
     render() {
         // states
         const { recordFetcherRunState, harvesterRunState, nextRun } = this.props;
-        // actions
+        // worker control actions
         const { onStartOaiHarvester, onDisableOaiHarvester, onStartOaiRecordFetcher, onDisableOaiRecordFetcher } = this.props;
-
+        // panel actions
+        const { onTogglePanelCollapse } = this.props;
 
         const recordFetcherButton = recordFetcherRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiRecordFetcher}><span className="glyphicon glyphicon-stop" /></button>)
@@ -30,7 +31,8 @@ class WorkerControls extends React.Component {
             : (<span>&nbsp;</span>);
 
         return (
-            <CollapsiblePanel title="Workers">
+            <CollapsiblePanel id="workers-panel" collapsed={this.props.collapsed} title="Workers"
+                              onTogglePanelCollapse={onTogglePanelCollapse}>
                 <InnerPanel>
                     {harvesterButton}{harvesterDisableButton}
                     Harvesters <br /> ({harvesterRunState})

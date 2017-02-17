@@ -22,9 +22,13 @@ const dashboardsConnector = (state) => {
         workerControls: {
             nextRun: getNextRun(nextRunTime),
             recordFetcherRunState: recordFetcherRunState,
-            harvesterRunState: harvesterRunState
+            harvesterRunState: harvesterRunState,
+            collapsed: state.panels["workers-panel"].collapsed
         },
-        workflow: (state.status.totals || {}).records,
+        workflow: {
+            ...(state.status.totals || {}).records,
+            collapsed: state.panels["workflow-panel"].collapsed
+        },
         status: state.status
     };
 };
