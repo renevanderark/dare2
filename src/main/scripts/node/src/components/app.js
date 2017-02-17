@@ -1,5 +1,4 @@
 import React from "react";
-import WorkerControls from "./dashboards/worker-controls";
 
 
 class App extends React.Component {
@@ -8,7 +7,7 @@ class App extends React.Component {
 
         return (
             <div className="container container-fluid">
-                <WorkerControls {...this.props} />
+                {this.props.children}
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
                 </pre>
