@@ -8,9 +8,6 @@ class App extends React.Component {
         return (
             <div className="container container-fluid">
                 {this.props.children}
-                <pre>
-                    {JSON.stringify(this.props.status, null, 2)}
-                </pre>
             </div>
         )
     }

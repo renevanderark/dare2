@@ -3,12 +3,16 @@ import {Router, Route, IndexRoute, browserHistory} from "react-router";
 import {Provider, connect} from "react-redux";
 
 import store from "./store";
-import actions from "./actions";
 
+import actions from "./actions";
+import ActionTypes from "./action-types";
+
+import rootConnector from "./connectors/root-connector";
 import App from "./components/app";
+
+import dashboardsConnector from "./connectors/dashboards-connector";
 import DashBoards from "./components/dashboards";
 
-import ActionTypes from "./action-types";
 
 const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
 
@@ -23,14 +27,14 @@ const urls = {
 
 const navigateTo = (key, args) => browserHistory.push(urls[key].apply(null, args));
 
-const defaultConnector = (state) => state;
+
 const connectComponent = (stateToProps) => connect(stateToProps, dispatch => actions(navigateTo, dispatch, webSocket));
 
 export default (
 <Provider store={store}>
     <Router history={browserHistory}>
-        <Route path={urls.root()} component={connectComponent(defaultConnector)(App)}>
-            <IndexRoute component={connectComponent(defaultConnector)(DashBoards) } />
+        <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
+            <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
         </Route>
     </Router>
 </Provider>
