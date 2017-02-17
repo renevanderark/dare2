@@ -46,7 +46,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private List<ListIdentifiers> runningHarvesters = Lists.newArrayList();
 
     public enum RunState {
-        RUNNING, WAITING, DISABLED
+        RUNNING, WAITING, DISABLING, DISABLED
     }
 
     public ScheduledOaiHarvester(RepositoryDao repositoryDao, ErrorReportDao errorReportDao, OaiRecordDao oaiRecordDao,
@@ -81,7 +81,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
         LOG.info("Harvest finished, time taken: {} seconds", timer.stop().elapsed(TimeUnit.SECONDS));
         lastRunTime = Instant.now();
-        runState = runState == RunState.DISABLED
+        runState = runState == RunState.DISABLED || runState == RunState.DISABLING
             ? RunState.DISABLED
             : RunState.WAITING;;
     }
@@ -147,7 +147,10 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     }
 
     public void disable() {
-        runState = RunState.DISABLED;
+        runState = runState == RunState.RUNNING
+                ? RunState.DISABLING
+                : RunState.DISABLED;
+
         runningHarvesters.forEach(ListIdentifiers::interruptHarvest);
     }
 
