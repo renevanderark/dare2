@@ -9,19 +9,23 @@ const lpad = number => number <= 99 ? ("0"+number).slice(-2) : number;
 class WorkerControls extends React.Component {
 
     render() {
-        const {
-            recordFetcherRunState,
-            harvesterRunState,
-            nextRun
-        } = this.props;
+        // states
+        const { recordFetcherRunState, harvesterRunState, nextRun } = this.props;
+        // actions
+        const { onStartOaiHarvester, onDisableOaiHarvester, onStartOaiRecordFetcher, onDisableOaiRecordFetcher } = this.props;
 
 
         const recordFetcherButton = recordFetcherRunState === "RUNNING"
-            ? (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-stop" /></button>)
-            : (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-play" /></button>);
+            ? (<button className="btn btn-default pull-right" onClick={onDisableOaiRecordFetcher}><span className="glyphicon glyphicon-stop" /></button>)
+            : (<button className="btn btn-default pull-right" onClick={onStartOaiRecordFetcher}><span className="glyphicon glyphicon-play" /></button>);
+
         const harvesterButton = harvesterRunState === "RUNNING"
-            ? (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-stop" /></button>)
-            : (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-play" /></button>);
+            ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-stop" /></button>)
+            : (<button className="btn btn-default pull-right" onClick={onStartOaiHarvester}><span className="glyphicon glyphicon-play" /></button>);
+
+        const nextRunMessage = harvesterRunState === "RUNNING"
+            ? (<span>&nbsp;</span>)
+            : `Next: run: ${nextRun}`;
 
         return (
             <CollapsiblePanel title="Workers">
@@ -29,7 +33,7 @@ class WorkerControls extends React.Component {
                     {harvesterButton}
                     Harvesters <br /> ({harvesterRunState})
                     <br />
-                    next run {nextRun}
+                    {nextRunMessage}
                 </InnerPanel>
                 <InnerPanelSpacer />
                 <InnerPanel>
