@@ -1,6 +1,7 @@
 import React from "react";
 import WorkerControls from "./dashboards/worker-controls";
 import Workflow from "./dashboards/workflow";
+import Repositories from "./dashboards/repositories";
 
 class DashBoards extends React.Component {
 
@@ -8,8 +9,19 @@ class DashBoards extends React.Component {
         // actions for WorkerControls
         const { onStartOaiHarvester, onDisableOaiHarvester, onStartOaiRecordFetcher, onDisableOaiRecordFetcher } = this.props;
 
+        // repository actions
+        const { onEnableRepository, onDisableRepository } = this.props;
+
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
+
+        const repositories = (
+            <Repositories {...this.props.repositories}
+                onTogglePanelCollapse={onTogglePanelCollapse}
+                onEnableRepository={onEnableRepository}
+                onDisableRepository={onDisableRepository}
+            />
+        );
 
         const workerControls = (
             <WorkerControls {...this.props.workerControls}
@@ -28,11 +40,12 @@ class DashBoards extends React.Component {
 
         return (
             <div>
+                {this.props.repositories.collapsed ? repositories : null}
                 {this.props.workerControls.collapsed ? workerControls : null}
                 {this.props.workflow.collapsed ? workFlow: null}
 
                 <div className="clearfix" />
-
+                {this.props.repositories.collapsed ? null : repositories}
                 {this.props.workerControls.collapsed ? null : workerControls}
                 {this.props.workflow.collapsed ? null: workFlow}
 

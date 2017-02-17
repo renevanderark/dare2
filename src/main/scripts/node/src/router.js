@@ -1,6 +1,7 @@
 import React from "react";
 import {Router, Route, IndexRoute, browserHistory} from "react-router";
 import {Provider, connect} from "react-redux";
+import xhr from "xhr";
 
 import store from "./store";
 
@@ -14,10 +15,20 @@ import dashboardsConnector from "./connectors/dashboards-connector";
 import DashBoards from "./components/dashboards";
 
 
+// Use a web socket to get status updates
 const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
-
 webSocket.onmessage = ({ data }) => store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: JSON.parse(data)});
 
+// Keep the websocket alive
+const pingWs = () => { webSocket.send("* ping! *"); window.setTimeout(pingWs, 8000); };
+webSocket.onopen = pingWs;
+
+
+// Load repositories on page load
+xhr({
+    method: "GET",
+    url: "/repositories"
+}, (err, resp, body) => store.dispatch({type: ActionTypes.RECEIVE_REPOSITORIES, data: JSON.parse(body)}));
 
 const urls = {
     root() {
@@ -26,7 +37,6 @@ const urls = {
 };
 
 const navigateTo = (key, args) => browserHistory.push(urls[key].apply(null, args));
-
 
 const connectComponent = (stateToProps) => connect(stateToProps, dispatch => actions(navigateTo, dispatch, webSocket));
 

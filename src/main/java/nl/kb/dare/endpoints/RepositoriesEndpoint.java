@@ -61,7 +61,7 @@ public class RepositoriesEndpoint {
     public Response enable(@PathParam("id") Integer id) {
         dao.enable(id);
 
-        return Response.ok().build();
+        return Response.ok("{}").build();
     }
 
 
@@ -70,7 +70,7 @@ public class RepositoriesEndpoint {
     public Response disable(@PathParam("id") Integer id) {
         dao.disable(id);
 
-        return Response.ok().build();
+        return Response.ok("{}").build();
     }
 
     @GET

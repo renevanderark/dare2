@@ -5,7 +5,7 @@ const getNextRun = (nextRunTime) => {
     const minutes = lpad(parseInt(Math.floor(((nextRunTime / 1000) / 60) % 60), 10));
     const seconds = lpad(parseInt(Math.floor(((nextRunTime / 1000) % 60) % 60), 10));
     return `${hours}:${minutes}:${seconds}`;
-}
+};
 
 const dashboardsConnector = (state) => {
     const { status: {
@@ -28,6 +28,10 @@ const dashboardsConnector = (state) => {
         workflow: {
             ...(state.status.totals || {}).records,
             collapsed: state.panels["workflow-panel"].collapsed
+        },
+        repositories: {
+            collapsed: state.panels["repositories-panel"].collapsed,
+            list: state.repositories.list
         },
         status: state.status
     };

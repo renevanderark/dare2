@@ -6,7 +6,7 @@ class CollapsiblePanel extends React.Component {
         const { id, title, collapsed, onTogglePanelCollapse } = this.props;
 
         return (
-            <div className={`panel panel-default ${collapsed ? "col-md-6" : ""}`}>
+            <div className={`panel panel-default ${collapsed ? "col-md-6 col-sm-8 col-xs-16" : ""}`}>
                 <div className="panel-heading">
                     {title}
                     <span className="pull-right" style={{cursor: "pointer"}} onClick={() => onTogglePanelCollapse(id)}>
