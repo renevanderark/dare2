@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  */
 public class ScheduledOaiHarvester extends AbstractScheduledService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiHarvester.class);
+    private static final long DELAY = 3_600_000L;
 
     private final RepositoryDao repositoryDao;
     private final ErrorReportDao errorReportDao;
@@ -59,9 +61,12 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     @Override
     protected void runOneIteration() throws Exception {
-        if (runState == RunState.DISABLED) { return; }
-        final Stopwatch timer = Stopwatch.createStarted();
+        if (runState == RunState.DISABLED || getNextRunTime() > 0) {
+            return;
+        }
         runState = RunState.RUNNING;
+
+        final Stopwatch timer = Stopwatch.createStarted();
         runningHarvesters = repositoryDao.list()
                 .stream()
                 .filter(Repository::getEnabled)
@@ -133,11 +138,11 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         }
     }
 
-    public void enableAndStart() throws Exception {
+    public void enable() {
         if (runState != RunState.RUNNING) {
-            LOG.info("HARVESTERS STARTED");
+            LOG.info("HARVESTERS ENABLED");
+            lastRunTime = Instant.now().minus(DELAY, ChronoUnit.MILLIS);
             runState = RunState.WAITING;
-            runOneIteration();
         }
     }
 
@@ -152,7 +157,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     Long getNextRunTime() {
         if (runState == RunState.WAITING) {
-            return 3_600_000L + Duration.between(Instant.now(), lastRunTime).toMillis();
+            return DELAY + Duration.between(Instant.now(), lastRunTime).toMillis();
         }
         return 0L;
     }
@@ -179,6 +184,6 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 1, TimeUnit.HOURS);
+        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 1, TimeUnit.SECONDS);
     }
 }

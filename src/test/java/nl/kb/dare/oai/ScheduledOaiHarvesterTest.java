@@ -37,8 +37,8 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class ScheduledOaiHarvesterTest {
 
-    public static final String DELETED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/162859";
-    public static final String UPDATED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/161841";
+    private static final String DELETED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/162859";
+    private static final String UPDATED_IDENTIFIER = "ru:oai:repository.ubn.ru.nl:2066/161841";
     private InputStream withResumptionToken;
     private InputStream withoutResumptionToken;
     private InputStream corruptXml;
@@ -74,7 +74,8 @@ public class ScheduledOaiHarvesterTest {
         );
         when(repositoryDao.list()).thenReturn(Lists.newArrayList());
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         verify(repositoryDao).list();
         assertThat(instance.getRunState(), is(WAITING));
@@ -111,7 +112,8 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         final ArgumentCaptor<OaiRecord> oaiRecordArgumentCaptor = ArgumentCaptor.forClass(OaiRecord.class);
         verify(oaiRecordDao, times(5)).insert(oaiRecordArgumentCaptor.capture());
@@ -138,7 +140,8 @@ public class ScheduledOaiHarvesterTest {
         final Repository repositoryConfig = new Repository("http://example.com", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         verify(errorReportDao).insertHarvesterError(
                 argThat(allOf(
@@ -170,7 +173,8 @@ public class ScheduledOaiHarvesterTest {
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         verify(errorReportDao).insertOaiRecordError(argThat(allOf(
                 hasProperty("message", is(ErrorStatus.UPDATED_AFTER_PROCESSING.getStatus())),
@@ -203,7 +207,8 @@ public class ScheduledOaiHarvesterTest {
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         verify(errorReportDao).insertOaiRecordError(argThat(allOf(
                 hasProperty("message", is(ErrorStatus.DELETED_AFTER_PROCESSING.getStatus())),
@@ -261,7 +266,8 @@ public class ScheduledOaiHarvesterTest {
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
 
-        instance.enableAndStart();
+        instance.enable();
+        instance.runOneIteration();
 
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),

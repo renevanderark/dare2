@@ -21,15 +21,7 @@ public class OaiHarvesterEndpoint {
     @PUT
     @Path("/start")
     public Response start() {
-        if (oaiHarvester.getRunState() != ScheduledOaiHarvester.RunState.RUNNING) {
-            new Thread(() -> {
-                try {
-                    oaiHarvester.enableAndStart();
-                } catch (Exception e) {
-                    LOG.error("Manually started OAI harvest failed", e);
-                }
-            }).start();
-        }
+        oaiHarvester.enable();
         return Response.ok().build();
     }
 
