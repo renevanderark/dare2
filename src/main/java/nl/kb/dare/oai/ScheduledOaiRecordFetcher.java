@@ -133,11 +133,10 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         return result;
     }
 
-    public void enableAndStart() throws Exception {
+    public void enable() {
         if (runState != RunState.RUNNING) {
-            LOG.info("FETCH RECORDS STARTED");
+            LOG.info("FETCH RECORDS ENABLED");
             runState = RunState.WAITING;
-            runOneIteration();
         }
     }
 

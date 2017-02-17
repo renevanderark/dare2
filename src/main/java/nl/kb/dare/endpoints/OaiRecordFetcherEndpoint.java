@@ -22,15 +22,7 @@ public class OaiRecordFetcherEndpoint {
     @PUT
     @Path("/start")
     public Response start() {
-        if (oaiRecordFetcher.getRunState() != ScheduledOaiRecordFetcher.RunState.RUNNING) {
-            new Thread(() -> {
-                try {
-                    oaiRecordFetcher.enableAndStart();
-                } catch (Exception e) {
-                    LOG.error("Manually started OAI harvest failed", e);
-                }
-            }).start();
-        }
+        oaiRecordFetcher.enable();
         return Response.ok().build();
     }
 
