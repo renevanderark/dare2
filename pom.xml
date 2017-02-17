@@ -43,6 +43,12 @@
             <artifactId>dropwizard-db</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
+        <!--serve static assets-->
+        <dependency>
+            <groupId>io.dropwizard</groupId>
+            <artifactId>dropwizard-assets</artifactId>
+            <version>${dropwizard.version}</version>
+        </dependency>
 
         <!--jdbi-->
         <dependency>
@@ -132,6 +138,22 @@
                         <logback.configurationFile>${basedir}/src/test/resources/disable-logging.xml</logback.configurationFile>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>Build assets</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/build-assets.sh</executable>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

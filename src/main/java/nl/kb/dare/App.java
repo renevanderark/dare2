@@ -1,7 +1,11 @@
 package nl.kb.dare;
 
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jdbi.DBIFactory;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.kb.dare.endpoints.OaiHarvesterEndpoint;
 import nl.kb.dare.endpoints.OaiRecordFetcherEndpoint;
@@ -34,6 +38,17 @@ public class App extends Application<Config> {
     }
 
     @Override
+    public void initialize(Bootstrap<Config> bootstrap) {
+        bootstrap.addBundle(new AssetsBundle("/assets", "/assets"));
+
+        bootstrap.setConfigurationSourceProvider(
+                new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(),
+                        new EnvironmentVariableSubstitutor(false))
+        );
+    }
+
+
+    @Override
     public void run(Config config, Environment environment) throws Exception {
         final DBIFactory factory = new DBIFactory();
         final DBI db = factory.build(environment, config.getDataSourceFactory(), "datasource");
@@ -56,7 +71,7 @@ public class App extends Application<Config> {
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                 config.getInSampleMode());
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db), oaiHarvester);
+        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db), oaiHarvester, oaiRecordFetcher);
 
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
