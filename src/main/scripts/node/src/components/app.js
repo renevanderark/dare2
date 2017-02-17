@@ -21,9 +21,12 @@ class App extends React.Component {
         const minutes = lpad(parseInt(Math.floor(((nextRunTime / 1000) / 60) % 60), 10));
         const seconds = lpad(parseInt(Math.floor(((nextRunTime / 1000) % 60) % 60), 10));
 
+        const recordFetcherButton = recordFetcherRunState === "RUNNING"
+            ? (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-stop" /></button>)
+            : (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-play" /></button>);
         const harvesterButton = harvesterRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-stop" /></button>)
-            : (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-play" /></button>)
+            : (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-play" /></button>);
 
         return (
             <div className="container container-fluid">
@@ -31,8 +34,7 @@ class App extends React.Component {
                     <div className="panel-heading">
                         Workflow
                     </div>
-                    <div className="panel-body">
-                        <div className="col-md-3">
+                    <div className="panel-body col-md-3">
                             <div className="panel panel-default">
                                 <div className="panel-body">
                                     {harvesterButton}
@@ -40,9 +42,17 @@ class App extends React.Component {
                                     <br />
                                     next run {hours}:{minutes}:{seconds}
                                 </div>
-                            </div>
                         </div>
                     </div>
+                    <div className="panel-body col-md-3">
+                            <div className="panel panel-default">
+                                <div className="panel-body">
+                                    {recordFetcherButton}
+                                    Object harvester ({recordFetcherRunState})
+                                </div>
+                            </div>
+                    </div>
+                    <div className="clearfix" />
                 </div>
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
