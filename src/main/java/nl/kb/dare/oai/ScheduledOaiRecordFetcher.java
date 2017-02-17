@@ -44,7 +44,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
 
     public enum RunState {
-        RUNNING, WAITING, DISABLED
+        RUNNING, WAITING, DISABLING, DISABLED
     }
     private RunState runState;
 
@@ -106,7 +106,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             worker.join();
         }
 
-        runState = runState == RunState.DISABLED
+        runState = runState == RunState.DISABLED || runState == RunState.DISABLING
                 ? RunState.DISABLED
                 : RunState.WAITING;;
     }
@@ -141,7 +141,9 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     }
 
     public void disable() {
-        runState = RunState.DISABLED;
+        runState = runState == RunState.RUNNING
+                ? RunState.DISABLING
+                : RunState.DISABLED;
     }
 
 

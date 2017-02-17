@@ -17,7 +17,7 @@ class WorkerControls extends React.Component {
 
         const recordFetcherButton = recordFetcherRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiRecordFetcher}><span className="glyphicon glyphicon-stop" /></button>)
-            : (<button className="btn btn-default pull-right" onClick={onStartOaiRecordFetcher}><span className="glyphicon glyphicon-play" /></button>);
+            : (<button className="btn btn-default pull-right" disabled={recordFetcherRunState === "DISABLING"} onClick={onStartOaiRecordFetcher}><span className="glyphicon glyphicon-play" /></button>);
 
         const harvesterButton = harvesterRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-stop" /></button>)
