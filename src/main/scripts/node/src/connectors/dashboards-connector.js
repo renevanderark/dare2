@@ -24,6 +24,7 @@ const dashboardsConnector = (state) => {
             recordFetcherRunState: recordFetcherRunState,
             harvesterRunState: harvesterRunState
         },
+        workflow: (state.status.totals || {}).records,
         status: state.status
     };
 };

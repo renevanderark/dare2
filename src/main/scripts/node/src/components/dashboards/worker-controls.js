@@ -3,8 +3,6 @@ import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import InnerPanelSpacer from "../panels/inner-panel-spacer";
 
-const lpad = number => number <= 99 ? ("0"+number).slice(-2) : number;
-
 
 class WorkerControls extends React.Component {
 

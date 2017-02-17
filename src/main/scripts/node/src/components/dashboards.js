@@ -1,10 +1,11 @@
 import React from "react";
 import WorkerControls from "./dashboards/worker-controls";
+import Workflow from "./dashboards/workflow";
 
 class DashBoards extends React.Component {
 
     render() {
-        // actions for WorkerControls
+        // actions for Workflow
         const { onStartOaiHarvester, onDisableOaiHarvester, onStartOaiRecordFetcher, onDisableOaiRecordFetcher } = this.props;
 
         return (
@@ -15,6 +16,7 @@ class DashBoards extends React.Component {
                     onStartOaiRecordFetcher={onStartOaiRecordFetcher}
                     onDisableOaiRecordFetcher={onDisableOaiRecordFetcher}
                 />
+                <Workflow {...this.props.workflow} />
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
                 </pre>
