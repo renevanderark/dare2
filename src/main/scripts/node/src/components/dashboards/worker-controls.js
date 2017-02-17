@@ -23,14 +23,18 @@ class WorkerControls extends React.Component {
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-stop" /></button>)
             : (<button className="btn btn-default pull-right" onClick={onStartOaiHarvester}><span className="glyphicon glyphicon-play" /></button>);
 
-        const nextRunMessage = harvesterRunState === "RUNNING"
+        const harvesterDisableButton = harvesterRunState === "WAITING"
+            ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-remove" /></button>)
+            : null;
+
+        const nextRunMessage = harvesterRunState === "RUNNING" || harvesterRunState === "DISABLED"
             ? (<span>&nbsp;</span>)
             : `Next: run: ${nextRun}`;
 
         return (
             <CollapsiblePanel title="Workers">
                 <InnerPanel>
-                    {harvesterButton}
+                    {harvesterButton}{harvesterDisableButton}
                     Harvesters <br /> ({harvesterRunState})
                     <br />
                     {nextRunMessage}
