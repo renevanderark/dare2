@@ -9,19 +9,12 @@ const lpad = number => number <= 99 ? ("0"+number).slice(-2) : number;
 class WorkerControls extends React.Component {
 
     render() {
-        const { status: {
-            status: {
-                harvesterStatus: {
-                    recordFetcherRunState,
-                    harvesterRunState,
-                    nextRunTime
-                }
-            }
-        }} = this.props;
+        const {
+            recordFetcherRunState,
+            harvesterRunState,
+            nextRun
+        } = this.props;
 
-        const hours = lpad(parseInt(Math.floor(((nextRunTime / 1000) / 60) / 60), 10));
-        const minutes = lpad(parseInt(Math.floor(((nextRunTime / 1000) / 60) % 60), 10));
-        const seconds = lpad(parseInt(Math.floor(((nextRunTime / 1000) % 60) % 60), 10));
 
         const recordFetcherButton = recordFetcherRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right"><span className="glyphicon glyphicon-stop" /></button>)
@@ -36,7 +29,7 @@ class WorkerControls extends React.Component {
                     {harvesterButton}
                     Harvesters <br /> ({harvesterRunState})
                     <br />
-                    next run {hours}:{minutes}:{seconds}
+                    next run {nextRun}
                 </InnerPanel>
                 <InnerPanelSpacer />
                 <InnerPanel>

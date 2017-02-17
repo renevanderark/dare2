@@ -7,7 +7,7 @@ class DashBoards extends React.Component {
 
         return (
             <div>
-                <WorkerControls {...this.props} />
+                <WorkerControls {...this.props.workerControls} />
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
                 </pre>
