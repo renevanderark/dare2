@@ -34,7 +34,7 @@ class Repositories extends React.Component {
                           </div>
                           <div className="col-md-14 col-sm-14 col-xs-14">
                               <span className="pull-right">
-                                  {repo.datestamp || "- none harvested yet -"}
+                                  {repo.dateStamp || "- none harvested yet -"}
                               </span>
                           </div>
                           <div className="col-md-4 col-sm-4 col-xs-4">
