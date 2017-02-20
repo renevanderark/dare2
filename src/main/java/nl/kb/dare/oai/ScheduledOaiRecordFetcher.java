@@ -26,7 +26,8 @@ import static java.util.stream.Collectors.toList;
 
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiRecordFetcher.class);
-    private static final Integer MAX_WORKERS = 40;
+    private static final Integer MAX_WORKERS = 20;
+    private static final Integer MAX_WORKERS_PER_REPO_PER_ITERATION = 4;
     private static AtomicInteger runningWorkers = new AtomicInteger(0);
 
     private final OaiRecordDao oaiRecordDao;
@@ -72,6 +73,8 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         final List<Thread> workers = Lists.newArrayList();
 
         for (OaiRecord oaiRecord : pendingRecords) {
+            startRecord(oaiRecord);
+
             final Thread worker = new Thread(() -> {
                 final Stopwatch timer = Stopwatch.createStarted();
 
@@ -83,7 +86,6 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                     return;
                 }
 
-                startRecord(oaiRecord);
                 final GetRecordResourceOperations resourceOperations = new GetRecordResourceOperations(
                         httpFetcher, responseHandlerFactory);
                 final GetRecordOperations getRecordOperations = new GetRecordOperations(
@@ -102,8 +104,10 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             runningWorkers.getAndIncrement();
         }
 
-        for (Thread worker : workers) {
-            worker.join();
+        if (runState == RunState.DISABLING) {
+            for (Thread worker : workers) {
+                worker.join();
+            }
         }
 
         runState = runState == RunState.DISABLED || runState == RunState.DISABLING
@@ -116,12 +120,14 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         final List<Integer> repositoryIds = repositoryDao.list().stream()
                 .filter(Repository::getEnabled)
                 .map(Repository::getId).collect(toList());
-        final int limitPerRepo = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
+
+        final int dividedLimit = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
+        final int limitPerRepo = dividedLimit > MAX_WORKERS_PER_REPO_PER_ITERATION ? MAX_WORKERS_PER_REPO_PER_ITERATION : dividedLimit;
 
         for (Integer repositoryId : repositoryIds) {
             result.addAll(oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
                     ProcessStatus.PENDING.getCode(),
-                    limitPerRepo,
+                    dividedLimit,
                     repositoryId
             ));
             limit -= limitPerRepo;
@@ -165,6 +171,6 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(50, 20, TimeUnit.MILLISECONDS);
+        return AbstractScheduledService.Scheduler.newFixedRateSchedule(50, 1, TimeUnit.SECONDS);
     }
 }
