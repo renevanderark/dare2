@@ -44,16 +44,16 @@ class OaiRecords extends React.Component {
                 <ul className="list-group">
                     {(this.props.results.result || []).map((record) => (
                         <li key={record.identifier} className="list-group-item row">
-                            <div className="col-md-8">
+                            <div className="col-md-16">
                                 {record.identifier}
                             </div>
                             <div className="col-md-8">
                                 {record.dateStamp}
                             </div>
-                            <div className="col-md-8">
+                            <div className="col-md-4">
                                 {record.processStatus}
                             </div>
-                            <div className="col-md-8">
+                            <div className="col-md-4">
                                 {(this.props.repositories.find((repo) => repo.id === record.repositoryId) || {}).set}
                             </div>
                         </li>
