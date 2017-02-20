@@ -14,6 +14,7 @@ import App from "./components/app";
 import dashboardsConnector from "./connectors/dashboards-connector";
 import DashBoards from "./components/dashboards";
 
+import {fetchOaiRecords } from "./actions/oai-records";
 
 // Use a web socket to get status updates
 const connectSocket = () => {
@@ -35,6 +36,8 @@ const connectSocket = () => {
 };
 
 connectSocket();
+
+store.dispatch(fetchOaiRecords());
 
 const urls = {
     root() {
