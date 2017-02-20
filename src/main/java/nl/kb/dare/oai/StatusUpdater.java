@@ -5,11 +5,14 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.endpoints.websocket.StatusSocketRegistrations;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
+import nl.kb.dare.model.repository.RepositoryDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.stream.Collectors.toList;
 
 public class StatusUpdater extends AbstractScheduledService {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -19,12 +22,16 @@ public class StatusUpdater extends AbstractScheduledService {
     private final OaiRecordStatusAggregator oaiRecordStatusAggregator;
     private final ScheduledOaiHarvester oaiHarvester;
     private final ScheduledOaiRecordFetcher oaiRecordFetcher;
+    private final RepositoryDao repositoryDao;
 
     public StatusUpdater(OaiRecordStatusAggregator oaiRecordStatusAggregator,
-                         ScheduledOaiHarvester oaiHarvester, ScheduledOaiRecordFetcher oaiRecordFetcher) {
+                         ScheduledOaiHarvester oaiHarvester,
+                         ScheduledOaiRecordFetcher oaiRecordFetcher,
+                         RepositoryDao repositoryDao) {
         this.oaiRecordStatusAggregator = oaiRecordStatusAggregator;
         this.oaiHarvester = oaiHarvester;
         this.oaiRecordFetcher = oaiRecordFetcher;
+        this.repositoryDao = repositoryDao;
     }
 
     @Override
@@ -45,6 +52,15 @@ public class StatusUpdater extends AbstractScheduledService {
                 final Map<String, Object> statusUpdate = Maps.newHashMap();
                 statusUpdate.put("harvesterStatus", harvesterState);
                 statusUpdate.put("recordProcessingStatus", records);
+                statusUpdate.put("repositoryStatus",
+                    repositoryDao.list().stream().map(repository -> {
+                        final Map<String, Object> repoStatus = Maps.newHashMap();
+                        repoStatus.put("set", repository.getSet());
+                        repoStatus.put("dateStamp", repository.getDateStamp());
+                        repoStatus.put("enabled", repository.getEnabled());
+                        repoStatus.put("id", repository.getId());
+                        return repoStatus;
+                    }).collect(toList()));
 
                 registrations.broadcast(OBJECT_MAPPER.writeValueAsString(statusUpdate));
             } catch (Exception e) {

@@ -19,7 +19,7 @@ public class OaiRecordStatusAggregator {
             "group by repository_id, process_status_code";
 
     private static final String ERROR_QUERY =
-            "select count(*) as count," +
+            "select count(distinct(record_identifier)) as count," +
                     "repositories.oai_set as oai_set, " +
                     "oai_record_errors.status_code as status_code " +
             "from oai_record_errors, oai_records, repositories " +

@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toList;
 public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private static final Logger LOG = LoggerFactory.getLogger(ScheduledOaiRecordFetcher.class);
     private static final Integer MAX_WORKERS = 20;
-    private static final Integer MAX_WORKERS_PER_REPO_PER_ITERATION = 4;
+    private static final Integer MAX_WORKERS_PER_REPO_PER_ITERATION = 6;
     private static AtomicInteger runningWorkers = new AtomicInteger(0);
 
     private final OaiRecordDao oaiRecordDao;
@@ -39,14 +39,10 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private final XsltTransformer xsltTransformer;
     private final boolean inSampleMode;
 
-    public RunState getRunState() {
-        return runState;
-    }
-
-
     public enum RunState {
-        RUNNING, WAITING, DISABLING, DISABLED
+        RUNNING, DISABLING, DISABLED
     }
+
     private RunState runState;
 
     public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
@@ -66,9 +62,11 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     @Override
     protected void runOneIteration() throws Exception {
-        if (runState == RunState.DISABLED) { return; }
+        if (runState == RunState.DISABLED || runState == RunState.DISABLING) {
+            checkRunState();
+            return;
+        }
 
-        runState = RunState.RUNNING;
         final List<OaiRecord> pendingRecords = fetchNextRecords(MAX_WORKERS - runningWorkers.get());
         final List<Thread> workers = Lists.newArrayList();
 
@@ -110,9 +108,13 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             }
         }
 
+        checkRunState();
+    }
+
+    private void checkRunState() {
         runState = runState == RunState.DISABLED || runState == RunState.DISABLING
-                ? RunState.DISABLED
-                : RunState.WAITING;;
+                ? runningWorkers.get() > 0 ? RunState.DISABLING : RunState.DISABLED
+                : RunState.RUNNING;
     }
 
     private List<OaiRecord> fetchNextRecords(int limit) {
@@ -140,18 +142,17 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     }
 
     public void enable() {
-        if (runState != RunState.RUNNING) {
-            LOG.info("FETCH RECORDS ENABLED");
-            runState = RunState.WAITING;
-        }
+        LOG.info("FETCH RECORDS ENABLED");
+        runState = RunState.RUNNING;
     }
 
     public void disable() {
-        runState = runState == RunState.RUNNING
-                ? RunState.DISABLING
-                : RunState.DISABLED;
+        runState = RunState.DISABLING;
     }
 
+    RunState getRunState() {
+        return runState;
+    }
 
     private void startRecord(OaiRecord oaiRecord) {
         oaiRecord.setProcessStatus(ProcessStatus.PROCESSING);
@@ -171,6 +172,6 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedRateSchedule(50, 1, TimeUnit.SECONDS);
+        return AbstractScheduledService.Scheduler.newFixedRateSchedule(0, 200, TimeUnit.MILLISECONDS);
     }
 }
