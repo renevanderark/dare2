@@ -71,7 +71,7 @@ public class OaiRecordQuery {
     @JsonIgnore
     public List<OaiRecord> getResults(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return getBaseFilter(h, "select * from oai_records")
+            return getBaseFilter(h, "select distinct oai_records.* from oai_records")
                     .withLimit(limit)
                     .withOffset(offset)
                     .build()
@@ -169,7 +169,6 @@ public class OaiRecordQuery {
             if (this.offset != null) {
                 sb.append(" offset :offset");
             }
-
             query = h.createQuery(sb.toString());
             filters.keySet().forEach(key -> query.bind(key, filters.get(key)));
 

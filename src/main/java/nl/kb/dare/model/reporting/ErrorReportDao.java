@@ -1,7 +1,13 @@
 package nl.kb.dare.model.reporting;
 
+import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.BindBean;
+import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+
+import java.util.List;
+
 
 public interface ErrorReportDao {
 
@@ -14,4 +20,7 @@ public interface ErrorReportDao {
             "values (:recordIdentifier, :url, :message, :filteredStackTrace, :dateStamp, :errorStatusCode)")
     void insertOaiRecordError(@BindBean OaiRecordErrorReport oaiRecordErrorReport);
 
+    @SqlQuery("select * from oai_record_errors where record_identifier = :recordIdentifier")
+    @Mapper(OaiRecordErrorReportMapper.class)
+    List<OaiRecordErrorReport> findByRecordIdentifier(@Bind("recordIdentifier") String recordIdentifier);
 }

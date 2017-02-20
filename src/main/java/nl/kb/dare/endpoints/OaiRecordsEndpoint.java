@@ -1,7 +1,12 @@
 package nl.kb.dare.endpoints;
 
+import com.google.common.collect.Maps;
+import nl.kb.dare.model.oai.OaiRecord;
+import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
 import nl.kb.dare.model.oai.OaiRecordResult;
+import nl.kb.dare.model.reporting.ErrorReportDao;
+import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
@@ -9,18 +14,25 @@ import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 
 @Path("/records")
 public class OaiRecordsEndpoint {
     private final DBI dbi;
+    private final OaiRecordDao oaiRecordDao;
+    private final ErrorReportDao errorReportDao;
 
-    public OaiRecordsEndpoint(DBI dbi) {
+    public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao) {
         this.dbi = dbi;
+        this.oaiRecordDao = oaiRecordDao;
+        this.errorReportDao = errorReportDao;
     }
 
     @GET
@@ -51,4 +63,23 @@ public class OaiRecordsEndpoint {
         return Response.ok(result).build();
     }
 
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{identifier}")
+    public Response get(@PathParam("identifier") String identifier) {
+        final Map<String, Object> result = Maps.newHashMap();
+
+        final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
+
+        final List<OaiRecordErrorReport> errorReports = errorReportDao.findByRecordIdentifier(oaiRecord.getIdentifier());
+
+        if (oaiRecord == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("{}").build();
+        }
+
+        result.put("record", oaiRecord);
+        result.put("errorReports", errorReports);
+
+        return Response.ok(result).build();
+    }
 }

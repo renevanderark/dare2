@@ -42,8 +42,8 @@ class OaiRecords extends React.Component {
                     Results ({numberFormat(this.props.results.count)})
                 </h4>
                 <ul className="list-group">
-                    {(this.props.results.result || []).map((record) => (
-                        <li key={record.identifier} className="list-group-item row">
+                    {(this.props.results.result || []).map((record, i) => (
+                        <li key={`${i}-${record.identifier}`} className="list-group-item row">
                             <div className="col-md-16">
                                 {record.identifier}
                             </div>
