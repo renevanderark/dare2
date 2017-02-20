@@ -2,6 +2,7 @@ package nl.kb.dare.endpoints;
 
 import nl.kb.dare.model.oai.OaiRecordQuery;
 import nl.kb.dare.model.oai.OaiRecordResult;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.DBI;
@@ -29,6 +30,7 @@ public class OaiRecordsEndpoint {
             @QueryParam("offset") Integer offsetParam,
             @QueryParam("limit") Integer limitParam,
             @QueryParam("processStatus") String processStatusParam,
+            @QueryParam("errorStatus") Integer errorStatusParam,
             @QueryParam("oaiStatus") String oaiStatusParam) {
 
         final Integer offset = offsetParam == null ? 0 : offsetParam;
@@ -36,8 +38,10 @@ public class OaiRecordsEndpoint {
 
         final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
         final ProcessStatus processStatus = ProcessStatus.forString(processStatusParam);
+        final ErrorStatus errorStatus = errorStatusParam == null ?
+                null : ErrorStatus.forCode(errorStatusParam);
 
-        final OaiRecordQuery oaiRecordQuery = new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus);
+        final OaiRecordQuery oaiRecordQuery = new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
         final OaiRecordResult result = new OaiRecordResult(
                 oaiRecordQuery,
                 oaiRecordQuery.getResults(dbi),

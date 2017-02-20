@@ -44,7 +44,9 @@ class DashBoards extends React.Component {
         );
 
         const errorReports = (
-            <ErrorReports {...this.props.errors} onTogglePanelCollapse={onTogglePanelCollapse} />
+            <ErrorReports {...this.props.errors}
+                          onSetRecordQueryFilter={onSetRecordQueryFilter}
+                          onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         const oaiRecords = (

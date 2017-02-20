@@ -3,6 +3,7 @@ package nl.kb.dare.model.oai;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
+import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.DBI;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 public class OaiRecordQuery {
     private final Integer repositoryId;
@@ -21,15 +23,17 @@ public class OaiRecordQuery {
     private final Integer limit;
     private final ProcessStatus processStatus;
     private final OaiStatus oaiStatus;
+    private final ErrorStatus errorStatus;
 
     public OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
-                          OaiStatus oaiStatus) {
+                          OaiStatus oaiStatus, ErrorStatus errorStatus) {
 
         this.repositoryId = repositoryId;
         this.offset = offset;
         this.limit = limit;
         this.processStatus = processStatus;
         this.oaiStatus = oaiStatus;
+        this.errorStatus = errorStatus;
     }
 
     @JsonProperty
@@ -57,13 +61,17 @@ public class OaiRecordQuery {
         return oaiStatus != null ? oaiStatus.getStatus() : "<< no supported parameter defined >>";
     }
 
+    @JsonProperty
+    public String getErrorStatus() {
+        return errorStatus != null
+                ? errorStatus.getCode() + " - " + errorStatus.getStatus()
+                : "<< no supported parameter defined >>";
+    }
+
     @JsonIgnore
     public List<OaiRecord> getResults(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return new Builder(h, "select * from oai_records")
-                    .withFilter("repository_id", repositoryId)
-                    .withFilter("process_status_code", processStatus)
-                    .withFilter("oai_status_code", oaiStatus)
+            return getBaseFilter(h, "select * from oai_records")
                     .withLimit(limit)
                     .withOffset(offset)
                     .build()
@@ -71,16 +79,22 @@ public class OaiRecordQuery {
         }
     }
 
+
     @JsonIgnore
     public Long getCount(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return new Builder(h, "select count(*) from oai_records")
-                    .withFilter("repository_id", repositoryId)
-                    .withFilter("process_status_code", processStatus)
-                    .withFilter("oai_status_code", oaiStatus)
+            return getBaseFilter(h, "select count(distinct(identifier)) from oai_records")
                     .build()
                     .getCount();
         }
+    }
+
+    private Builder getBaseFilter(Handle h, String selectClause) {
+        return new Builder(h, selectClause)
+                .withFilter("repository_id", repositoryId)
+                .withFilter("process_status_code", processStatus)
+                .withFilter("oai_status_code", oaiStatus)
+                .withErrorFilter(errorStatus);
     }
 
     private class Builder {
@@ -90,6 +104,8 @@ public class OaiRecordQuery {
         private Integer limit = null;
         private Integer offset = null;
         private Query<Map<String, Object>> query;
+        private boolean withErrorSelect = false;
+        private Integer withErrorStatus = null;
 
         private Builder(Handle h, String selectClause) {
             this.h = h;
@@ -126,14 +142,26 @@ public class OaiRecordQuery {
         Builder build() {
             final StringBuilder sb = new StringBuilder(selectClause);
 
-            if (filters.size() > 0) {
+            if (withErrorSelect) {
+                sb.append(", oai_record_errors");
+            }
+
+            if (filters.size() > 0 || withErrorSelect) {
                 sb.append(" where ");
             }
 
-            sb.append(filters.keySet()
+
+            final List<String> clauses = filters.keySet()
                     .stream()
                     .map(field -> String.format("%s = :%s", field, field))
-                    .collect(joining(" and ")));
+                    .collect(toList());
+
+            if (withErrorSelect) {
+                clauses.add("oai_record_errors.record_identifier = oai_records.identifier");
+                clauses.add("oai_record_errors.status_code = :error_status_code");
+            }
+
+            sb.append(clauses.stream().collect(joining(" and ")));
 
             if (this.limit != null) {
                 sb.append(" limit :limit");
@@ -145,6 +173,10 @@ public class OaiRecordQuery {
             query = h.createQuery(sb.toString());
             filters.keySet().forEach(key -> query.bind(key, filters.get(key)));
 
+            if (withErrorSelect) {
+                query.bind("error_status_code", withErrorStatus);
+            }
+
             if (this.limit != null) {
                 query.bind("limit", limit);
             }
@@ -152,8 +184,20 @@ public class OaiRecordQuery {
                 query.bind("offset", offset);
             }
 
+            System.out.println(sb.toString());
+
             return this;
         }
+
+        Builder withErrorFilter(ErrorStatus errorStatus) {
+            if (errorStatus == null) {
+                return this;
+            }
+            withErrorSelect = true;
+            withErrorStatus = errorStatus.getCode();
+            return this;
+        }
+
 
         List<OaiRecord> getResults() {
             return query.map(new OaiRecordMapper()).list();
@@ -162,5 +206,6 @@ public class OaiRecordQuery {
         Long getCount() {
             return query.map(LongMapper.FIRST).first();
         }
+
     }
 }

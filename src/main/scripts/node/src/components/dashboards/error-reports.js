@@ -1,12 +1,12 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-import { numberFormat } from "../../util/format-number";
+import CounterBadge from "./counter-badge";
 
 class ErrorReports extends React.Component {
 
     render() {
         // panel actions
-        const { onTogglePanelCollapse } = this.props;
+        const { onTogglePanelCollapse, onSetRecordQueryFilter } = this.props;
 
         const errorReports = Object.keys(this.props)
             .filter((key) => typeof this.props[key] === "number")
@@ -19,7 +19,8 @@ class ErrorReports extends React.Component {
                     {errorReports.map((report, i) => (
                         <li key={report.error} className="list-group-item">
                             <span>{report.error}</span>
-                            <span className="badge">{numberFormat(report.amount)}</span>
+                            <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter} count={report.amount}
+                                          filterKey="errorStatus" filterValue={report.error.replace(/\s+-.*$/, "")}/>
                         </li>
                     ))}
                 </ul>
