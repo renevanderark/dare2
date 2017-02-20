@@ -5,6 +5,7 @@ const initialState = {
     "workflow-panel": {collapsed: false},
     "error-panel": {collapsed: false},
     "repositories-panel": {collapsed: false},
+    "oai-records-panel": {collapsed: true }
 };
 
 

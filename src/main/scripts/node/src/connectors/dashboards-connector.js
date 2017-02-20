@@ -33,6 +33,9 @@ const dashboardsConnector = (state) => {
             ...(state.status.totals || {}).errors,
             collapsed: state.panels["error-panel"].collapsed
         },
+        records: {
+            collapsed: state.panels["oai-records-panel"].collapsed
+        },
         repositories: {
             collapsed: state.panels["repositories-panel"].collapsed,
             list: state.repositories.list

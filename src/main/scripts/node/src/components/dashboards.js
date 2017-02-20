@@ -3,6 +3,7 @@ import WorkerControls from "./dashboards/worker-controls";
 import Workflow from "./dashboards/workflow";
 import ErrorReports from "./dashboards/error-reports";
 import Repositories from "./dashboards/repositories";
+import OaiRecords from "./dashboards/oai-records";
 
 class DashBoards extends React.Component {
 
@@ -41,19 +42,23 @@ class DashBoards extends React.Component {
             <ErrorReports {...this.props.errors} onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
+        const oaiRecords = (
+            <OaiRecords {...this.props.records} onTogglePanelCollapse={onTogglePanelCollapse} />
+        );
+
         return (
             <div>
                 {this.props.repositories.collapsed ? repositories : null}
                 {this.props.workerControls.collapsed ? workerControls : null}
                 {this.props.workflow.collapsed ? workFlow: null}
                 {this.props.errors.collapsed ? errorReports: null}
-
+                {this.props.records.collapsed ? oaiRecords : null }
                 <div className="clearfix" />
                 {this.props.repositories.collapsed ? null : repositories}
                 {this.props.workerControls.collapsed ? null : workerControls}
-                {this.props.workflow.collapsed ? null: workFlow}
-                {this.props.errors.collapsed ? null: errorReports}
-
+                {this.props.workflow.collapsed ? null : workFlow}
+                {this.props.errors.collapsed ? null : errorReports}
+                {this.props.records.collapsed ? null : oaiRecords }
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
                 </pre>
