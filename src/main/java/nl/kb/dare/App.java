@@ -81,7 +81,7 @@ public class App extends Application<Config> {
 
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
-        register(environment, new OaiRecordsEndpoint(oaiRecordDao));
+        register(environment, new OaiRecordsEndpoint(db));
         register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, new RepositoryValidator(httpFetcher, responseHandlerFactory)));
         register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new OaiRecordFetcherEndpoint(oaiRecordFetcher));

@@ -14,11 +14,6 @@ public interface OaiRecordDao {
     @SqlQuery("select * from oai_records where identifier = :identifier")
     OaiRecord findByIdentifier(@Bind("identifier") String identifier);
 
-    @SqlQuery("select * from oai_records where process_status_code = :process_status_code LIMIT :limit")
-    List<OaiRecord> fetchNextWithProcessStatus(
-            @Bind("process_status_code") Integer processStatusCode,
-            @Bind("limit") Integer limit);
-
     @SqlQuery("select * from oai_records where process_status_code = :process_status_code AND repository_id = :repository_id LIMIT :limit")
     List<OaiRecord> fetchNextWithProcessStatusByRepositoryId(
             @Bind("process_status_code") Integer processStatusCode,
@@ -36,61 +31,4 @@ public interface OaiRecordDao {
 
     @SqlUpdate("delete from oai_records where repository_id = :repositoryId")
     void removeForRepository(@Bind("repositoryId") Integer repositoryId);
-
-    @SqlQuery("select * from oai_records where repository_id = :repositoryId limit :limit offset :offset")
-    List<OaiRecord> list(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("offset") Integer offset,
-            @Bind("limit") Integer limit);
-
-    @SqlQuery("select * from oai_records " +
-            "where repository_id = :repositoryId and oai_status_code = :oai_status_code " +
-            "limit :limit offset :offset")
-    List<OaiRecord> listWithOaiStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("offset") Integer offset,
-            @Bind("limit") Integer limit,
-            @Bind("oai_status_code") Integer oaiStatusCode);
-
-    @SqlQuery("select * from oai_records " +
-            "where repository_id = :repositoryId and process_status_code = :process_status_code " +
-            "limit :limit offset :offset")
-    List<OaiRecord> listWithProcessStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("offset") Integer offset,
-            @Bind("limit") Integer limit,
-            @Bind("process_status_code") Integer processStatusCode);
-
-    @SqlQuery("select * from oai_records " +
-            "where repository_id = :repositoryId and process_status_code = :process_status_code and oai_status_code = :oai_status_code " +
-            "limit :limit offset :offset")
-    List<OaiRecord> listWithProcessStatusAndOaiStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("offset") Integer offset,
-            @Bind("limit") Integer limit,
-            @Bind("process_status_code") Integer processStatusCode,
-            @Bind("oai_status_code") Integer oaiStatusCode);
-
-
-    @SqlQuery("select count(*) from oai_records where repository_id = :repositoryId")
-    Long count(@Bind("repositoryId") Integer repositoryId);
-
-    @SqlQuery("select count(*) from oai_records " +
-            "where repository_id = :repositoryId and oai_status_code = :oai_status_code ")
-    Long countWithOaiStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("oai_status_code") Integer oaiStatusCode);
-
-    @SqlQuery("select count(*) from oai_records " +
-            "where repository_id = :repositoryId and process_status_code = :process_status_code ")
-    Long countWithProcessStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("process_status_code") Integer processStatusCode);
-
-    @SqlQuery("select count(*) from oai_records " +
-            "where repository_id = :repositoryId and process_status_code = :process_status_code and oai_status_code = :oai_status_code ")
-    Long countWithProcessStatusAndOaiStatus(
-            @Bind("repositoryId") Integer repositoryId,
-            @Bind("process_status_code") Integer processStatusCode,
-            @Bind("oai_status_code") Integer oaiStatusCode);
 }
