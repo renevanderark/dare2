@@ -19,6 +19,14 @@ export default function(state=initialState, action) {
                     collapsed: !state[action.id].collapsed
                 }
             };
+        case ActionTypes.ON_OPEN_PANEL:
+            return {
+                ...state,
+                [action.id]: {
+                    ...state[action.id],
+                    collapsed: false
+                }
+            };
         default:
     }
 

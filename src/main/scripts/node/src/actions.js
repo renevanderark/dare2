@@ -12,6 +12,11 @@ import {
     disableRepository
 } from "./actions/repositories";
 
+import {
+    setRecordQueryFilter,
+    fetchOaiRecords
+} from "./actions/oai-records";
+
 export default function actionsMaker(navigateTo, dispatch) {
     return {
         onStartOaiHarvester: () => dispatch(startOaiHarvester()),
@@ -22,6 +27,13 @@ export default function actionsMaker(navigateTo, dispatch) {
         onTogglePanelCollapse: (panelId) => dispatch({type: ActionTypes.ON_TOGGLE_PANEL_COLLAPSE, id: panelId}),
 
         onEnableRepository: (id) => dispatch(enableRepository(id)),
-        onDisableRepository: (id) => dispatch(disableRepository(id))
+        onDisableRepository: (id) => dispatch(disableRepository(id)),
+
+        onSetRecordQueryFilter: (field, value) => {
+            dispatch(setRecordQueryFilter(field, value));
+            dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-records-panel"})
+        },
+
+        onRefetchRecords: () => dispatch(fetchOaiRecords())
     };
 }

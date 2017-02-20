@@ -1,36 +1,45 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
+import { numberFormat } from "../../util/format-number";
 
 class OaiRecords extends React.Component {
 
     render() {
         // panel actions
-        const { onTogglePanelCollapse } = this.props;
+        const { onTogglePanelCollapse, onSetRecordQueryFilter, onRefetchRecords } = this.props;
 
         const query = Object.keys(this.props.query)
-            .filter((key) => this.props.query[key] !== null)
+            .filter((key) => this.props.query[key] !== null && key !== 'limit' && key !== 'offset')
             .map((key) => ({key: key, value: this.props.query[key]}));
+
+        const queryPanel = query.length > 0 ? (
+            <InnerPanel spacing="col-md-32">
+                {query.map(part => (
+                    <span className="badge" title={part.key} key={part.key}
+                          onClick={() => onSetRecordQueryFilter(part.key, null)}
+                          style={{cursor: "pointer"}}>
+                        {part.value}{" "}
+                        <span className="glyphicon glyphicon-remove" />
+                    </span>
+                ))}
+            </InnerPanel>
+        ) : null;
 
         return (
             <CollapsiblePanel id="oai-records-panel" collapsed={this.props.collapsed} title="Records browser"
                               onTogglePanelCollapse={onTogglePanelCollapse}>
 
                 <h4>Query</h4>
-                <InnerPanel spacing="col-md-32">
-                    <div className="row">
-                        {query.map(part => (<div className="col-md-8" key={part.key}>
-                            <strong>{part.key}</strong>:
-                            {part.value}
-                        </div>))}
-                    </div>
-                </InnerPanel>
+                {queryPanel}
                 <div className="clearfix" />
                 <br />
                 <h4>
-                    <span className="glyphicon glyphicon-refresh" />
+                    <span className="glyphicon glyphicon-refresh" style={{cursor: "pointer"}}
+                          onClick={() => onRefetchRecords()}
+                    />
                     {" "}
-                    Results ({this.props.results.count})
+                    Results ({numberFormat(this.props.results.count)})
                 </h4>
                 <ul className="list-group">
                     {(this.props.results.result || []).map((record) => (

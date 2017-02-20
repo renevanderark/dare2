@@ -21,6 +21,11 @@ export default function(state=initialState, action) {
                 ...state,
                 results: action.data
             };
+        case ActionTypes.SET_OAI_RECORD_QUERY:
+            return {
+                ...state,
+                query: action.query
+            };
         default:
     }
 

@@ -14,6 +14,9 @@ class DashBoards extends React.Component {
         // repository actions
         const { onEnableRepository, onDisableRepository } = this.props;
 
+        // actions for records
+        const { onSetRecordQueryFilter, onRefetchRecords } = this.props;
+
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
 
@@ -35,7 +38,9 @@ class DashBoards extends React.Component {
             />);
 
         const workFlow = (
-            <Workflow {...this.props.workflow} onTogglePanelCollapse={onTogglePanelCollapse} />
+            <Workflow {...this.props.workflow}
+                onSetRecordQueryFilter={onSetRecordQueryFilter}
+                onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         const errorReports = (
@@ -43,22 +48,20 @@ class DashBoards extends React.Component {
         );
 
         const oaiRecords = (
-            <OaiRecords {...this.props.records} onTogglePanelCollapse={onTogglePanelCollapse} />
+            <OaiRecords {...this.props.records}
+                        onSetRecordQueryFilter={onSetRecordQueryFilter}
+                        onTogglePanelCollapse={onTogglePanelCollapse}
+                        onRefetchRecords={onRefetchRecords} />
         );
 
         return (
             <div>
-                {this.props.repositories.collapsed ? repositories : null}
-                {this.props.workerControls.collapsed ? workerControls : null}
-                {this.props.workflow.collapsed ? workFlow: null}
-                {this.props.errors.collapsed ? errorReports: null}
-                {this.props.records.collapsed ? oaiRecords : null }
+                {repositories }
+                {workerControls }
+                {workFlow}
+                {oaiRecords}
+                {errorReports}
                 <div className="clearfix" />
-                {this.props.repositories.collapsed ? null : repositories}
-                {this.props.workerControls.collapsed ? null : workerControls}
-                {this.props.workflow.collapsed ? null : workFlow}
-                {this.props.errors.collapsed ? null : errorReports}
-                {this.props.records.collapsed ? null : oaiRecords }
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
                 </pre>

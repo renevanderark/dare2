@@ -1,8 +1,8 @@
 import xhr from "xhr";
 import ActionTypes from "../action-types";
 
-const fetchOaiRecords = () => (dispatch, getState) => {
-    const query = getState().oaiRecords.query;
+const fetchOaiRecords = (newQuery = null) => (dispatch, getState) => {
+    const query = newQuery || getState().oaiRecords.query;
 
     const queryS = Object.keys(query)
         .filter((key) => query[key] !== null)
@@ -15,6 +15,15 @@ const fetchOaiRecords = () => (dispatch, getState) => {
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORDS, data: JSON.parse(body)}));
 };
 
-export { fetchOaiRecords }
+const setRecordQueryFilter = (field, value) => (dispatch, getState) => {
+    const query = {
+        ...getState().oaiRecords.query,
+        [field] : value
+    };
+    dispatch({type: ActionTypes.SET_OAI_RECORD_QUERY, query: query});
+    dispatch(fetchOaiRecords(query));
+};
+
+export { fetchOaiRecords, setRecordQueryFilter }
 
 

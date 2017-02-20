@@ -3,40 +3,43 @@ import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import InnerPanelSpacer from "../panels/inner-panel-spacer";
 import { numberFormat } from "../../util/format-number";
-
+import CounterBadge from "./counter-badge";
 
 class Workflow extends React.Component {
 
     render() {
         // panel actions
-        const { onTogglePanelCollapse } = this.props;
+        const { onTogglePanelCollapse, onSetRecordQueryFilter } = this.props;
 
         return (
             <CollapsiblePanel id="workflow-panel" collapsed={this.props.collapsed} title="Processing status"
                               onTogglePanelCollapse={onTogglePanelCollapse}>
                 <InnerPanel>
                     Pending
-                    <span className="badge pull-right">
-                        {numberFormat(this.props.pending || 0)}
-                    </span>
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="pending"
+                                  count={this.props.pending} />
                 </InnerPanel>
                 <InnerPanelSpacer>
                    <span className="glyphicon glyphicon-arrow-right" style={{top: "16px"}} />
                 </InnerPanelSpacer>
                 <InnerPanel>
                     Processing
-                    <span className="badge pull-right">
-                        {numberFormat(this.props.processing || 0)}
-                    </span>
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="processing"
+                                  count={this.props.processing} />
                 </InnerPanel>
                 <InnerPanelSpacer>
                     <span className="glyphicon glyphicon-arrow-right" style={{top: "16px"}} />
                 </InnerPanelSpacer>
                 <InnerPanel>
                     Processed
-                    <span className="badge pull-right">
-                        {numberFormat(this.props.processed || 0)}
-                    </span>
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="processed"
+                                  count={this.props.processed} />
                 </InnerPanel>
                 <div className="clearfix" />
 
@@ -51,16 +54,18 @@ class Workflow extends React.Component {
                 <InnerPanelSpacer spacing="col-md-7 col-sm-9 col-xs-11" />
                 <InnerPanel>
                     Failure
-                    <span className="badge pull-right">
-                        {numberFormat(this.props.failure || 0)}
-                    </span>
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="failure"
+                                  count={this.props.failure} />
                 </InnerPanel>
                 <InnerPanelSpacer spacing="col-md-14 col-sm-10 col-xs-4" />
                 <InnerPanel spacing="col-md-5 col-sm-5 col-xs-7">
                     <span title="Deleted by data provider">Skip <sup>1</sup></span>
-                    <span className="badge pull-right">
-                        {numberFormat(this.props.skip || 0)}
-                    </span>
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="skip"
+                                  count={this.props.skip} />
                 </InnerPanel>
             </CollapsiblePanel>
         )
