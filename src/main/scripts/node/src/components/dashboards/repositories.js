@@ -15,20 +15,20 @@ class Repositories extends React.Component {
             <CollapsiblePanel id="repositories-panel" collapsed={this.props.collapsed} title="Data providers"
                               onTogglePanelCollapse={onTogglePanelCollapse}>
 
-                <div className="row">
-                    <div className="col-md-14 col-sm-14 col-xs-14">
-                        <strong>Set</strong>
-                    </div>
-                    <div className="col-md-14 col-sm-14 col-xs-14">
-                        <strong className="pull-right" title="...of an OAI record">Latest datestamp <sup>1</sup></strong>
-                    </div>
-                    <div className="col-md-4 col-sm-4 col-xs-4">
-                        <strong className="pull-right">Options</strong>
-                    </div>
-                </div>
-                <div style={{overflowY: "auto", maxHeight: "150px"}}>
+                <ul className="list-group" style={{overflowY: "auto", maxHeight: "200px"}}>
+                    <li className="list-group-item row">
+                        <div className="col-md-14 col-sm-14 col-xs-14">
+                            Set
+                        </div>
+                        <div className="col-md-14 col-sm-14 col-xs-14">
+                            <span className="pull-right" title="...of an OAI record">Latest datestamp <sup>1</sup></span>
+                        </div>
+                        <div className="col-md-4 col-sm-4 col-xs-4">
+                            <span className="pull-right">Options</span>
+                        </div>
+                    </li>
                     {this.props.list.map((repo, i) => (
-                      <div className="row" style={{marginTop: "0.5em"}} key={i}>
+                      <li className="list-group-item row" key={i}>
                           <div className="col-md-14 col-sm-14 col-xs-14">
                               {repo.set}
                           </div>
@@ -50,9 +50,9 @@ class Repositories extends React.Component {
                                   )
                               }
                           </div>
-                      </div>
+                      </li>
                     ))}
-                </div>
+                </ul>
             </CollapsiblePanel>
         )
     }
