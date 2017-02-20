@@ -28,7 +28,10 @@ const connectSocket = () => {
     };
     webSocket.onopen = pingWs;
 
-    webSocket.onclose = () => window.setTimeout(connectSocket, 500);
+    webSocket.onclose = () => {
+        store.dispatch({type: ActionTypes.ON_SOCKET_CLOSED});
+        window.setTimeout(connectSocket, 500);
+    }
 };
 
 connectSocket();

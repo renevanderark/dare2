@@ -6,7 +6,8 @@ const initialState = {
             harvesterRunState: null,
             recordFetcherRunState: null
         }
-    }
+    },
+    socketClosed: true
 };
 
 function getTotals(data) {
@@ -25,11 +26,18 @@ export default function(state=initialState, action) {
     switch (action.type) {
         case ActionTypes.ON_STATUS_UPDATE:
             return {
+                ...state,
+                socketClosed: false,
                 status: action.data,
                 totals: {
                     records: getTotals(action.data["recordProcessingStatus"].recordStatus),
                     errors: getTotals(action.data["recordProcessingStatus"].errorStatus)
                 }
+            };
+        case ActionTypes.ON_SOCKET_CLOSED:
+            return {
+                ...state,
+                socketClosed: true
             };
         default:
     }
