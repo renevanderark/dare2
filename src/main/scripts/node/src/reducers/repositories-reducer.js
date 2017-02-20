@@ -7,10 +7,10 @@ const initialState = {
 
 export default function(state=initialState, action) {
     switch (action.type) {
-        case ActionTypes.RECEIVE_REPOSITORIES:
+        case ActionTypes.ON_STATUS_UPDATE:
             return {
                 ...state,
-                list: action.data
+                list: action.data.repositoryStatus
             };
         default:
     }

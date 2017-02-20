@@ -24,12 +24,6 @@ const pingWs = () => { webSocket.send("* ping! *"); window.setTimeout(pingWs, 80
 webSocket.onopen = pingWs;
 
 
-// Load repositories on page load
-xhr({
-    method: "GET",
-    url: "/repositories"
-}, (err, resp, body) => store.dispatch({type: ActionTypes.RECEIVE_REPOSITORIES, data: JSON.parse(body)}));
-
 const urls = {
     root() {
         return "/";
