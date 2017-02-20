@@ -14,10 +14,6 @@ class WorkerControls extends React.Component {
         // panel actions
         const { onTogglePanelCollapse } = this.props;
 
-        const recordFetcherButton = recordFetcherRunState === "RUNNING"
-            ? (<button className="btn btn-default pull-right" onClick={onDisableOaiRecordFetcher}><span className="glyphicon glyphicon-stop" /></button>)
-            : (<button className="btn btn-default pull-right" disabled={recordFetcherRunState === "DISABLING"} onClick={onStartOaiRecordFetcher}><span className="glyphicon glyphicon-play" /></button>);
-
         const harvesterButton = harvesterRunState === "RUNNING"
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-stop" /></button>)
             : (<button className="btn btn-default pull-right" disabled={harvesterRunState === "DISABLING"} onClick={onStartOaiHarvester}><span className="glyphicon glyphicon-play" /></button>);
@@ -25,6 +21,10 @@ class WorkerControls extends React.Component {
         const harvesterDisableButton = harvesterRunState === "WAITING"
             ? (<button className="btn btn-default pull-right" onClick={onDisableOaiHarvester}><span className="glyphicon glyphicon-remove" /></button>)
             : null;
+
+        const recordFetcherButton = recordFetcherRunState === "RUNNING" || recordFetcherRunState === "WAITING"
+            ? (<button className="btn btn-default pull-right" onClick={onDisableOaiRecordFetcher}><span className="glyphicon glyphicon-stop" /></button>)
+            : (<button className="btn btn-default pull-right" disabled={recordFetcherRunState === "DISABLING"} onClick={onStartOaiRecordFetcher}><span className="glyphicon glyphicon-play" /></button>);
 
         const nextRunMessage = harvesterRunState === "WAITING"
             ? `Next: run: ${nextRun}`
