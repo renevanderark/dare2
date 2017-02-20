@@ -12,7 +12,7 @@ import {
     disableRepository
 } from "./actions/repositories";
 
-export default function actionsMaker(navigateTo, dispatch, webSocket) {
+export default function actionsMaker(navigateTo, dispatch) {
     return {
         onStartOaiHarvester: () => dispatch(startOaiHarvester()),
         onDisableOaiHarvester: () => dispatch(disableOaiHarvester()),

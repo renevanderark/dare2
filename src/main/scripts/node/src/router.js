@@ -16,13 +16,22 @@ import DashBoards from "./components/dashboards";
 
 
 // Use a web socket to get status updates
-const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
-webSocket.onmessage = ({ data }) => store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: JSON.parse(data)});
+const connectSocket = () => {
+    const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
+    webSocket.onmessage = ({data}) => store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: JSON.parse(data)});
 
-// Keep the websocket alive
-const pingWs = () => { webSocket.send("* ping! *"); window.setTimeout(pingWs, 8000); };
-webSocket.onopen = pingWs;
 
+    // Keep the websocket alive
+    const pingWs = () => {
+        webSocket.send("* ping! *");
+        window.setTimeout(pingWs, 8000);
+    };
+    webSocket.onopen = pingWs;
+
+    webSocket.onclose = () => window.setTimeout(connectSocket, 500);
+};
+
+connectSocket();
 
 const urls = {
     root() {
@@ -32,7 +41,7 @@ const urls = {
 
 const navigateTo = (key, args) => browserHistory.push(urls[key].apply(null, args));
 
-const connectComponent = (stateToProps) => connect(stateToProps, dispatch => actions(navigateTo, dispatch, webSocket));
+const connectComponent = (stateToProps) => connect(stateToProps, dispatch => actions(navigateTo, dispatch));
 
 export default (
 <Provider store={store}>
