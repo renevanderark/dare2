@@ -1,6 +1,7 @@
 import React from "react";
 import WorkerControls from "./dashboards/worker-controls";
 import Workflow from "./dashboards/workflow";
+import ErrorReports from "./dashboards/error-reports";
 import Repositories from "./dashboards/repositories";
 
 class DashBoards extends React.Component {
@@ -33,9 +34,11 @@ class DashBoards extends React.Component {
             />);
 
         const workFlow = (
-            <Workflow {...this.props.workflow}
-                      onTogglePanelCollapse={onTogglePanelCollapse}
-            />
+            <Workflow {...this.props.workflow} onTogglePanelCollapse={onTogglePanelCollapse} />
+        );
+
+        const errorReports = (
+            <ErrorReports {...this.props.errors} onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         return (
@@ -43,11 +46,13 @@ class DashBoards extends React.Component {
                 {this.props.repositories.collapsed ? repositories : null}
                 {this.props.workerControls.collapsed ? workerControls : null}
                 {this.props.workflow.collapsed ? workFlow: null}
+                {this.props.errors.collapsed ? errorReports: null}
 
                 <div className="clearfix" />
                 {this.props.repositories.collapsed ? null : repositories}
                 {this.props.workerControls.collapsed ? null : workerControls}
                 {this.props.workflow.collapsed ? null: workFlow}
+                {this.props.errors.collapsed ? null: errorReports}
 
                 <pre>
                     {JSON.stringify(this.props.status, null, 2)}
