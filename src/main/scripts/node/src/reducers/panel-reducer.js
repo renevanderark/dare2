@@ -4,8 +4,9 @@ const initialState = {
     "workers-panel": {collapsed: false},
     "workflow-panel": {collapsed: false},
     "error-panel": {collapsed: false},
-    "repositories-panel": {collapsed: false},
-    "oai-records-panel": {collapsed: false }
+    "repositories-panel": {collapsed: false },
+    "oai-records-panel": {collapsed: false },
+    "oai-record-panel": {collapsed: false }
 };
 
 

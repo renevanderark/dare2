@@ -10,7 +10,8 @@ const initialState = {
     results: {
         result: [],
         count: 0
-    }
+    },
+    current: null
 };
 
 
@@ -26,6 +27,11 @@ export default function(state=initialState, action) {
                 ...state,
                 query: action.query
             };
+        case ActionTypes.RECEIVE_OAI_RECORD:
+            return {
+                ...state,
+                current: action.data
+            }
         default:
     }
 

@@ -14,7 +14,8 @@ import {
 
 import {
     setRecordQueryFilter,
-    fetchOaiRecords
+    fetchOaiRecords,
+    fetchOaiRecord
 } from "./actions/oai-records";
 
 export default function actionsMaker(navigateTo, dispatch) {
@@ -34,6 +35,8 @@ export default function actionsMaker(navigateTo, dispatch) {
             dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-records-panel"})
         },
 
-        onRefetchRecords: () => dispatch(fetchOaiRecords())
+        onRefetchRecords: () => dispatch(fetchOaiRecords()),
+
+        onFetchOaiRecord: (identifier) => dispatch(fetchOaiRecord(identifier))
     };
 }

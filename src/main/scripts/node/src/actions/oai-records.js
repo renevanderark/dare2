@@ -24,6 +24,13 @@ const setRecordQueryFilter = (field, value) => (dispatch, getState) => {
     dispatch(fetchOaiRecords(query));
 };
 
-export { fetchOaiRecords, setRecordQueryFilter }
+const fetchOaiRecord = (identifier) => (dispatch) => {
+    xhr({
+        url: `/records/${encodeURIComponent(identifier)}`,
+        method: "GET"
+    }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
+};
+
+export { fetchOaiRecords, setRecordQueryFilter, fetchOaiRecord }
 
 

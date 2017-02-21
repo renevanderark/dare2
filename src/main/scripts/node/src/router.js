@@ -1,7 +1,6 @@
 import React from "react";
 import {Router, Route, IndexRoute, browserHistory} from "react-router";
 import {Provider, connect} from "react-redux";
-import xhr from "xhr";
 
 import store from "./store";
 
@@ -13,6 +12,9 @@ import App from "./components/app";
 
 import dashboardsConnector from "./connectors/dashboards-connector";
 import DashBoards from "./components/dashboards";
+
+import oaiRecordConnector from "./connectors/oai-record-connector";
+import OaiRecord from "./components/oai-record"
 
 import {fetchOaiRecords } from "./actions/oai-records";
 
@@ -42,19 +44,27 @@ store.dispatch(fetchOaiRecords());
 const urls = {
     root() {
         return "/";
+    },
+    record(identifier = null) {
+        return identifier
+            ? `/record-overview/${identifier}`
+            : "/record-overview/:identifier"
     }
 };
+
+export { urls };
 
 const navigateTo = (key, args) => browserHistory.push(urls[key].apply(null, args));
 
 const connectComponent = (stateToProps) => connect(stateToProps, dispatch => actions(navigateTo, dispatch));
 
 export default (
-<Provider store={store}>
-    <Router history={browserHistory}>
-        <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
-            <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
-        </Route>
-    </Router>
-</Provider>
+    <Provider store={store}>
+        <Router history={browserHistory}>
+            <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
+                <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
+                <Route path={urls.record()} component={connectComponent(oaiRecordConnector)(OaiRecord) } />
+            </Route>
+        </Router>
+    </Provider>
 );

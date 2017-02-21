@@ -1,7 +1,11 @@
 import React from "react";
+import { Link } from "react-router";
+
+import { urls } from "../../router";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import { numberFormat } from "../../util/format-number";
+
 
 class OaiRecords extends React.Component {
 
@@ -45,7 +49,9 @@ class OaiRecords extends React.Component {
                     {(this.props.results.result || []).map((record, i) => (
                         <li key={`${i}-${record.identifier}`} className="list-group-item row">
                             <div className="col-md-16">
-                                {record.identifier}
+                                <Link to={urls.record(encodeURIComponent(record.identifier))}>
+                                    {record.identifier}
+                                </Link>
                             </div>
                             <div className="col-md-8">
                                 {record.dateStamp}
