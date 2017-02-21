@@ -7,8 +7,6 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.reporting.ErrorReport;
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,7 +22,6 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 class GetRecordResourceOperations {
-    private static final Logger LOG = LoggerFactory.getLogger(GetRecordResourceOperations.class);
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
 
@@ -41,7 +38,8 @@ class GetRecordResourceOperations {
         final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
 
         // First try to fetch the resource by encoding the url name one way (whitespace as '+')
-        final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
+        final String preparedUrlWithPluses = prepareUrl(fileLocation, false);
+        final List<ErrorReport> firstAttemptErrors = attemptDownload(objectOut, checksumOut, preparedUrlWithPluses);
 
         if (firstAttemptErrors.isEmpty()) {
             writeChecksumAndFilename(objectResource, checksumOut, filename);
@@ -49,7 +47,12 @@ class GetRecordResourceOperations {
         }
 
         // Then try to fetch the resource by encoding the url name another way (whitespace as '%20')
-        final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
+        final String preparedUrlWithPercents = prepareUrl(fileLocation, true);
+        if (preparedUrlWithPercents.equals(preparedUrlWithPluses)) {
+            return firstAttemptErrors;
+        }
+
+        final List<ErrorReport> secondAttemptErrors = attemptDownload(objectOut, checksumOut, preparedUrlWithPercents);
 
         if (secondAttemptErrors.isEmpty()) {
             writeChecksumAndFilename(objectResource, checksumOut, filename);
@@ -67,10 +70,10 @@ class GetRecordResourceOperations {
         objectResource.setLocalFilename(filename);
     }
 
-    private List<ErrorReport> attemptDownload(String fileLocation, OutputStream objectOut, OutputStream checksumOut, boolean plusToPercent) throws UnsupportedEncodingException, MalformedURLException {
+    private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut, String preparedUrl) throws UnsupportedEncodingException, MalformedURLException {
         final HttpResponseHandler responseHandler = responseHandlerFactory
                 .getStreamCopyingResponseHandler(objectOut, checksumOut);
-        final URL objectUrl = new URL(prepareUrl(fileLocation, plusToPercent));
+        final URL objectUrl = new URL(preparedUrl);
 
         httpFetcher.execute(objectUrl, responseHandler);
 
