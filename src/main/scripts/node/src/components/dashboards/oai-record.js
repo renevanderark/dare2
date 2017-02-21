@@ -20,12 +20,15 @@ class OaiRecordDashboard extends React.Component {
     }
 
     render() {
-        const { oaiRecord: { record, collapsed }, identifier } = this.props;
+        const { oaiRecord: { record, collapsed, errorReports }, identifier } = this.props;
         const { onTogglePanelCollapse } = this.props;
 
         const body = !record
             ? (<div>Loading: {identifier}</div>)
-            : (<pre>{JSON.stringify(record, null, 2)}</pre>);
+            : (<div>
+                <pre>{JSON.stringify(record, null, 2)}</pre>
+                <pre>{JSON.stringify(errorReports, null, 2)}</pre>
+            </div>);
 
 
         return (
