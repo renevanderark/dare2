@@ -14,7 +14,10 @@ import dashboardsConnector from "./connectors/dashboards-connector";
 import DashBoards from "./components/dashboards";
 
 import oaiRecordConnector from "./connectors/oai-record-connector";
-import OaiRecord from "./components/oai-record"
+import OaiRecord from "./components/oai-record";
+
+import dataProviderConnector from "./connectors/data-provider-connector";
+import DataProvider from "./components/data-provider";
 
 import {fetchOaiRecords } from "./actions/oai-records";
 
@@ -49,6 +52,11 @@ const urls = {
         return identifier
             ? `/record-overview/${identifier}`
             : "/record-overview/:identifier"
+    },
+    dataProvider(id = null) {
+        return id
+            ? `/data-provider/${id}`
+            : "/data-provider/:id"
     }
 };
 
@@ -64,6 +72,7 @@ export default (
             <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
                 <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
                 <Route path={urls.record()} component={connectComponent(oaiRecordConnector)(OaiRecord) } />
+                <Route path={urls.dataProvider()} component={connectComponent(dataProviderConnector)(DataProvider)} />
             </Route>
         </Router>
     </Provider>

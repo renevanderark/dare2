@@ -33,7 +33,9 @@ class OaiRecords extends React.Component {
                     <span className="badge" title={part.key} key={part.key}
                           onClick={() => onSetRecordQueryFilter(part.key, null)}
                           style={{cursor: "pointer"}}>
-                        {part.value}{" "}
+                        {part.key === "repositoryId"
+                            ? (this.props.repositories.find((repo) => "" + repo.id === part.value) || {}).set
+                            : part.value}{" "}
                         <span className="glyphicon glyphicon-remove" />
                     </span>
                 ))}
@@ -66,14 +68,17 @@ class OaiRecords extends React.Component {
                                 </Link>
                             </div>
                             <div className="col-md-8">
+                                <Link to={urls.dataProvider(record.repositoryId)}>
+                                    {(this.props.repositories.find((repo) => repo.id === record.repositoryId) || {}).set}
+                                </Link>
+                            </div>
+                            <div className="col-md-5">
                                 {record.dateStamp}
                             </div>
-                            <div className="col-md-4">
+                            <div className="col-md-2">
                                 {record.processStatus}
                             </div>
-                            <div className="col-md-4">
-                                {(this.props.repositories.find((repo) => repo.id === record.repositoryId) || {}).set}
-                            </div>
+
                         </li>
                     ))}
                 </ul>

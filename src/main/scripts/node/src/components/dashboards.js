@@ -6,6 +6,11 @@ import Repositories from "./dashboards/repositories";
 import OaiRecords from "./dashboards/oai-records";
 
 class DashBoards extends React.Component {
+    componentDidMount() {
+        if (!this.props.records.collapsed) {
+            this.props.onSetRecordQueryFilter("repositoryId", null, null);
+        }
+    }
 
     render() {
         // actions for WorkerControls
@@ -62,16 +67,11 @@ class DashBoards extends React.Component {
                 <ol className="breadcrumb">
                     <li className="active">Dashboard</li>
                 </ol>
-
-                {repositories }
+                {repositories}
                 {workerControls }
                 {workFlow}
                 {oaiRecords}
                 {errorReports}
-                <div className="clearfix" />
-                <pre>
-                    {JSON.stringify(this.props.status, null, 2)}
-                </pre>
             </div>
         )
     }

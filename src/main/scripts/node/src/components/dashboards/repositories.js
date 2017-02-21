@@ -1,6 +1,7 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-
+import { Link } from "react-router";
+import { urls } from "../../router";
 
 class Repositories extends React.Component {
 
@@ -30,7 +31,9 @@ class Repositories extends React.Component {
                     {this.props.list.map((repo, i) => (
                       <li className="list-group-item row" key={i}>
                           <div className="col-md-14 col-sm-14 col-xs-14">
-                              {repo.set}
+                              <Link to={urls.dataProvider(repo.id)}>
+                                {repo.set}
+                              </Link>
                           </div>
                           <div className="col-md-14 col-sm-14 col-xs-14">
                               <span className="pull-right">

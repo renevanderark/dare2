@@ -31,9 +31,15 @@ export default function actionsMaker(navigateTo, dispatch) {
         onEnableRepository: (id) => dispatch(enableRepository(id)),
         onDisableRepository: (id) => dispatch(disableRepository(id)),
 
-        onSetRecordQueryFilter: (field, value) => {
-            dispatch(setRecordQueryFilter(field, value));
-            dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-records-panel"})
+        onSetRecordQueryFilter: (field, value, repositoryId = null) => {
+            dispatch(setRecordQueryFilter(field, value, repositoryId));
+            dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-records-panel"});
+            if (field === "processStatus" && value === "failure") {
+                dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "error-panel"});
+            }
+            if (field === "errorStatus") {
+                dispatch(setRecordQueryFilter("processStatus", "failure", repositoryId));
+            }
         },
 
         onSetRecordQueryOffset: (newOffset) => dispatch(setRecordQueryOffset(newOffset)),

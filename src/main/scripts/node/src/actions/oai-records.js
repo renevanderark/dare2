@@ -15,12 +15,18 @@ const fetchOaiRecords = (newQuery = null) => (dispatch, getState) => {
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORDS, data: JSON.parse(body)}));
 };
 
-const setRecordQueryFilter = (field, value) => (dispatch, getState) => {
-    const query = {
-        ...getState().oaiRecords.query,
-        [field] : value,
-        "offset": 0
-    };
+const setRecordQueryFilter = (field, value, repositoryId = null) => (dispatch, getState) => {
+    const query = repositoryId
+        ? {
+            ...getState().oaiRecords.query,
+            [field] : value,
+            offset: 0,
+            repositoryId: repositoryId
+        } : {
+            ...getState().oaiRecords.query,
+            [field] : value,
+            offset: 0
+        };
     dispatch({type: ActionTypes.SET_OAI_RECORD_QUERY, query: query});
     dispatch(fetchOaiRecords(query));
 };
@@ -28,7 +34,7 @@ const setRecordQueryFilter = (field, value) => (dispatch, getState) => {
 const setRecordQueryOffset = (newOffset) => (dispatch, getState) => {
     const query = {
         ...getState().oaiRecords.query,
-        "offset": newOffset
+        offset: newOffset
     };
     dispatch({type: ActionTypes.SET_OAI_RECORD_QUERY, query: query});
     dispatch(fetchOaiRecords(query));

@@ -43,13 +43,7 @@ class Workflow extends React.Component {
                 </InnerPanel>
 
                 <InnerPanelSpacer spacing="col-md-7 col-sm-1 col-xs-1" />
-                <InnerPanel spacing="col-md-5 col-sm-5 col-xs-7">
-                    <span title="Deleted by data provider after processing">Deleted<sup>1</sup></span>
-                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
-                                  filterKey="processStatus"
-                                  filterValue="deleted-after-processing"
-                                  count={this.props["deleted-after-processing"]} />
-                </InnerPanel>
+
 
                 <div className="clearfix" />
 
@@ -69,14 +63,7 @@ class Workflow extends React.Component {
                                   filterValue="failure"
                                   count={this.props.failure} />
                 </InnerPanel>
-                <InnerPanelSpacer spacing="col-md-14 col-sm-10 col-xs-4" />
-                <InnerPanel spacing="col-md-5 col-sm-5 col-xs-7">
-                    <span title="Updated by data provider after processing">Updated<sup>1</sup></span>
-                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
-                                  filterKey="processStatus"
-                                  filterValue="updated-after-processing"
-                                  count={this.props["updated-after-processing"]} />
-                </InnerPanel>
+
             </CollapsiblePanel>
         )
     }
