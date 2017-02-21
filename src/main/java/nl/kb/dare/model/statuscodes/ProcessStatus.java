@@ -6,8 +6,8 @@ public enum ProcessStatus {
     PROCESSING(20, "processing"),
     FAILED(90, "failure"),
     PROCESSED(100, "processed"),
-    UPDATED_AFTER_PROCESSING(1001, "record was updated after processing"),
-    DELETED_AFTER_PROCESSING(1002, "record was deleted after processing");
+    UPDATED_AFTER_PROCESSING(1001, "updated-after-processing"),
+    DELETED_AFTER_PROCESSING(1002, "deleted-after-processing");
 
     private final int code;
     private final String status;

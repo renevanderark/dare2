@@ -3,6 +3,7 @@ package nl.kb.dare.oai;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
+import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
@@ -19,6 +20,7 @@ import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -39,6 +41,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private final OaiRecordDao oaiRecordDao;
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
+    private final FileStorage fileStorage;
 
     private RunState runState;
     private Instant lastRunTime = Instant.now();
@@ -50,12 +53,14 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     }
 
     public ScheduledOaiHarvester(RepositoryDao repositoryDao, ErrorReportDao errorReportDao, OaiRecordDao oaiRecordDao,
-                                 HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+                                 HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                                 FileStorage fileStorage) {
         this.repositoryDao = repositoryDao;
         this.errorReportDao = errorReportDao;
         this.oaiRecordDao = oaiRecordDao;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
+        this.fileStorage = fileStorage;
         this.runState = RunState.DISABLED;
     }
 
@@ -89,7 +94,11 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private void saveOaiRecord(OaiRecord newOaiRecord) {
         final OaiRecord existingRecord = oaiRecordDao.findByIdentifier(newOaiRecord.getIdentifier());
         if (existingRecord == null) {
-            oaiRecordDao.insert(newOaiRecord);
+            if (newOaiRecord.getOaiStatus() != OaiStatus.DELETED) {
+                oaiRecordDao.insert(newOaiRecord);
+            } // else {
+                // Do not save a newly encountered deleted record to save space & make faster queries
+            // }
         } else if (!existingRecord.equals(newOaiRecord)) {
             // preferably we do not alter the record if the processing thread is using the dao
             synchronized (oaiRecordDao) {
@@ -100,7 +109,18 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                     case PENDING: // in this case just overwrite the record with new the data
                     case SKIP:    // in this the record would have been _undeleted_, pretty sure that's bad practice.
                     case FAILED:  // in this case we got lucky, maybe the update fixed the data
-                        oaiRecordDao.update(newOaiRecord);
+                        if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
+                            oaiRecordDao.delete(newOaiRecord);
+                        } else {
+                            oaiRecordDao.update(newOaiRecord);
+                            if (existingRecord.getProcessStatus() == ProcessStatus.FAILED) {
+                                try {
+                                    fileStorage.create(newOaiRecord).deleteFiles();
+                                } catch (IOException e) {
+                                    LOG.warn("Failed to delete failed record", e);
+                                }
+                            }
+                        }
                         break;
 
                     case DELETED_AFTER_PROCESSING: // in these cases do nothing, there was a problem already

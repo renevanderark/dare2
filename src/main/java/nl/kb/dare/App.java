@@ -67,7 +67,7 @@ public class App extends Application<Config> {
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToMetsXslt);
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
-                repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory);
+                repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory, fileStorage);
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                 config.getInSampleMode());
