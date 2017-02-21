@@ -1,3 +1,7 @@
 .pagination > li  > a {
     cursor: pointer
 }
+
+.list-group-item.active a {
+    color: white
+}

@@ -40,6 +40,10 @@ export default function actionsMaker(navigateTo, dispatch) {
 
         onRefetchRecords: () => dispatch(fetchOaiRecords()),
 
-        onFetchOaiRecord: (identifier) => dispatch(fetchOaiRecord(identifier))
+        onFetchOaiRecord: (identifier) => {
+            dispatch(fetchOaiRecord(identifier));
+            dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-record-panel"})
+
+        }
     };
 }

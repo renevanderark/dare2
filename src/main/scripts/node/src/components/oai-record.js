@@ -1,30 +1,38 @@
 import React from "react";
 import CollapsiblePanel from "./panels/collapsible-panel";
 
+import OaiRecords from "./dashboards/oai-records";
+import OaiRecordDashboard from "./dashboards/oai-record";
+
 class OaiRecord extends React.Component {
 
-    componentDidMount() {
-        const { oaiRecord, identifier, onFetchOaiRecord } = this.props;
 
-        if (oaiRecord === null || oaiRecord.record.identifier !== identifier) {
-            onFetchOaiRecord(identifier);
-        }
-    }
 
     render() {
-        const { oaiRecord, identifier, collapsed } = this.props;
+        const { oaiRecord, identifier } = this.props;
         const { onTogglePanelCollapse } = this.props;
 
-        const oaiRecordBody = oaiRecord === null
-            ? (<div>Loading: {identifier}</div>)
-            : (<pre>{JSON.stringify(oaiRecord, null, 2)}</pre>);
+        // actions for records
+        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset, onFetchOaiRecord } = this.props;
+
+        const oaiRecordPanel =
+            <OaiRecordDashboard identifier={identifier} oaiRecord={oaiRecord} onFetchOaiRecord={onFetchOaiRecord}
+                                onTogglePanelCollapse={onTogglePanelCollapse} />;
+
+        const oaiRecords = (
+            <OaiRecords {...this.props.records}
+                        onSetRecordQueryFilter={onSetRecordQueryFilter}
+                        onSetRecordQueryOffset={onSetRecordQueryOffset}
+                        onTogglePanelCollapse={onTogglePanelCollapse}
+                        onRefetchRecords={onRefetchRecords}
+                        activeRecordIdentifier={identifier}
+            />
+        );
 
         return (
             <div>
-                <CollapsiblePanel id="oai-record-panel" title="Record overview" collapsed={collapsed}
-                                  onTogglePanelCollapse={onTogglePanelCollapse}>
-                    {oaiRecordBody}
-                </CollapsiblePanel>
+                {oaiRecordPanel}
+                {oaiRecords}
             </div>
         );
     }

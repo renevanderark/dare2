@@ -13,12 +13,15 @@ class OaiRecords extends React.Component {
 
         return nextProps.query !== this.props.query ||
             nextProps.results !== this.props.results ||
-            nextProps.collapsed !== this.props.collapsed;
+            nextProps.collapsed !== this.props.collapsed ||
+            nextProps.activeRecordIdentifier !== this.props.activeRecordIdentifier
     }
 
     render() {
         // panel actions
         const { onTogglePanelCollapse, onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset } = this.props;
+
+        const { activeRecordIdentifier } = this.props;
 
         const query = Object.keys(this.props.query)
             .filter((key) => this.props.query[key] !== null && key !== 'limit' && key !== 'offset')
@@ -54,7 +57,9 @@ class OaiRecords extends React.Component {
                 </h4>
                 <ul className="list-group">
                     {(this.props.results.result || []).map((record, i) => (
-                        <li key={`${i}-${record.identifier}`} className="list-group-item row">
+                        <li key={`${i}-${record.identifier}`}
+                            className={`list-group-item row ${activeRecordIdentifier === record.identifier ? "active" : ""}`}>
+
                             <div className="col-md-16">
                                 <Link to={urls.record(encodeURIComponent(record.identifier))}>
                                     {record.identifier}

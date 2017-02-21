@@ -1,8 +1,15 @@
 const rootConnector = (state, routed) => ({
 
-    oaiRecord: state.oaiRecords.current,
     identifier: routed.params.identifier,
-    collapsed: state.panels["oai-record-panel"].collapsed
+    oaiRecord: {
+        ...state.oaiRecords.current,
+        collapsed: state.panels["oai-record-panel"].collapsed
+    },
+    records: {
+        ...state.oaiRecords,
+        repositories: state.repositories.list,
+        collapsed: state.panels["oai-records-panel"].collapsed
+    },
 });
 
 export default rootConnector;
