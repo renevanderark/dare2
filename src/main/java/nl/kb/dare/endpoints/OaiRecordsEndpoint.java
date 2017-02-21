@@ -71,11 +71,11 @@ public class OaiRecordsEndpoint {
 
         final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
 
-        final List<OaiRecordErrorReport> errorReports = errorReportDao.findByRecordIdentifier(oaiRecord.getIdentifier());
-
         if (oaiRecord == null) {
             return Response.status(Response.Status.NOT_FOUND).entity("{}").build();
         }
+
+        final List<OaiRecordErrorReport> errorReports = errorReportDao.findByRecordIdentifier(oaiRecord.getIdentifier());
 
         result.put("record", oaiRecord);
         result.put("errorReports", errorReports);
