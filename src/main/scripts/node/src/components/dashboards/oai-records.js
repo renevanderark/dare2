@@ -68,7 +68,7 @@ class OaiRecords extends React.Component {
                                 </Link>
                             </div>
                             <div className="col-md-8">
-                                <Link to={urls.dataProvider(record.repositoryId)}>
+                                <Link to={urls.record(encodeURIComponent(record.identifier))}>
                                     {(this.props.repositories.find((repo) => repo.id === record.repositoryId) || {}).set}
                                 </Link>
                             </div>
