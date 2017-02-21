@@ -5,13 +5,20 @@ import { urls } from "../../router";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import { numberFormat } from "../../util/format-number";
-
+import Pagination from "./pagination";
 
 class OaiRecords extends React.Component {
 
+    shouldComponentUpdate(nextProps) {
+
+        return nextProps.query !== this.props.query ||
+            nextProps.results !== this.props.results ||
+            nextProps.collapsed !== this.props.collapsed;
+    }
+
     render() {
         // panel actions
-        const { onTogglePanelCollapse, onSetRecordQueryFilter, onRefetchRecords } = this.props;
+        const { onTogglePanelCollapse, onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset } = this.props;
 
         const query = Object.keys(this.props.query)
             .filter((key) => this.props.query[key] !== null && key !== 'limit' && key !== 'offset')
@@ -65,6 +72,11 @@ class OaiRecords extends React.Component {
                         </li>
                     ))}
                 </ul>
+                <Pagination offset={this.props.query.offset}
+                            limit={this.props.query.limit}
+                            count={this.props.results.count}
+                            onPageClick={(newOffset) => onSetRecordQueryOffset(newOffset)}
+                />
             </CollapsiblePanel>
         )
     }
