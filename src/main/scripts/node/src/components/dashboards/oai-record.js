@@ -12,10 +12,11 @@ class OaiRecordDashboard extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        const { onFetchOaiRecord } = this.props;
+        const {onFetchOaiRecord} = this.props;
 
         if (nextProps.identifier !== this.props.identifier) {
             onFetchOaiRecord(nextProps.identifier);
+            this.setState({expandedTraces: []});
         }
     }
 
