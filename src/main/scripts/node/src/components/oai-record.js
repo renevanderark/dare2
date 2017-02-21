@@ -1,5 +1,5 @@
 import React from "react";
-import CollapsiblePanel from "./panels/collapsible-panel";
+import { Link } from "react-router";
 
 import OaiRecords from "./dashboards/oai-records";
 import OaiRecordDashboard from "./dashboards/oai-record";
@@ -31,6 +31,10 @@ class OaiRecord extends React.Component {
 
         return (
             <div>
+                <ol className="breadcrumb">
+                    <li><Link to="/">Dashboard</Link></li>
+                    <li className="active">Record overview</li>
+                </ol>
                 {oaiRecordPanel}
                 {oaiRecords}
             </div>

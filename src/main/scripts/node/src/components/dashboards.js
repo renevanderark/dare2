@@ -59,6 +59,10 @@ class DashBoards extends React.Component {
 
         return (
             <div>
+                <ol className="breadcrumb">
+                    <li className="active">Dashboard</li>
+                </ol>
+
                 {repositories }
                 {workerControls }
                 {workFlow}
