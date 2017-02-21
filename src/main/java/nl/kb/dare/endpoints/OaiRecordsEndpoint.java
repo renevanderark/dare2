@@ -1,6 +1,8 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Maps;
+import nl.kb.dare.files.FileStorage;
+import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
@@ -17,8 +19,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,11 +33,14 @@ public class OaiRecordsEndpoint {
     private final DBI dbi;
     private final OaiRecordDao oaiRecordDao;
     private final ErrorReportDao errorReportDao;
+    private final FileStorage fileStorage;
 
-    public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao) {
+    public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
+                              FileStorage fileStorage) {
         this.dbi = dbi;
         this.oaiRecordDao = oaiRecordDao;
         this.errorReportDao = errorReportDao;
+        this.fileStorage = fileStorage;
     }
 
     @GET
@@ -81,5 +89,25 @@ public class OaiRecordsEndpoint {
         result.put("errorReports", errorReports);
 
         return Response.ok(result).build();
+    }
+
+    @GET
+    @Produces("application/zip")
+    @Path("/{identifier}/download")
+    public Response download(@PathParam("identifier") String identifier) {
+        final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
+        if (oaiRecord == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        try {
+            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
+            final StreamingOutput downloadOutput = fileStorageHandle::downloadZip;
+            return Response.ok(downloadOutput)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"download.zip\"")
+                    .build();
+        } catch (IOException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
     }
 }

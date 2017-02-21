@@ -2,6 +2,7 @@ package nl.kb.dare.files;
 
 import nl.kb.dare.model.oai.OaiRecord;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +15,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static nl.kb.dare.checksum.ChecksumUtil.getChecksumString;
 
@@ -92,5 +95,35 @@ class LocalFileStorageHandle implements FileStorageHandle {
     @Override
     public void deleteFiles() throws IOException {
         FileUtils.deleteDirectory(new File(fileDir));
+    }
+
+    @Override
+    public void downloadZip(OutputStream output) throws IOException {
+        final ZipOutputStream zipOutputStream = new ZipOutputStream(output);
+
+        zipFile(zipOutputStream, "metadata.xml");
+        zipFile(zipOutputStream, "sip.xml");
+
+        final File resourceDir = new File(fileDir + "/resources");
+        if (resourceDir.exists() && resourceDir.isDirectory()) {
+            for (File file : FileUtils.listFiles(resourceDir, null, false)) {
+                zipFile(zipOutputStream, String.format("resources/%s", file.getName()));
+            }
+        }
+
+        zipOutputStream.close();
+    }
+
+    private void zipFile(ZipOutputStream zipOutputStream, String name) throws IOException {
+
+        try {
+            final InputStream metadata = getFile(name);
+            final ZipEntry metadataEntry = new ZipEntry(name);
+            zipOutputStream.putNextEntry(metadataEntry);
+            IOUtils.copy(metadata, zipOutputStream);
+            metadata.close();
+        } catch (FileNotFoundException e) {
+            return;
+        }
     }
 }

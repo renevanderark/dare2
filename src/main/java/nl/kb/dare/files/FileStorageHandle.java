@@ -19,4 +19,6 @@ public interface FileStorageHandle {
     void syncFile(OutputStream out) throws IOException;
 
     void deleteFiles() throws IOException;
+
+    void downloadZip(OutputStream output) throws IOException;
 }

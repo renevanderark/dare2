@@ -120,6 +120,7 @@ public class RepositoriesEndpoint {
 
         dao.remove(id);
         oaiRecordDao.removeForRepository(id);
+        // TODO filestorage.delete all ?
         return Response.ok().build();
     }
 

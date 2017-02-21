@@ -50,22 +50,23 @@ class OaiRecordDashboard extends React.Component {
                     {errorReports.map((errorReport, i) => (
                         <li key={i} className="list-group-item">
                             <div className="row">
-                                        <span className="col-md-8">
-                                            {errorReport.errorStatusCode} - {errorReport.errorStatus}
-                                        </span>
+                                <span className="col-md-8">
+                                    {errorReport.errorStatusCode} - {errorReport.errorStatus}
+                                </span>
                                 <span className="col-24">
-                                            <a target="_blank" href={errorReport.url}>
-                                                {errorReport.url}
-                                            </a>
-                                        </span>
+                                    <a target="_blank" href={errorReport.url}>
+                                        {errorReport.url}
+                                    </a>
+                                </span>
                             </div>
                             <div className="row">
-                                        <span className="col-md-32">
-                                            {errorReport.message}
-                                            <span style={{cursor: "pointer"}}
-                                                  onClick={() => this.toggleStacktrace(i) }
-                                                  className={`glyphicon glyphicon-${expandedTraces.indexOf(i) < 0 ? "expand" : "collapse-down"} pull-right`} />
-                                        </span>
+                                <span className="col-md-32">
+                                    {errorReport.message}
+                                    <span style={{cursor: "pointer"}}
+                                          onClick={() => this.toggleStacktrace(i) }
+                                          className={`glyphicon glyphicon-${expandedTraces.indexOf(i) < 0 ?
+                                              "expand" : "collapse-down"} pull-right`} />
+                                </span>
                             </div>
                             { expandedTraces.indexOf(i) > -1
                                 ? (<pre>{errorReport.filteredStackTrace}</pre>)
@@ -82,7 +83,15 @@ class OaiRecordDashboard extends React.Component {
                 <ul className="list-group">
                     <li className="row list-group-item">
                         <strong className="col-md-4">Identifier</strong>
-                        <span className="col-md-16">{record.identifier}</span>
+                        <span className="col-md-27">{record.identifier}</span>
+                        <span className="col-md-1">
+                            {record.processStatus !== "PENDING" && record.processStatus !== "PROCESSING"
+                                ? (<a type="download" className="pull-right"
+                                    href={`/records/${encodeURIComponent(record.identifier)}/download`}>
+                                        <span className="glyphicon glyphicon-download-alt" />
+                                    </a>)
+                                : null}
+                        </span>
                     </li>
                     <li className="row list-group-item">
                         <strong className="col-md-4">Datestamp</strong>
