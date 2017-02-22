@@ -117,11 +117,11 @@ class LocalFileStorageHandle implements FileStorageHandle {
     private void zipFile(ZipOutputStream zipOutputStream, String name) throws IOException {
 
         try {
-            final InputStream metadata = getFile(name);
+            final InputStream is = getFile(name);
             final ZipEntry metadataEntry = new ZipEntry(name);
             zipOutputStream.putNextEntry(metadataEntry);
-            IOUtils.copy(metadata, zipOutputStream);
-            metadata.close();
+            IOUtils.copy(is, zipOutputStream);
+            is.close();
         } catch (FileNotFoundException e) {
             return;
         }
