@@ -1,5 +1,7 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
+import EnableToggle from "./enable-toggle";
+
 import { Link } from "react-router";
 import { urls } from "../../router";
 
@@ -41,17 +43,11 @@ class Repositories extends React.Component {
                               </span>
                           </div>
                           <div className="col-md-4 col-sm-4 col-xs-4">
-                              {repo.enabled
-                                  ? (<button className="btn btn-default btn-xs pull-right"
-                                             onClick={() => onDisableRepository(repo.id)}>
-                                      <span className="glyphicon glyphicon-stop"/>
-                                    </button>
-                                  ) : (<button className="btn btn-default btn-xs pull-right"
-                                               onClick={() => onEnableRepository(repo.id)}>
-                                      <span className="glyphicon glyphicon-play"/>
-                                    </button>
-                                  )
-                              }
+                              <span className="pull-right">
+                                <EnableToggle enabled={repo.enabled}
+                                      onEnableClick={() => onEnableRepository(repo.id)}
+                                      onDisableClick={() => onDisableRepository(repo.id)} />
+                              </span>
                           </div>
                       </li>
                     ))}

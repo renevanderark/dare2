@@ -1,6 +1,6 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-
+import EnableToggle from "./enable-toggle";
 
 class DataProviderDashboard extends React.Component {
 
@@ -52,6 +52,11 @@ class DataProviderDashboard extends React.Component {
                         className="glyphicon glyphicon-remove pull-right"
                         style={{color: "red", cursor: "pointer"}} />;
 
+        const enableToggle = repository
+            ? <EnableToggle enabled={repository.enabled}
+                            onEnableClick={() => console.log("enable")}
+                            onDisableClick={() => console.log("disblaed")}/>
+            : null;
         const body = repository
             ? (
                 <div>
@@ -87,6 +92,10 @@ class DataProviderDashboard extends React.Component {
                             <span className="col-md-16">
                               {repository.dateStamp || "- none harvested yet -"}
                             </span>
+                        </li>
+                        <li className="row list-group-item">
+                            <strong className="col-md-4">Enabled</strong>
+                            <span className="col-md-16">{enableToggle}</span>
                         </li>
                     </ul>
                     <button className="btn btn-default" onClick={() => onValidateRepository(repository.id)}>

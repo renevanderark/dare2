@@ -61,7 +61,7 @@ class OaiRecordDashboard extends React.Component {
                             </div>
                             <div className="row">
                                 <span className="col-md-32">
-                                    {errorReport.message}
+                                    {errorReport.message} ({errorReport.dateStamp})
                                     <span style={{cursor: "pointer"}}
                                           onClick={() => this.toggleStacktrace(i) }
                                           className={`glyphicon glyphicon-${expandedTraces.indexOf(i) < 0 ?
