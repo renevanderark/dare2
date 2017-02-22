@@ -1,13 +1,13 @@
-const rootConnector = (state, routed) => {
+const oaiRecordConnector = (state, routed) => {
     const oaiRecord = state.oaiRecords.current;
-    const repositorySet = ((state.repositories.list || [])
-        .find(repo => oaiRecord.record.repositoryId === repo.id) || {}).set;
+    const repositoryName = ((state.repositories.list || [])
+        .find(repo => oaiRecord.record.repositoryId === repo.id) || {}).name;
 
     return {
         identifier: routed.params.identifier,
         oaiRecord: {
             ...oaiRecord,
-            repositorySet: repositorySet,
+            repositoryName: repositoryName,
             collapsed: state.panels["oai-record-panel"].collapsed
         },
         records: {
@@ -18,4 +18,4 @@ const rootConnector = (state, routed) => {
     }
 };
 
-export default rootConnector;
+export default oaiRecordConnector;

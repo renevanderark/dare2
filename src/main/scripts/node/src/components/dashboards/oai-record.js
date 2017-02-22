@@ -38,7 +38,7 @@ class OaiRecordDashboard extends React.Component {
     }
 
     render() {
-        const { oaiRecord: { record, collapsed, errorReports, repositorySet }, identifier } = this.props;
+        const { oaiRecord: { record, collapsed, errorReports, repositoryName }, identifier } = this.props;
         const { onTogglePanelCollapse } = this.props;
 
         const expandedTraces = this.state.expandedTraces;
@@ -103,7 +103,7 @@ class OaiRecordDashboard extends React.Component {
                     </li>
                     <li className="row list-group-item">
                         <strong className="col-md-4">Data provider</strong>
-                        <span className="col-md-16">{repositorySet}</span>
+                        <span className="col-md-16">{repositoryName}</span>
                     </li>
                 </ul>
 

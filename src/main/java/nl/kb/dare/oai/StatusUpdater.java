@@ -55,7 +55,7 @@ public class StatusUpdater extends AbstractScheduledService {
                 statusUpdate.put("repositoryStatus",
                     repositoryDao.list().stream().map(repository -> {
                         final Map<String, Object> repoStatus = Maps.newHashMap();
-                        repoStatus.put("set", repository.getSet());
+                        repoStatus.put("name", repository.getName());
                         repoStatus.put("dateStamp", repository.getDateStamp());
                         repoStatus.put("enabled", repository.getEnabled());
                         repoStatus.put("id", repository.getId());

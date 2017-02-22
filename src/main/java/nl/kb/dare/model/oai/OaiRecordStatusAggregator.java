@@ -13,18 +13,16 @@ public class OaiRecordStatusAggregator {
     private static final String RECORDS_QUERY =
             "select count(*) as count, " +
                     "oai_records.process_status_code as status_code, " +
-                    "repositories.oai_set as oai_set " +
-            "from oai_records, repositories " +
-            "where repositories.id = oai_records.repository_id " +
+                    "oai_records.repository_id as repository_id " +
+            "from oai_records " +
             "group by repository_id, process_status_code";
 
     private static final String ERROR_QUERY =
             "select count(distinct(record_identifier)) as count," +
-                    "repositories.oai_set as oai_set, " +
-                    "oai_record_errors.status_code as status_code " +
-            "from oai_record_errors, oai_records, repositories " +
+                    "oai_record_errors.status_code as status_code, " +
+                    "oai_records.repository_id as repository_id " +
+                    "from oai_record_errors, oai_records " +
             "where oai_records.identifier = oai_record_errors.record_identifier " +
-            "and repositories.id = oai_records.repository_id " +
             "group by repository_id, oai_record_errors.status_code";
 
     private final DBI db;
@@ -51,10 +49,10 @@ public class OaiRecordStatusAggregator {
         final Map<String, Map<String, Object>> result = Maps.newHashMap();
         final Handle handle = db.open();
         for (Map<String, Object> row : handle.createQuery(sql)) {
-            final String oaiSet = (String) row.get("oai_set");
+            final String repositoryId = String.format("%d", (Integer) row.get("repository_id"));
             final Integer statusCode = (Integer) row.get("status_code");
 
-            final Map<String, Object> statusMap = result.getOrDefault(oaiSet, Maps.newHashMap());
+            final Map<String, Object> statusMap = result.getOrDefault(repositoryId, Maps.newHashMap());
             if (forRecords) {
                 final ProcessStatus processStatus = ProcessStatus.forCode(statusCode);
                 if (processStatus != null) {
@@ -67,7 +65,7 @@ public class OaiRecordStatusAggregator {
                 }
 
             }
-            result.put(oaiSet, statusMap);
+            result.put(repositoryId, statusMap);
         }
         handle.close();
         return result;

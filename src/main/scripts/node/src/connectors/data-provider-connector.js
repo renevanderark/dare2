@@ -4,15 +4,13 @@ const dataProviderConnector = (state, routed) => {
     const { recordProcessingStatus } = state.status.status || {};
     const { recordStatus, errorStatus } = recordProcessingStatus || {};
 
-    const set = ((repositories.list || []).find((repo) => "" + repo.id === routed.params.id) || {}).set;
-
     return {
         workflow: {
-            ...(recordStatus || {})[set],
+            ...(recordStatus || {})[routed.params.id],
             collapsed: state.panels["workflow-panel"].collapsed
         },
         errors: {
-            ...(errorStatus || {})[set],
+            ...(errorStatus || {})[routed.params.id],
             collapsed: state.panels["error-panel"].collapsed
         },
         records: {

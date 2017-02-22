@@ -19,7 +19,7 @@ class Repositories extends React.Component {
                 <ul className="list-group" style={{overflowY: "auto", maxHeight: "200px"}}>
                     <li className="list-group-item row">
                         <div className="col-md-14 col-sm-14 col-xs-14">
-                            Set
+                            Name
                         </div>
                         <div className="col-md-14 col-sm-14 col-xs-14">
                             <span className="pull-right" title="...of an OAI record">Latest datestamp <sup>1</sup></span>
@@ -32,7 +32,7 @@ class Repositories extends React.Component {
                       <li className="list-group-item row" key={i}>
                           <div className="col-md-14 col-sm-14 col-xs-14">
                               <Link to={urls.dataProvider(repo.id)}>
-                                {repo.set}
+                                {repo.name}
                               </Link>
                           </div>
                           <div className="col-md-14 col-sm-14 col-xs-14">
