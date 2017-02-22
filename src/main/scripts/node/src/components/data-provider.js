@@ -58,6 +58,7 @@ class OaiRecord extends React.Component {
                     <li><Link to="/">Dashboard</Link></li>
                     <li className="active">Data provider</li>
                 </ol>
+                {this.props.children ? React.cloneElement(this.props.children, {...this.props.dataProvider }) : null}
                 {dataProvider}
                 {workFlow}
                 {oaiRecords}

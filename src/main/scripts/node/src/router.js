@@ -18,6 +18,8 @@ import OaiRecord from "./components/oai-record";
 
 import dataProviderConnector from "./connectors/data-provider-connector";
 import DataProvider from "./components/data-provider";
+import DataProviderForm from "./components/data-provider/data-provider-form";
+
 
 import {fetchOaiRecords } from "./actions/oai-records";
 
@@ -57,7 +59,13 @@ const urls = {
         return id
             ? `/data-provider/${id}`
             : "/data-provider/:id"
+    },
+    editDataProvider(id = null) {
+        return id
+            ? `/data-provider/${id}/edit`
+            : "/data-provider/:id/edit"
     }
+
 };
 
 export { urls };
@@ -72,7 +80,9 @@ export default (
             <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
                 <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
                 <Route path={urls.record()} component={connectComponent(oaiRecordConnector)(OaiRecord) } />
-                <Route path={urls.dataProvider()} component={connectComponent(dataProviderConnector)(DataProvider)} />
+                <Route path={urls.dataProvider()} component={connectComponent(dataProviderConnector)(DataProvider)}>
+                    <Route path={urls.editDataProvider()} component={connectComponent((state) => ({}))(DataProviderForm)} />
+                </Route>
             </Route>
         </Router>
     </Provider>

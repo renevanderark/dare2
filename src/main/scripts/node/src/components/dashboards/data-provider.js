@@ -2,6 +2,9 @@ import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import EnableToggle from "./enable-toggle";
 
+import { Link } from "react-router";
+import { urls } from "../../router";
+
 class DataProviderDashboard extends React.Component {
 
     shouldComponentUpdate(nextProps) {
@@ -108,6 +111,9 @@ class DataProviderDashboard extends React.Component {
                     <button className="btn btn-default" onClick={() => onValidateRepository(repository.id)}>
                         Test settings
                     </button>
+                    <Link to={urls.editDataProvider(repository.id)} className="btn btn-default">
+                        Edit
+                    </Link>
                 </div>
             ) : (<div>Loading...</div>);
         return (
