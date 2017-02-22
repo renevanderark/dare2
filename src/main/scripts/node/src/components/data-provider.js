@@ -20,6 +20,9 @@ class OaiRecord extends React.Component {
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
 
+        // actions for data provider
+        const { onFetchDataProvider, onValidateRepository } = this.props;
+
         const workFlow = (
             <Workflow {...this.props.workflow}
                       onSetRecordQueryFilter={(field, value) => onSetRecordQueryFilter(field, value, this.props.params.id)}
@@ -42,6 +45,8 @@ class OaiRecord extends React.Component {
         const dataProvider = (
             <DataProviderDashboard {...this.props.dataProvider}
                                    onTogglePanelCollapse={onTogglePanelCollapse}
+                                   onFetchDataProvider={onFetchDataProvider}
+                                   onValidateRepository={onValidateRepository}
             />
         );
 

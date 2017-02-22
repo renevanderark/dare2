@@ -11,9 +11,9 @@ const oaiRecordConnector = (state, routed) => {
             collapsed: state.panels["oai-record-panel"].collapsed
         },
         records: {
-        ...state.oaiRecords,
-                repositories: state.repositories.list,
-                collapsed: state.panels["oai-records-panel"].collapsed
+            ...state.oaiRecords,
+            repositories: state.repositories.list,
+            collapsed: state.panels["oai-records-panel"].collapsed
         },
     }
 };

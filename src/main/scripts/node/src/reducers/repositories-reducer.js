@@ -1,7 +1,9 @@
 import ActionTypes from "../action-types";
 
 const initialState = {
-    list: []
+    list: [],
+    current: null,
+    validationResults: {}
 };
 
 
@@ -11,6 +13,17 @@ export default function(state=initialState, action) {
             return {
                 ...state,
                 list: action.data.repositoryStatus
+            };
+        case ActionTypes.RECEIVE_DATA_PROVIDER:
+            return {
+                ...state,
+                current: action.data,
+                validationResults: {}
+            };
+        case ActionTypes.RECEIVE_REPOSITORY_VALIDATION_RESULTS:
+            return {
+                ...state,
+                validationResults: action.data
             };
         default:
     }

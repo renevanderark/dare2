@@ -4,14 +4,100 @@ import CollapsiblePanel from "../panels/collapsible-panel";
 
 class DataProviderDashboard extends React.Component {
 
-    render() {
-        const { collapsed } = this.props;
-        const { onTogglePanelCollapse } = this.props;
+    shouldComponentUpdate(nextProps) {
+        return this.props.collapsed !== nextProps.collapsed ||
+                this.props.repository !== nextProps.repository ||
+                this.props.id !== nextProps.id ||
+                this.props.validationResults !== nextProps.validationResults;
+    }
 
+    componentWillReceiveProps(nextProps) {
+        const {onFetchDataProvider} = this.props;
+
+        if (nextProps.id !== this.props.id) {
+            onFetchDataProvider(nextProps.id);
+        }
+    }
+
+    componentDidMount() {
+        const { id, repository, onFetchDataProvider } = this.props;
+
+
+        if (!repository || `${repository.id}` !== id) {
+            onFetchDataProvider(id);
+        }
+    }
+
+    render() {
+        const { collapsed, repository, validationResults } = this.props;
+        const { onTogglePanelCollapse, onValidateRepository } = this.props;
+
+        const { setExists, metadataFormatSupported } = validationResults;
+
+        const setExistsMarker = typeof setExists === 'undefined'
+            ? null
+            : setExists
+                ? <span title="Set exists in this repository" className="glyphicon glyphicon-ok pull-right"
+                        style={{color: "green", cursor: "pointer"}} />
+                : <span title="Set does not exist in this repository" className="glyphicon glyphicon-remove pull-right"
+                        style={{color: "red", cursor: "pointer"}} />;
+
+        const metadataFormatSupportedMarker = typeof metadataFormatSupported === 'undefined'
+            ? null
+            : metadataFormatSupported
+                ? <span title="Metadata format is supported by this repository"
+                        className="glyphicon glyphicon-ok pull-right"
+                        style={{color: "green", cursor: "pointer"}} />
+                : <span title="Metadata format is not supported by this repository"
+                        className="glyphicon glyphicon-remove pull-right"
+                        style={{color: "red", cursor: "pointer"}} />;
+
+        const body = repository
+            ? (
+                <div>
+                    <h3>{repository.name}</h3>
+                    <ul className="list-group">
+                        <li className="row list-group-item">
+                            <strong className="col-md-4">Name</strong>
+                            <span className="col-md-16">{repository.name}</span>
+                        </li>
+                        <li className="row list-group-item">
+                            <strong className="col-md-4">Url</strong>
+                            <span className="col-md-16">{repository.url}</span>
+                        </li>
+                        <li className="row list-group-item">
+                            <strong className="col-md-4">OAI set</strong>
+                            <span className="col-md-16">
+                                {repository.set}
+                                {setExistsMarker}
+                            </span>
+                        </li>
+                        <li className="row list-group-item">
+                            <strong className="col-md-4">OAI metadataPrefix</strong>
+                            <span className="col-md-16">
+                                {repository.metadataPrefix}
+                                {metadataFormatSupportedMarker}
+                            </span>
+                        </li>
+                        <li className="row list-group-item">
+                            <strong title="Both latest datestamp encountered in harvest and start date for next harvest"
+                                    className="col-md-4">
+                                Datestamp<sup>1</sup>
+                            </strong>
+                            <span className="col-md-16">
+                              {repository.dateStamp || "- none harvested yet -"}
+                            </span>
+                        </li>
+                    </ul>
+                    <button className="btn btn-default" onClick={() => onValidateRepository(repository.id)}>
+                        Test settings
+                    </button>
+                </div>
+            ) : (<div>Loading...</div>);
         return (
             <CollapsiblePanel id="data-provider-panel" title="Data provider" collapsed={collapsed}
                               onTogglePanelCollapse={onTogglePanelCollapse}>
-                foo
+                {body}
             </CollapsiblePanel>
         );
     }

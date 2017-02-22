@@ -9,7 +9,9 @@ import {
 
 import {
     enableRepository,
-    disableRepository
+    disableRepository,
+    fetchRepository,
+    validateRepository
 } from "./actions/repositories";
 
 import {
@@ -30,6 +32,8 @@ export default function actionsMaker(navigateTo, dispatch) {
 
         onEnableRepository: (id) => dispatch(enableRepository(id)),
         onDisableRepository: (id) => dispatch(disableRepository(id)),
+        onValidateRepository: (id) => dispatch(validateRepository(id)),
+        onFetchDataProvider: (id) => dispatch(fetchRepository(id)),
 
         onSetRecordQueryFilter: (field, value, repositoryId = null) => {
             dispatch(setRecordQueryFilter(field, value, repositoryId));
@@ -49,7 +53,6 @@ export default function actionsMaker(navigateTo, dispatch) {
         onFetchOaiRecord: (identifier) => {
             dispatch(fetchOaiRecord(identifier));
             dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-record-panel"})
-
         }
     };
 }
