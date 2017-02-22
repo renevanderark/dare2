@@ -11,14 +11,8 @@ const Modal  = ({closeLink, title, children}) => (
                     </Link>
                     <h4 className="modal-title">{title}</h4>
                 </div>
-                <div className="modal-body">
-                    {children}
-                </div>
-                <div className="modal-footer">
-                    <Link to={closeLink} className="btn btn-default pull-left">
-                        Cancel
-                    </Link>
-                </div>
+                {children}
+
             </div>
         </div>
     </div>

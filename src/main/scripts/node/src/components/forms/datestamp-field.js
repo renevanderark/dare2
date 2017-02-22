@@ -6,8 +6,10 @@ const Parts = {
 
 
 const validate = (value) =>
-    !isNaN(Date.parse(value)) &&
-    value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/) !== null;
+    value === null || (
+        !isNaN(Date.parse(value)) &&
+        value.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/) !== null
+    );
 
 const validateYear = (year) =>
     year.match(/^[0-9]{4}$/) !== null;
@@ -108,8 +110,9 @@ class DatestampField extends React.Component {
 
 DatestampField.propTypes = {
     label: React.PropTypes.string.isRequired,
-    value: React.PropTypes.string.isRequired,
+    value: React.PropTypes.string,
     onChange: React.PropTypes.func.isRequired
 };
 
 export default DatestampField;
+export { validate as validateDateStamp };

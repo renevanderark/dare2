@@ -17,9 +17,40 @@ const validateRepository = (id) => (dispatch) =>
     xhr({url: `/repositories/${id}/validate`, method: "GET"}, (err, resp, body) =>
         dispatch({type: ActionTypes.RECEIVE_REPOSITORY_VALIDATION_RESULTS, data: JSON.parse(body)}));
 
+const validateNewRepository = (repository) => (dispatch) =>
+    xhr({
+        url: `/repositories/validate`,
+        method: "POST",
+        headers: { "Content-type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(repository)
+    }, (err, resp, body) => {
+        if (resp.statusCode > 299) {
+            dispatch({
+                type: ActionTypes.RECEIVE_NEW_REPOSITORY_VALIDATION_RESULTS,
+                underEdit: repository,
+                data: {
+                    urlIsValidOAI: false,
+                    setExists: undefined,
+                    metadataFormatSupported: undefined
+                }
+            })
+        } else {
+            dispatch({
+                type: ActionTypes.RECEIVE_NEW_REPOSITORY_VALIDATION_RESULTS,
+                underEdit: repository,
+                data: {
+                    ...JSON.parse(body),
+                    urlIsValidOAI: true
+                }
+            })
+        }
+    });
+
+
 export  {
     enableRepository,
     disableRepository,
     fetchRepository,
-    validateRepository
+    validateRepository,
+    validateNewRepository
 };

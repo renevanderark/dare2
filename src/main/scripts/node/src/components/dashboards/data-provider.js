@@ -2,6 +2,8 @@ import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import EnableToggle from "./enable-toggle";
 
+import ValidationMarker from "../widgets/validation-marker";
+
 import { Link } from "react-router";
 import { urls } from "../../router";
 
@@ -11,7 +13,8 @@ class DataProviderDashboard extends React.Component {
         return this.props.collapsed !== nextProps.collapsed ||
                 this.props.repository !== nextProps.repository ||
                 this.props.id !== nextProps.id ||
-                this.props.validationResults !== nextProps.validationResults;
+                this.props.validationResults !== nextProps.validationResults ||
+                this.props.underEdit !== nextProps.underEdit;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,24 +46,6 @@ class DataProviderDashboard extends React.Component {
 
         const { setExists, metadataFormatSupported } = validationResults;
 
-        const setExistsMarker = typeof setExists === 'undefined'
-            ? null
-            : setExists
-                ? <span title="Set exists in this repository" className="glyphicon glyphicon-ok pull-right"
-                        style={{color: "green", cursor: "pointer"}} />
-                : <span title="Set does not exist in this repository" className="glyphicon glyphicon-remove pull-right"
-                        style={{color: "red", cursor: "pointer"}} />;
-
-        const metadataFormatSupportedMarker = typeof metadataFormatSupported === 'undefined'
-            ? null
-            : metadataFormatSupported
-                ? <span title="Metadata format is supported by this repository"
-                        className="glyphicon glyphicon-ok pull-right"
-                        style={{color: "green", cursor: "pointer"}} />
-                : <span title="Metadata format is not supported by this repository"
-                        className="glyphicon glyphicon-remove pull-right"
-                        style={{color: "red", cursor: "pointer"}} />;
-
         const enableToggle = repository
             ? <EnableToggle enabled={repository.enabled}
                             onEnableClick={() => onEnableRepository(repository.id, () => onFetchDataProvider(repository.id)) }
@@ -84,14 +69,20 @@ class DataProviderDashboard extends React.Component {
                             <strong className="col-md-4">OAI set</strong>
                             <span className="col-md-16">
                                 {repository.set}
-                                {setExistsMarker}
+                                <ValidationMarker validates={setExists}
+                                      messageOk="Set exists in this repository"
+                                      messageFail="Set does not exist in this repository"
+                                />
                             </span>
                         </li>
                         <li className="row list-group-item">
                             <strong className="col-md-4">OAI metadataPrefix</strong>
                             <span className="col-md-16">
                                 {repository.metadataPrefix}
-                                {metadataFormatSupportedMarker}
+                                <ValidationMarker validates={metadataFormatSupported}
+                                      messageOk="Metadata format is supported by this repository"
+                                      messageFail="Metadata format is not supported by this repository"
+                                />
                             </span>
                         </li>
                         <li className="row list-group-item">

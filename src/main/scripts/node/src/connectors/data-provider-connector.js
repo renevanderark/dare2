@@ -20,7 +20,9 @@ const dataProviderConnector = (state, routed) => {
         },
         dataProvider: {
             repository: state.repositories.current,
+            underEdit:  state.repositories.underEdit,
             validationResults: state.repositories.validationResults,
+            validationResultsUnderEdit: state.repositories.validationResultsUnderEdit,
             id: routed.params.id,
             collapsed: state.panels["data-provider-panel"].collapsed
         }

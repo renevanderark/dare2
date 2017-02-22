@@ -1,7 +1,7 @@
 const oaiRecordConnector = (state, routed) => {
     const oaiRecord = state.oaiRecords.current;
     const repositoryName = ((state.repositories.list || [])
-        .find(repo => oaiRecord.record.repositoryId === repo.id) || {}).name;
+        .find(repo => ((oaiRecord || {}).record || {}).repositoryId === repo.id) || {}).name;
 
     return {
         identifier: routed.params.identifier,

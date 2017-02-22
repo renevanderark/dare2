@@ -3,7 +3,9 @@ import ActionTypes from "../action-types";
 const initialState = {
     list: [],
     current: null,
-    validationResults: {}
+    underEdit: null,
+    validationResults: {},
+    validationResultsUnderEdit: {}
 };
 
 
@@ -18,12 +20,20 @@ export default function(state=initialState, action) {
             return {
                 ...state,
                 current: action.data,
-                validationResults: {}
+                validationResults: {},
+                underEdit: null,
+                validationResultsUnderEdit: {}
             };
         case ActionTypes.RECEIVE_REPOSITORY_VALIDATION_RESULTS:
             return {
                 ...state,
                 validationResults: action.data
+            };
+        case ActionTypes.RECEIVE_NEW_REPOSITORY_VALIDATION_RESULTS:
+            return {
+                ...state,
+                underEdit: action.underEdit,
+                validationResultsUnderEdit: action.data
             };
         default:
     }

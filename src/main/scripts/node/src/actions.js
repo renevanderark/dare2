@@ -11,7 +11,8 @@ import {
     enableRepository,
     disableRepository,
     fetchRepository,
-    validateRepository
+    validateRepository,
+    validateNewRepository
 } from "./actions/repositories";
 
 import {
@@ -33,7 +34,10 @@ export default function actionsMaker(navigateTo, dispatch) {
         onEnableRepository: (id, next = () => {}) => dispatch(enableRepository(id, next)),
         onDisableRepository: (id, next = () => {}) => dispatch(disableRepository(id, next)),
         onValidateRepository: (id) => dispatch(validateRepository(id)),
+        onValidateNewRepository: (repository) => dispatch(validateNewRepository(repository)),
+
         onFetchDataProvider: (id) => dispatch(fetchRepository(id)),
+
 
         onSetRecordQueryFilter: (field, value, repositoryId = null) => {
             dispatch(setRecordQueryFilter(field, value, repositoryId));
