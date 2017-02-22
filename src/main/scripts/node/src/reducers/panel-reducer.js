@@ -6,7 +6,8 @@ const initialState = {
     "error-panel": {collapsed: true},
     "repositories-panel": {collapsed: true },
     "oai-records-panel": {collapsed: true },
-    "oai-record-panel": {collapsed: false }
+    "oai-record-panel": {collapsed: false },
+    "data-provider-panel": {collapsed: false}
 };
 
 

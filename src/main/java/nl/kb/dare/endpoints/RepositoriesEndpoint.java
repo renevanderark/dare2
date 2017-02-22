@@ -96,10 +96,8 @@ public class RepositoriesEndpoint {
             return notFoundResponse(id);
         }
 
-        final RepositoryValidator.ValidationResult result;
-
         try {
-            result = validator.validate(repositoryConfig);
+            final RepositoryValidator.ValidationResult result = validator.validate(repositoryConfig);
             return Response.ok(result).build();
         } catch (IOException e) {
 

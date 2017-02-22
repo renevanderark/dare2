@@ -18,6 +18,9 @@ const dataProviderConnector = (state, routed) => {
             repositories: state.repositories.list,
             collapsed: state.panels["oai-records-panel"].collapsed
         },
+        dataProvider: {
+            collapsed: state.panels["data-provider-panel"].collapsed
+        }
     }
 };
 

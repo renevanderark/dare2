@@ -183,8 +183,6 @@ public class OaiRecordQuery {
                 query.bind("offset", offset);
             }
 
-            System.out.println(sb.toString());
-
             return this;
         }
 

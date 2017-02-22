@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import Workflow from "./dashboards/workflow";
 import OaiRecords from "./dashboards/oai-records";
 import ErrorReports from "./dashboards/error-reports";
+import DataProviderDashboard from "./dashboards/data-provider";
 
 class OaiRecord extends React.Component {
 
@@ -37,12 +38,20 @@ class OaiRecord extends React.Component {
                           onSetRecordQueryFilter={(field, value) => onSetRecordQueryFilter(field, value, this.props.params.id)}
                           onTogglePanelCollapse={onTogglePanelCollapse} />
         );
+
+        const dataProvider = (
+            <DataProviderDashboard {...this.props.dataProvider}
+                                   onTogglePanelCollapse={onTogglePanelCollapse}
+            />
+        );
+
         return (
             <div>
                 <ol className="breadcrumb">
                     <li><Link to="/">Dashboard</Link></li>
                     <li className="active">Data provider</li>
                 </ol>
+                {dataProvider}
                 {workFlow}
                 {oaiRecords}
                 {errorReports}
