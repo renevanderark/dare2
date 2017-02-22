@@ -17,7 +17,7 @@ public interface RepositoryDao {
     @GetGeneratedKeys
     Integer insert(@BindBean Repository repositoryConfig);
 
-    @SqlQuery("select id, url, metadataPrefix, oai_set, datestamp, enabled from repositories where id = :id")
+    @SqlQuery("select id, url, name, metadataPrefix, oai_set, datestamp, enabled from repositories where id = :id")
     Repository findById(@Bind("id") int id);
 
     @SqlUpdate("delete from repositories where id = :id")
@@ -28,7 +28,7 @@ public interface RepositoryDao {
             "where id = :id")
     void update(@Bind("id") Integer id, @BindBean("r") Repository repositoryConfig);
 
-    @SqlQuery("select id, url, metadataPrefix, oai_set, datestamp, enabled from repositories")
+    @SqlQuery("select id, url, name, metadataPrefix, oai_set, datestamp, enabled from repositories")
     List<Repository> list();
 
     @SqlUpdate("update repositories " +

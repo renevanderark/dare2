@@ -12,11 +12,12 @@ public class RepositoryMapper implements ResultSetMapper<Repository> {
     @Override
     public Repository map(int index, ResultSet resultSet, StatementContext statementContext) throws SQLException {
         final String url = resultSet.getString("url");
+        final String name = resultSet.getString("name");
         final String metadataPrefix = resultSet.getString("metadataPrefix");
         final String set = resultSet.getString("oai_set");
         final String dateStamp = resultSet.getString("dateStamp");
         final Integer id = resultSet.getInt("id");
         final Boolean enabled = resultSet.getBoolean("enabled");
-        return new Repository(url, metadataPrefix, set, dateStamp, enabled, id);
+        return new Repository(url, name, metadataPrefix, set, dateStamp, enabled, id);
     }
 }

@@ -84,6 +84,7 @@ DROP TABLE IF EXISTS `repositories`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `repositories` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(255) DEFAULT NULL,
   `url` varchar(255) DEFAULT NULL,
   `metadataPrefix` varchar(255) DEFAULT NULL,
   `oai_set` varchar(50) DEFAULT NULL,

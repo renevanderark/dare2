@@ -10,27 +10,34 @@ public class Repository {
     private String metadataPrefix;
     private String set;
     private String dateStamp;
+    private String name;
 
     public Repository() {
 
     }
 
-    public Repository(String url, String metadataPrefix, String set, String dateStamp, Boolean enabled) {
+    public Repository(String url, String name, String metadataPrefix, String set, String dateStamp, Boolean enabled) {
         this.url = url;
+        this.name = name;
         this.metadataPrefix = metadataPrefix;
         this.set = set;
         this.dateStamp = dateStamp;
         this.enabled = enabled;
     }
 
-    public Repository(String url, String metadataPrefix, String set, String dateStamp, Boolean enabled, Integer id) {
-        this(url, metadataPrefix, set, dateStamp, enabled);
+    public Repository(String url, String name, String metadataPrefix, String set, String dateStamp, Boolean enabled, Integer id) {
+        this(url, name, metadataPrefix, set, dateStamp, enabled);
         this.id = id;
     }
 
     @JsonProperty
     public String getUrl() {
         return url;
+    }
+
+    @JsonProperty
+    public String getName() {
+        return name;
     }
 
     @JsonProperty
@@ -51,6 +58,11 @@ public class Repository {
     @JsonProperty
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    @JsonProperty
+    public void setName(String name) {
+        this.name = name;
     }
 
     @JsonProperty
