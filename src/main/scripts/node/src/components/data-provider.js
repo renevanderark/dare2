@@ -21,7 +21,7 @@ class OaiRecord extends React.Component {
         const { onTogglePanelCollapse } = this.props;
 
         // actions for data provider
-        const { onFetchDataProvider, onValidateRepository } = this.props;
+        const { onFetchDataProvider, onValidateRepository, onEnableRepository, onDisableRepository } = this.props;
 
         const workFlow = (
             <Workflow {...this.props.workflow}
@@ -38,15 +38,17 @@ class OaiRecord extends React.Component {
 
         const errorReports = (
             <ErrorReports {...this.props.errors}
-                          onSetRecordQueryFilter={(field, value) => onSetRecordQueryFilter(field, value, this.props.params.id)}
-                          onTogglePanelCollapse={onTogglePanelCollapse} />
+                      onSetRecordQueryFilter={(field, value) => onSetRecordQueryFilter(field, value, this.props.params.id)}
+                      onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         const dataProvider = (
             <DataProviderDashboard {...this.props.dataProvider}
-                                   onTogglePanelCollapse={onTogglePanelCollapse}
-                                   onFetchDataProvider={onFetchDataProvider}
-                                   onValidateRepository={onValidateRepository}
+                       onTogglePanelCollapse={onTogglePanelCollapse}
+                       onFetchDataProvider={onFetchDataProvider}
+                       onValidateRepository={onValidateRepository}
+                       onEnableRepository={onEnableRepository}
+                       onDisableRepository={onDisableRepository}
             />
         );
 

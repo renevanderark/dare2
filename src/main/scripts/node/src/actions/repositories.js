@@ -1,13 +1,13 @@
 import xhr from "xhr";
 import ActionTypes from "../action-types";
 
-const toggleRepositoryAndFetch = (id, operation) => (dispatch) =>
-    xhr({url: `/repositories/${id}/${operation}`, method: "PUT"}, () => {});
+const toggleRepositoryAndFetch = (id, operation, next = () => {}) => (dispatch) =>
+    xhr({url: `/repositories/${id}/${operation}`, method: "PUT"}, next);
 
 
-const enableRepository = (id) => toggleRepositoryAndFetch(id, "enable");
+const enableRepository = (id, next) => toggleRepositoryAndFetch(id, "enable", next);
 
-const disableRepository = (id) => toggleRepositoryAndFetch(id, "disable");
+const disableRepository = (id, next) => toggleRepositoryAndFetch(id, "disable", next);
 
 const fetchRepository = (id) => (dispatch) =>
     xhr({url: `/repositories/${id}`, method: "GET"}, (err, resp, body) =>

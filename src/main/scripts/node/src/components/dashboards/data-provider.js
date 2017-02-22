@@ -30,7 +30,13 @@ class DataProviderDashboard extends React.Component {
 
     render() {
         const { collapsed, repository, validationResults } = this.props;
-        const { onTogglePanelCollapse, onValidateRepository } = this.props;
+        const {
+            onTogglePanelCollapse,
+            onValidateRepository,
+            onEnableRepository,
+            onDisableRepository,
+            onFetchDataProvider
+        } = this.props;
 
         const { setExists, metadataFormatSupported } = validationResults;
 
@@ -54,9 +60,10 @@ class DataProviderDashboard extends React.Component {
 
         const enableToggle = repository
             ? <EnableToggle enabled={repository.enabled}
-                            onEnableClick={() => console.log("enable")}
-                            onDisableClick={() => console.log("disblaed")}/>
+                            onEnableClick={() => onEnableRepository(repository.id, () => onFetchDataProvider(repository.id)) }
+                            onDisableClick={() => onDisableRepository(repository.id, () => onFetchDataProvider(repository.id)) }/>
             : null;
+
         const body = repository
             ? (
                 <div>

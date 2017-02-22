@@ -30,8 +30,8 @@ export default function actionsMaker(navigateTo, dispatch) {
 
         onTogglePanelCollapse: (panelId) => dispatch({type: ActionTypes.ON_TOGGLE_PANEL_COLLAPSE, id: panelId}),
 
-        onEnableRepository: (id) => dispatch(enableRepository(id)),
-        onDisableRepository: (id) => dispatch(disableRepository(id)),
+        onEnableRepository: (id, next = () => {}) => dispatch(enableRepository(id, next)),
+        onDisableRepository: (id, next = () => {}) => dispatch(disableRepository(id, next)),
         onValidateRepository: (id) => dispatch(validateRepository(id)),
         onFetchDataProvider: (id) => dispatch(fetchRepository(id)),
 
