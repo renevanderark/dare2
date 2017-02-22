@@ -126,6 +126,21 @@ public class RepositoriesEndpointTest {
         assertThat(response.getEntity(), equalTo(validationResult));
     }
     @Test
+    public void validateNewShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryValidator validator = mock(RepositoryValidator.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator);
+        final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
+        final RepositoryValidator.ValidationResult validationResult = validator.new ValidationResult();
+        when(validator.validate(repositoryConfig)).thenReturn(validationResult);
+
+        final Response response = instance.validateNew(repositoryConfig);
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+        assertThat(response.getEntity(), equalTo(validationResult));
+    }
+
+    @Test
     public void validateShouldReturnNotFoundWhenRepositoryIsNotFound() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class));

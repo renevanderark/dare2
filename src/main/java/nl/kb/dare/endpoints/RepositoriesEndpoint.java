@@ -96,6 +96,17 @@ public class RepositoriesEndpoint {
             return notFoundResponse(id);
         }
 
+        return getValidationResponse(repositoryConfig);
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/validate")
+    public Response validateNew(Repository repositoryConfig) {
+        return getValidationResponse(repositoryConfig);
+    }
+
+    private Response getValidationResponse(Repository repositoryConfig) {
         try {
             final RepositoryValidator.ValidationResult result = validator.validate(repositoryConfig);
             return Response.ok(result).build();
