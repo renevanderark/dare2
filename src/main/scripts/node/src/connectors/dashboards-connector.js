@@ -1,3 +1,5 @@
+import { convertRecords } from "./converters";
+
 const lpad = number => number <= 99 ? ("0"+number).slice(-2) : number;
 
 const getNextRun = (nextRunTime) => {
@@ -33,11 +35,7 @@ const dashboardsConnector = (state) => {
             ...(state.status.totals || {}).errors,
             collapsed: state.panels["error-panel"].collapsed
         },
-        records: {
-            ...state.oaiRecords,
-            repositories: state.repositories.list,
-            collapsed: state.panels["oai-records-panel"].collapsed
-        },
+        records: convertRecords(state),
         repositories: {
             collapsed: state.panels["repositories-panel"].collapsed,
             list: state.repositories.list

@@ -1,3 +1,4 @@
+import {convertRecords} from "./converters";
 const oaiRecordConnector = (state, routed) => {
     const oaiRecord = state.oaiRecords.current;
     const repositoryName = ((state.repositories.list || [])
@@ -10,11 +11,7 @@ const oaiRecordConnector = (state, routed) => {
             repositoryName: repositoryName,
             collapsed: state.panels["oai-record-panel"].collapsed
         },
-        records: {
-            ...state.oaiRecords,
-            repositories: state.repositories.list || [],
-            collapsed: state.panels["oai-records-panel"].collapsed
-        },
+        records: convertRecords(state)
     }
 };
 

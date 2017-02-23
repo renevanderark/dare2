@@ -45,7 +45,7 @@ export default function actionsMaker(navigateTo, dispatch) {
             if (field === "processStatus" && value === "failure") {
                 dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "error-panel"});
             }
-            if (field === "errorStatus") {
+            if (field === "errorStatus" && value !== null) {
                 dispatch(setRecordQueryFilter("processStatus", "failure", repositoryId));
             }
         },

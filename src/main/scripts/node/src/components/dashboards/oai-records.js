@@ -1,90 +1,58 @@
 import React from "react";
-import { Link } from "react-router";
 
-import { urls } from "../../router";
 import CollapsiblePanel from "../panels/collapsible-panel";
-import InnerPanel from "../panels/inner-panel";
-import { numberFormat } from "../../util/format-number";
-import Pagination from "./pagination";
 
-class OaiRecords extends React.Component {
+import Pagination from "./oai-records/pagination";
+
+import Query from "./oai-records/query";
+import ResultHeader from "./oai-records/result-header";
+import OaiRecordRow from "./oai-records/row";
+
+const shouldUpdateForPagination = (props, nextProps) =>
+    props.query.offset !== nextProps.query.offset ||
+    props.query.limit !== nextProps.query.limit ||
+    props.results.count !== nextProps.results.count;
+
+const serializeQuery = (query) =>
+    query.map(({label, key}) => `${key}-${label}`).join();
+
+const serializeResults = (results) => results.map(result =>
+    result.identifier + "-" +
+    result.repositoryName + "-" +
+    result.dateStamp + "-" +
+    result.processStatus + "-").join("|");
+
+    class OaiRecords extends React.Component {
 
     shouldComponentUpdate(nextProps) {
-
-        return nextProps.query !== this.props.query ||
-            nextProps.results !== this.props.results ||
-            nextProps.collapsed !== this.props.collapsed ||
-            nextProps.activeRecordIdentifier !== this.props.activeRecordIdentifier
+        return  this.props.collapsed !== nextProps.collapsed ||
+            this.props.activeRecordIdentifier !== nextProps.activeRecordIdentifier ||
+            shouldUpdateForPagination(this.props, nextProps) ||
+            serializeQuery(this.props.labeledQuery) !== serializeQuery(nextProps.labeledQuery) ||
+            serializeResults(this.props.results.result) !== serializeResults(nextProps.results.result);
     }
 
     render() {
         // panel actions
         const { onTogglePanelCollapse, onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset } = this.props;
 
-        const { activeRecordIdentifier } = this.props;
-
-        const query = Object.keys(this.props.query)
-            .filter((key) => this.props.query[key] !== null && key !== 'limit' && key !== 'offset')
-            .map((key) => ({key: key, value: this.props.query[key]}));
-
-        const queryPanel = query.length > 0 ? (
-            <InnerPanel spacing="col-md-32">
-                {query.map(part => (
-                    <span className="badge" title={part.key} key={part.key}
-                          onClick={() => onSetRecordQueryFilter(part.key, null)}
-                          style={{cursor: "pointer"}}>
-                        {part.key === "repositoryId"
-                            ? ((this.props.repositories|| []).find((repo) => "" + repo.id === part.value) || {}).name
-                            : part.value}{" "}
-                        <span className="glyphicon glyphicon-remove" />
-                    </span>
-                ))}
-            </InnerPanel>
-        ) : null;
+        const { activeRecordIdentifier, labeledQuery, collapsed, results: { count, result }, query } = this.props;
 
         return (
-            <CollapsiblePanel id="oai-records-panel" collapsed={this.props.collapsed} title="Records browser"
+            <CollapsiblePanel id="oai-records-panel" collapsed={collapsed} title="Records browser"
                               onTogglePanelCollapse={onTogglePanelCollapse}>
 
-                <h4>Query</h4>
-                {queryPanel}
-                <div className="clearfix" />
-                <br />
-                <h4>
-                    <span className="glyphicon glyphicon-refresh" style={{cursor: "pointer"}}
-                          onClick={() => onRefetchRecords()}
-                    />
-                    {" "}
-                    Results ({numberFormat(this.props.results.count)})
-                </h4>
+                <Query query={labeledQuery} onSetRecordQueryFilter={onSetRecordQueryFilter} />
+                <ResultHeader count={count} onRefetchRecords={onRefetchRecords} />
+
                 <ul className="list-group">
-                    {(this.props.results.result || []).map((record, i) => (
-                        <li key={`${i}-${record.identifier}`}
-                            className={`list-group-item row ${activeRecordIdentifier === record.identifier ? "active" : ""}`}>
-
-                            <div className="col-md-16">
-                                <Link to={urls.record(encodeURIComponent(record.identifier))}>
-                                    {record.identifier}
-                                </Link>
-                            </div>
-                            <div className="col-md-8">
-                                <Link to={urls.record(encodeURIComponent(record.identifier))}>
-                                    {((this.props.repositories ||[]).find((repo) => repo.id === record.repositoryId) || {}).name}
-                                </Link>
-                            </div>
-                            <div className="col-md-5">
-                                {record.dateStamp}
-                            </div>
-                            <div className="col-md-2">
-                                {record.processStatus}
-                            </div>
-
-                        </li>
+                    {(result || []).map((record, i) => (
+                        <OaiRecordRow {...record} key={i} activeRecordIdentifier={activeRecordIdentifier} />
                     ))}
                 </ul>
-                <Pagination offset={this.props.query.offset}
-                            limit={this.props.query.limit}
-                            count={this.props.results.count}
+                <Pagination offset={query.offset}
+                            limit={query.limit}
+                            count={count}
                             onPageClick={(newOffset) => onSetRecordQueryOffset(newOffset)}
                 />
             </CollapsiblePanel>

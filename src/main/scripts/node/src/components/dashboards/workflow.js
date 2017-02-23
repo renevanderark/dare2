@@ -7,10 +7,11 @@ import CounterBadge from "../widgets/counter-badge";
 class Workflow extends React.Component {
 
     shouldComponentUpdate(nextProps) {
-        return this.props.pending !== nextProps.pending ||
-                this.props.processing !== nextProps.processing ||
-                this.props.processed !== nextProps.processed ||
-                this.props.failure !== nextProps.failure;
+        return this.props.collapsed !== nextProps.collapsed ||
+            this.props.pending !== nextProps.pending ||
+            this.props.processing !== nextProps.processing ||
+            this.props.processed !== nextProps.processed ||
+            this.props.failure !== nextProps.failure;
     }
 
     render() {

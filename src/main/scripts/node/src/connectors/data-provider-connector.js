@@ -1,3 +1,4 @@
+import {convertRecords} from "./converters";
 const dataProviderConnector = (state, routed) => {
 
     const { repositories } = state;
@@ -13,11 +14,7 @@ const dataProviderConnector = (state, routed) => {
             ...(errorStatus || {})[routed.params.id],
             collapsed: state.panels["error-panel"].collapsed
         },
-        records: {
-            ...state.oaiRecords,
-            repositories: state.repositories.list,
-            collapsed: state.panels["oai-records-panel"].collapsed
-        },
+        records: convertRecords(state),
         dataProvider: {
             repository: state.repositories.current,
             underEdit:  state.repositories.underEdit,
