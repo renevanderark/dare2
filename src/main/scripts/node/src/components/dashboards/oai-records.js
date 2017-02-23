@@ -34,7 +34,7 @@ class OaiRecords extends React.Component {
                           onClick={() => onSetRecordQueryFilter(part.key, null)}
                           style={{cursor: "pointer"}}>
                         {part.key === "repositoryId"
-                            ? (this.props.repositories.find((repo) => "" + repo.id === part.value) || {}).name
+                            ? ((this.props.repositories|| []).find((repo) => "" + repo.id === part.value) || {}).name
                             : part.value}{" "}
                         <span className="glyphicon glyphicon-remove" />
                     </span>
@@ -69,7 +69,7 @@ class OaiRecords extends React.Component {
                             </div>
                             <div className="col-md-8">
                                 <Link to={urls.record(encodeURIComponent(record.identifier))}>
-                                    {(this.props.repositories.find((repo) => repo.id === record.repositoryId) || {}).name}
+                                    {((this.props.repositories ||[]).find((repo) => repo.id === record.repositoryId) || {}).name}
                                 </Link>
                             </div>
                             <div className="col-md-5">

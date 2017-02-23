@@ -12,7 +12,7 @@ const oaiRecordConnector = (state, routed) => {
         },
         records: {
             ...state.oaiRecords,
-            repositories: state.repositories.list,
+            repositories: state.repositories.list || [],
             collapsed: state.panels["oai-records-panel"].collapsed
         },
     }

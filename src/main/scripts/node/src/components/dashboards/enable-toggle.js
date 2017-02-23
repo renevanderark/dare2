@@ -17,7 +17,7 @@ const EnableToggle = ({ enabled, onEnableClick, onDisableClick }) => {
                     Off
                 </div>
                 <button className="btn btn-success btn-xs" onClick={onEnableClick}
-                        style={{opacity: ".9", borderTopLeftRadius: "0", borderTopLeftRadius: "0", boxShadow: "0px 1px 1px #aaa5, inset 0px 1px 1px #fff5"}}>
+                        style={{opacity: ".9", borderTopLeftRadius: "0", borderBottomLeftRadius: "0", boxShadow: "0px 1px 1px #aaa5, inset 0px 1px 1px #fff5"}}>
                     On
                 </button>
             </div>

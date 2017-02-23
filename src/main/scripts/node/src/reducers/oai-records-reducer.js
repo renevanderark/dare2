@@ -31,7 +31,7 @@ export default function(state=initialState, action) {
             return {
                 ...state,
                 current: action.data
-            }
+            };
         default:
     }
 
