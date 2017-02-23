@@ -26,51 +26,35 @@ class DashBoards extends React.Component {
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
 
-        const repositories = (
-            <Repositories {...this.props.repositories} key="repositories"
-                onTogglePanelCollapse={onTogglePanelCollapse}
-                onEnableRepository={onEnableRepository}
-                onDisableRepository={onDisableRepository}
-            />
-        );
-
-        const workerControls = (
-            <WorkerControls {...this.props.workerControls} key="worker-controls"
-                onStartOaiHarvester={onStartOaiHarvester}
-                onDisableOaiHarvester={onDisableOaiHarvester}
-                onStartOaiRecordFetcher={onStartOaiRecordFetcher}
-                onDisableOaiRecordFetcher={onDisableOaiRecordFetcher}
-                onTogglePanelCollapse={onTogglePanelCollapse}
-            />);
-
-        const workFlow = (
-            <Workflow {...this.props.workflow} key="workflow"
-                onSetRecordQueryFilter={onSetRecordQueryFilter}
-                onTogglePanelCollapse={onTogglePanelCollapse} />
-        );
-
-        const errorReports = (
-            <ErrorReports {...this.props.errors} key="error-reports"
-                          onSetRecordQueryFilter={onSetRecordQueryFilter}
-                          onTogglePanelCollapse={onTogglePanelCollapse} />
-        );
-
-        const oaiRecords = (
-            <OaiRecords {...this.props.records} key="oai-records"
-                        onSetRecordQueryFilter={onSetRecordQueryFilter}
-                        onSetRecordQueryOffset={onSetRecordQueryOffset}
-                        onTogglePanelCollapse={onTogglePanelCollapse}
-                        onRefetchRecords={onRefetchRecords} />
-        );
-
         return (
             <div className="container container-fluid" key="dashboards">
                 <BreadCrumbs />
-                {repositories}
-                {workerControls }
-                {workFlow}
-                {oaiRecords}
-                {errorReports}
+                <Repositories {...this.props.repositories} key="repositories"
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                    onEnableRepository={onEnableRepository}
+                    onDisableRepository={onDisableRepository}
+                />
+                <WorkerControls {...this.props.workerControls} key="worker-controls"
+                    onStartOaiHarvester={onStartOaiHarvester}
+                    onDisableOaiHarvester={onDisableOaiHarvester}
+                    onStartOaiRecordFetcher={onStartOaiRecordFetcher}
+                    onDisableOaiRecordFetcher={onDisableOaiRecordFetcher}
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                />
+                <Workflow {...this.props.workflow} key="workflow"
+                    onSetRecordQueryFilter={onSetRecordQueryFilter}
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                />
+                <OaiRecords {...this.props.records} key="oai-records"
+                            onSetRecordQueryFilter={onSetRecordQueryFilter}
+                            onSetRecordQueryOffset={onSetRecordQueryOffset}
+                            onTogglePanelCollapse={onTogglePanelCollapse}
+                            onRefetchRecords={onRefetchRecords}
+                />
+                <ErrorReports {...this.props.errors} key="error-reports"
+                      onSetRecordQueryFilter={onSetRecordQueryFilter}
+                      onTogglePanelCollapse={onTogglePanelCollapse}
+                />
             </div>
         )
     }
