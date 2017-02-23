@@ -27,7 +27,7 @@ class DashBoards extends React.Component {
         const { onTogglePanelCollapse } = this.props;
 
         const repositories = (
-            <Repositories {...this.props.repositories}
+            <Repositories {...this.props.repositories} key="repositories"
                 onTogglePanelCollapse={onTogglePanelCollapse}
                 onEnableRepository={onEnableRepository}
                 onDisableRepository={onDisableRepository}
@@ -35,7 +35,7 @@ class DashBoards extends React.Component {
         );
 
         const workerControls = (
-            <WorkerControls {...this.props.workerControls}
+            <WorkerControls {...this.props.workerControls} key="worker-controls"
                 onStartOaiHarvester={onStartOaiHarvester}
                 onDisableOaiHarvester={onDisableOaiHarvester}
                 onStartOaiRecordFetcher={onStartOaiRecordFetcher}
@@ -44,19 +44,19 @@ class DashBoards extends React.Component {
             />);
 
         const workFlow = (
-            <Workflow {...this.props.workflow}
+            <Workflow {...this.props.workflow} key="workflow"
                 onSetRecordQueryFilter={onSetRecordQueryFilter}
                 onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         const errorReports = (
-            <ErrorReports {...this.props.errors}
+            <ErrorReports {...this.props.errors} key="error-reports"
                           onSetRecordQueryFilter={onSetRecordQueryFilter}
                           onTogglePanelCollapse={onTogglePanelCollapse} />
         );
 
         const oaiRecords = (
-            <OaiRecords {...this.props.records}
+            <OaiRecords {...this.props.records} key="oai-records"
                         onSetRecordQueryFilter={onSetRecordQueryFilter}
                         onSetRecordQueryOffset={onSetRecordQueryOffset}
                         onTogglePanelCollapse={onTogglePanelCollapse}
@@ -64,7 +64,7 @@ class DashBoards extends React.Component {
         );
 
         return (
-            <div className="container container-fluid">
+            <div className="container container-fluid" key="dashboards">
                 <BreadCrumbs />
                 {repositories}
                 {workerControls }

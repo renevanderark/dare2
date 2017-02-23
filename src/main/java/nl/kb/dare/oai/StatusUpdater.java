@@ -71,6 +71,6 @@ public class StatusUpdater extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 20, TimeUnit.MILLISECONDS);
+        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 150, TimeUnit.MILLISECONDS);
     }
 }
