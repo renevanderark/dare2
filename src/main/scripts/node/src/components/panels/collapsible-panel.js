@@ -5,6 +5,13 @@ class CollapsiblePanel extends React.Component {
     render() {
         const { id, title, collapsed, onTogglePanelCollapse } = this.props;
 
+        const panelBody = collapsed ? null : (
+            <div className="panel-body">
+                {this.props.children}
+                <div className="clearfix" />
+            </div>
+        );
+
         return (
             <div>
                 {collapsed ? null : <div className="clearfix" />}
@@ -15,10 +22,7 @@ class CollapsiblePanel extends React.Component {
                             <span className={`glyphicon glyphicon-collapse-${collapsed ? "down" : "up"}`} />
                         </span>
                     </div>
-                    <div className={`panel-body ${collapsed ? "hidden" : ""}`}>
-                        {this.props.children}
-                        <div className="clearfix" />
-                    </div>
+                    {panelBody}
                 </div>
             </div>
         );

@@ -1,11 +1,11 @@
 import React from "react";
-import { Link } from "react-router";
+import BreadCrumbs from "./layout/breadcrumbs";
 import Workflow from "./dashboards/workflow";
 import OaiRecords from "./dashboards/oai-records";
 import ErrorReports from "./dashboards/error-reports";
 import DataProviderDashboard from "./dashboards/data-provider";
 
-class OaiRecord extends React.Component {
+class DataProvider extends React.Component {
 
     componentDidMount() {
         if (!this.props.records.collapsed) {
@@ -53,11 +53,8 @@ class OaiRecord extends React.Component {
         );
 
         return (
-            <div>
-                <ol className="breadcrumb">
-                    <li><Link to="/">Dashboard</Link></li>
-                    <li className="active">Data provider</li>
-                </ol>
+            <div className="container container-fluid">
+                <BreadCrumbs titles={["Data provider"]} />
                 {this.props.children ? React.cloneElement(this.props.children, {...this.props.dataProvider }) : null}
                 {dataProvider}
                 {workFlow}
@@ -68,4 +65,4 @@ class OaiRecord extends React.Component {
     }
 }
 
-export default OaiRecord;
+export default DataProvider;

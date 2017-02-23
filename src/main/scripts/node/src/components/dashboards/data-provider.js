@@ -1,6 +1,6 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-import EnableToggle from "./enable-toggle";
+import EnableToggle from "../widgets/enable-toggle";
 
 import ValidationMarker from "../widgets/validation-marker";
 

@@ -1,11 +1,18 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-import EnableToggle from "./enable-toggle";
+import Repository from "./repository";
 
-import { Link } from "react-router";
-import { urls } from "../../router";
+const serializeProps = (props) =>
+    props.map(({id, enabled, name, dateStamp}) => `${id}${enabled}${name}${dateStamp}`)
+        .join();
 
 class Repositories extends React.Component {
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.collapsed !== nextProps.collapsed ||
+                serializeProps(nextProps.list) !== serializeProps(this.props.list);
+
+    }
 
     render() {
         // repository actions
@@ -31,25 +38,9 @@ class Repositories extends React.Component {
                         </div>
                     </li>
                     {this.props.list.map((repo, i) => (
-                      <li className="list-group-item row" key={i}>
-                          <div className="col-md-14 col-sm-14 col-xs-14">
-                              <Link to={urls.dataProvider(repo.id)}>
-                                {repo.name}
-                              </Link>
-                          </div>
-                          <div className="col-md-14 col-sm-14 col-xs-14">
-                              <span className="pull-right">
-                                  {repo.dateStamp || "- none harvested yet -"}
-                              </span>
-                          </div>
-                          <div className="col-md-4 col-sm-4 col-xs-4">
-                              <span className="pull-right">
-                                <EnableToggle enabled={repo.enabled}
-                                      onEnableClick={() => onEnableRepository(repo.id)}
-                                      onDisableClick={() => onDisableRepository(repo.id)} />
-                              </span>
-                          </div>
-                      </li>
+                        <Repository {...repo} key={i}
+                                onEnableRepository={onEnableRepository}
+                                onDisableRepository={onDisableRepository} />
                     ))}
                 </ul>
             </CollapsiblePanel>

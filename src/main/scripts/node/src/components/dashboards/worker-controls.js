@@ -6,6 +6,13 @@ import InnerPanelSpacer from "../panels/inner-panel-spacer";
 
 class WorkerControls extends React.Component {
 
+    shouldComponentUpdate(nextProps) {
+        return this.props.collapsed !== nextProps.collapsed ||
+                this.props.nextRun !== nextProps.nextRun ||
+                this.props.harvesterRunState !== nextProps.harvesterRunState ||
+                this.props.recordFetcherRunState !== nextProps.recordFetcherRunState;
+    }
+
     render() {
         // states
         const { recordFetcherRunState, harvesterRunState, nextRun } = this.props;

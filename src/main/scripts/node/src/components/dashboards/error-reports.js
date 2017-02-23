@@ -1,8 +1,19 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
-import CounterBadge from "./counter-badge";
+import CounterBadge from "../widgets/counter-badge";
+
+const serializeProps = (props) =>
+    Object.keys(props)
+        .filter((key) => typeof props[key] === "number")
+        .map((key) => `${key}:${props[key]}`)
+        .join();
 
 class ErrorReports extends React.Component {
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.collapsed !== nextProps.collapsed ||
+            serializeProps(nextProps) !== serializeProps(this.props);
+    }
 
     render() {
         // panel actions

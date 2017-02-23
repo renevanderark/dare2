@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router";
+import BreadCrumbs from "./layout/breadcrumbs";
 
 import OaiRecords from "./dashboards/oai-records";
 import OaiRecordDashboard from "./dashboards/oai-record";
@@ -9,7 +9,7 @@ class OaiRecord extends React.Component {
 
 
     render() {
-        const { oaiRecord, identifier } = this.props;
+        const { oaiRecord, identifier, records } = this.props;
         const { onTogglePanelCollapse } = this.props;
 
         // actions for records
@@ -20,7 +20,7 @@ class OaiRecord extends React.Component {
                                 onTogglePanelCollapse={onTogglePanelCollapse} />;
 
         const oaiRecords = (
-            <OaiRecords {...this.props.records}
+            <OaiRecords {...records}
                         onSetRecordQueryFilter={onSetRecordQueryFilter}
                         onSetRecordQueryOffset={onSetRecordQueryOffset}
                         onTogglePanelCollapse={onTogglePanelCollapse}
@@ -30,11 +30,8 @@ class OaiRecord extends React.Component {
         );
 
         return (
-            <div>
-                <ol className="breadcrumb">
-                    <li><Link to="/">Dashboard</Link></li>
-                    <li className="active">Record overview</li>
-                </ol>
+            <div className="container container-fluid">
+                <BreadCrumbs titles={["Record overview"]} />
                 {oaiRecordPanel}
                 {oaiRecords}
             </div>

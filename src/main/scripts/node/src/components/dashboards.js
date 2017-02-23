@@ -4,6 +4,7 @@ import Workflow from "./dashboards/workflow";
 import ErrorReports from "./dashboards/error-reports";
 import Repositories from "./dashboards/repositories";
 import OaiRecords from "./dashboards/oai-records";
+import BreadCrumbs from "./layout/breadcrumbs";
 
 class DashBoards extends React.Component {
     componentDidMount() {
@@ -63,10 +64,8 @@ class DashBoards extends React.Component {
         );
 
         return (
-            <div>
-                <ol className="breadcrumb">
-                    <li className="active">Dashboard</li>
-                </ol>
+            <div className="container container-fluid">
+                <BreadCrumbs />
                 {repositories}
                 {workerControls }
                 {workFlow}
