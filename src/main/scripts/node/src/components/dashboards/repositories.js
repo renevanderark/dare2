@@ -40,7 +40,7 @@ class Repositories extends React.Component {
                         </div>
                     </li>
                     {this.props.list.map((repo, i) => (
-                        <Repository {...repo} key={i}
+                        <Repository {...repo} key={repo.id}
                                 onEnableRepository={onEnableRepository}
                                 onDisableRepository={onDisableRepository} />
                     ))}
