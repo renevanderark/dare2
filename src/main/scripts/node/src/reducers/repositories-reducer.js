@@ -17,10 +17,10 @@ export default function(state=initialState, action) {
                 list: (action.data || [])
                     .map((repo) => ({id: repo.id, dateStamp: repo.dateStamp, name: repo.name, enabled: repo.enabled}))
             };
-        case ActionTypes.ON_STATUS_UPDATE:
+        case ActionTypes.ON_REPOSITORY_STATUS_UPDATE:
             return {
                 ...state,
-                list: action.data.repositoryStatus || state.list
+                list: action.data
             };
         case ActionTypes.RECEIVE_DATA_PROVIDER:
             return {

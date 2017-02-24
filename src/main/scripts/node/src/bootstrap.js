@@ -17,7 +17,13 @@ const connectSocket = (onInitialize) => {
     const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
 
     webSocket.onmessage = ({data}) => {
-        store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: JSON.parse(data)});
+        const status = JSON.parse(data);
+
+        if (status.hasOwnProperty("repositoryStatus")) {
+            store.dispatch({type: ActionTypes.ON_REPOSITORY_STATUS_UPDATE, data: status.repositoryStatus});
+        }
+
+        store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: status});
         if (!initialized) {
             initialize(onInitialize);
         }
