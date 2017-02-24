@@ -49,6 +49,7 @@ public class RepositoriesEndpoint {
         final Integer id = dao.insert(repositoryConfig);
         repositoryNotifier.notifyUpdate();
         repositoryConfig.setId(id);
+        repositoryConfig.setEnabled(false);
         return Response.created(URI.create("/repositories/" + id)).entity(repositoryConfig).build();
     }
 
@@ -134,7 +135,8 @@ public class RepositoriesEndpoint {
         dao.remove(id);
         repositoryNotifier.notifyUpdate();
         oaiRecordDao.removeForRepository(id);
-        // TODO filestorage.delete all ?
+        // TODO remove oaiRecordErrors.
+        // TODO filestorage.delete all
         return Response.ok().build();
     }
 

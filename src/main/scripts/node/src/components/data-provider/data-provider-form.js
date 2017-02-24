@@ -95,7 +95,7 @@ class DataProviderForm extends React.Component {
                     </TextField>
                     <DatestampField label="Datestamp" value={repository.dateStamp} onChange={this.onChange.bind(this, "dateStamp")} />
                 </ModalBody>
-                <ModalFooter closeLink={urls.dataProvider(repository.id)}>
+                <ModalFooter closeLink={repository.id ? urls.dataProvider(repository.id) : "/"}>
                     <button className="btn btn-default"
                             disabled={!validateDateStamp(repository.dateStamp)}
                             onClick={() => onValidateNewRepository(repository)}>

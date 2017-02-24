@@ -1,6 +1,8 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import Repository from "./repository";
+import { Link } from "react-router";
+import { urls } from "../../router";
 
 const serializeProps = (props) =>
     props.map(({id, enabled, name, dateStamp}) => `${id}${enabled}${name}${dateStamp}`)
@@ -43,6 +45,12 @@ class Repositories extends React.Component {
                                 onDisableRepository={onDisableRepository} />
                     ))}
                 </ul>
+                <div className="panel-footer">
+                    <Link to={urls.newDataProvider()}>
+                        <span className="glyphicon glyphicon-plus-sign" />
+                        Add new repository
+                    </Link>
+                </div>
             </CollapsiblePanel>
         )
     }
