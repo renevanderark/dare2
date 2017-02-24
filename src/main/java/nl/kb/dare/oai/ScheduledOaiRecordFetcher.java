@@ -94,7 +94,6 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                 final ProcessStatus result = new GetRecord(getRecordOperations, oaiRecord, inSampleMode).fetch();
 
                 finishRecord(oaiRecord, result, timer.elapsed(TimeUnit.SECONDS));
-                try { Thread.sleep(100L); } catch (InterruptedException ignored) { }
                 runningWorkers.getAndDecrement();
             });
             workers.add(worker);
