@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,15 @@ public class RepositoriesEndpointTest {
         verify(repositoryNotifier).notifyUpdate();
         assertThat(response.getStatus(), equalTo(Response.Status.CREATED.getStatusCode()));
         assertThat(response.getHeaderString("Location"), equalTo("/repositories/" + id));
-        assertThat(response.getEntity(), hasProperty("id", equalTo(123)));
+        assertThat(response.getEntity(), allOf(
+                hasProperty("id", equalTo(123)),
+                hasProperty("enabled", equalTo(false)),
+                hasProperty("url", equalTo(repositoryConfig.getUrl())),
+                hasProperty("set", equalTo(repositoryConfig.getSet())),
+                hasProperty("name", equalTo(repositoryConfig.getName())),
+                hasProperty("metadataPrefix", equalTo(repositoryConfig.getMetadataPrefix())),
+                hasProperty("dateStamp", equalTo(repositoryConfig.getDateStamp()))
+        ));
     }
 
     @Test
