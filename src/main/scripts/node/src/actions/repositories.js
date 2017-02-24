@@ -1,9 +1,14 @@
 import xhr from "xhr";
 import ActionTypes from "../action-types";
 
+const fetchRepositories = (next = () => {}) => (dispatch) =>
+    xhr({url: `/repositories`, method: "GET"}, (err, resp, body) => {
+        dispatch({type: ActionTypes.RECEIVE_REPOSITORIES, data: JSON.parse(body)});
+        next();
+    });
+
 const toggleRepositoryAndFetch = (id, operation, next = () => {}) => (dispatch) =>
     xhr({url: `/repositories/${id}/${operation}`, method: "PUT"}, next);
-
 
 const enableRepository = (id, next) => toggleRepositoryAndFetch(id, "enable", next);
 
@@ -47,7 +52,8 @@ const validateNewRepository = (repository) => (dispatch) =>
     });
 
 
-export  {
+export {
+    fetchRepositories,
     enableRepository,
     disableRepository,
     fetchRepository,

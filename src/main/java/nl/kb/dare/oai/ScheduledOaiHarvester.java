@@ -14,6 +14,7 @@ import nl.kb.dare.model.reporting.HarvesterErrorReport;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
@@ -42,6 +43,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
     private final FileStorage fileStorage;
+    private final RepositoryNotifier repositoryNotifier;
 
     private RunState runState;
     private Instant lastRunTime = Instant.now();
@@ -54,13 +56,14 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     public ScheduledOaiHarvester(RepositoryDao repositoryDao, ErrorReportDao errorReportDao, OaiRecordDao oaiRecordDao,
                                  HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-                                 FileStorage fileStorage) {
+                                 FileStorage fileStorage, RepositoryNotifier repositoryNotifier) {
         this.repositoryDao = repositoryDao;
         this.errorReportDao = errorReportDao;
         this.oaiRecordDao = oaiRecordDao;
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
         this.fileStorage = fileStorage;
+        this.repositoryNotifier = repositoryNotifier;
         this.runState = RunState.DISABLED;
     }
 
@@ -203,6 +206,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
     private void saveRepositoryStatus(Repository repoDone) {
         repositoryDao.update(repoDone.getId(), repoDone);
+        repositoryNotifier.notifyUpdate();
     }
 
     @Override

@@ -10,7 +10,7 @@ window.setTimeout(() => {
     Perf.stop();
     const measurements = Perf.getLastMeasurements();
     Perf.printInclusive(measurements);
-}, 10000);
+}, 30000);
 
 document.addEventListener("DOMContentLoaded", () =>
     connectSocket(() => ReactDOM.render(router, document.getElementById("app"))));

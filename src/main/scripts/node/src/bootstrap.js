@@ -1,10 +1,12 @@
 import store from "./store";
 import ActionTypes from "./action-types";
 import {fetchOaiRecords } from "./actions/oai-records";
+import {fetchRepositories} from "./actions/repositories";
 
 let initialized = false;
 const initialize = (onInitialize) => {
     store.dispatch(fetchOaiRecords());
+    store.dispatch(fetchRepositories());
     initialized = true;
     onInitialize();
 };

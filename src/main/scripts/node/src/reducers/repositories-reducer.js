@@ -11,10 +11,16 @@ const initialState = {
 
 export default function(state=initialState, action) {
     switch (action.type) {
+        case ActionTypes.RECEIVE_REPOSITORIES:
+            return {
+                ...state,
+                list: (action.data || [])
+                    .map((repo) => ({id: repo.id, dateStamp: repo.dateStamp, name: repo.name, enabled: repo.enabled}))
+            };
         case ActionTypes.ON_STATUS_UPDATE:
             return {
                 ...state,
-                list: action.data.repositoryStatus
+                list: action.data.repositoryStatus || state.list
             };
         case ActionTypes.RECEIVE_DATA_PROVIDER:
             return {
