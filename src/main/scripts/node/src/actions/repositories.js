@@ -14,13 +14,33 @@ const enableRepository = (id, next) => toggleRepositoryAndFetch(id, "enable", ne
 
 const disableRepository = (id, next) => toggleRepositoryAndFetch(id, "disable", next);
 
-const fetchRepository = (id) => (dispatch) =>
-    xhr({url: `/repositories/${id}?${new Date().getTime()}`, method: "GET"}, (err, resp, body) =>
-        dispatch({type: ActionTypes.RECEIVE_DATA_PROVIDER, data: JSON.parse(body)}));
+const fetchRepository = (id, next = () => {}) => (dispatch) =>
+    xhr({url: `/repositories/${id}?${new Date().getTime()}`, method: "GET"}, (err, resp, body) => {
+        dispatch({type: ActionTypes.RECEIVE_DATA_PROVIDER, data: JSON.parse(body)});
+        next()
+    });
 
 const validateRepository = (id) => (dispatch) =>
     xhr({url: `/repositories/${id}/validate?${new Date().getTime()}`, method: "GET"}, (err, resp, body) =>
         dispatch({type: ActionTypes.RECEIVE_REPOSITORY_VALIDATION_RESULTS, data: JSON.parse(body)}));
+
+const saveRepository = (next) => (dispatch, getState) => {
+    const { underEdit } = getState().repositories;
+    if (!underEdit) {
+        return;
+    }
+
+    xhr({
+        url: underEdit.id ? `/repositories/${underEdit.id}` : `/repositories`,
+        method: underEdit.id ? "PUT" : "POST",
+        headers: { 'Content-type': "application/json", 'Accept': 'application/json'},
+        body: JSON.stringify(underEdit)
+    }, (err, resp, body) => {
+        const savedRepository = JSON.parse(body);
+        dispatch({type: ActionTypes.RECEIVE_DATA_PROVIDER, data: savedRepository});
+        next(savedRepository.id)
+    });
+};
 
 const validateNewRepository = (repository) => (dispatch) =>
     xhr({
@@ -58,5 +78,6 @@ export {
     disableRepository,
     fetchRepository,
     validateRepository,
-    validateNewRepository
+    validateNewRepository,
+    saveRepository
 };

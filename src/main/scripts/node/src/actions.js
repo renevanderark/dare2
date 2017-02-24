@@ -12,7 +12,7 @@ import {
     disableRepository,
     fetchRepository,
     validateRepository,
-    validateNewRepository
+    validateNewRepository, saveRepository
 } from "./actions/repositories";
 
 import {
@@ -21,6 +21,8 @@ import {
     fetchOaiRecords,
     fetchOaiRecord
 } from "./actions/oai-records";
+
+import {urls} from "./router"
 
 export default function actionsMaker(navigateTo, dispatch) {
     return {
@@ -35,6 +37,7 @@ export default function actionsMaker(navigateTo, dispatch) {
         onDisableRepository: (id, next = () => {}) => dispatch(disableRepository(id, next)),
         onValidateRepository: (id) => dispatch(validateRepository(id)),
         onValidateNewRepository: (repository) => dispatch(validateNewRepository(repository)),
+        onSaveRepository: () => dispatch(saveRepository((id) => navigateTo("dataProvider", [id]))),
 
         onFetchDataProvider: (id) => dispatch(fetchRepository(id)),
 

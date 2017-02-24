@@ -61,7 +61,7 @@ class DataProviderForm extends React.Component {
 
     render() {
         const { repository, changed } = this.state;
-        const { onValidateNewRepository, validationResultsUnderEdit } = this.props;
+        const { onValidateNewRepository, validationResultsUnderEdit, onSaveRepository } = this.props;
 
         const {urlIsValidOAI, setExists, metadataFormatSupported } = validationResultsUnderEdit;
 
@@ -101,7 +101,9 @@ class DataProviderForm extends React.Component {
                             onClick={() => onValidateNewRepository(repository)}>
                         Test settings
                     </button>
-                    <button className="btn btn-default" disabled={!allowedToSave}>
+                    <button className="btn btn-default"
+                            disabled={!allowedToSave}
+                            onClick={onSaveRepository}>
                         Save
                     </button>
                 </ModalFooter>

@@ -37,7 +37,7 @@ public class RepositoriesEndpointTest {
         verify(repositoryNotifier).notifyUpdate();
         assertThat(response.getStatus(), equalTo(Response.Status.CREATED.getStatusCode()));
         assertThat(response.getHeaderString("Location"), equalTo("/repositories/" + id));
-
+        assertThat(response.getEntity(), hasProperty("id", equalTo(123)));
     }
 
     @Test
@@ -98,6 +98,7 @@ public class RepositoriesEndpointTest {
         verify(repositoryNotifier).notifyUpdate();
 
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+        assertThat(response.getEntity(), equalTo(repositoryConfig));
     }
 
     @Test

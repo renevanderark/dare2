@@ -24,7 +24,7 @@ public interface RepositoryDao {
     void remove(@Bind("id") int id);
 
     @SqlUpdate("update repositories " +
-            "set url=:r.url, metadataPrefix=:r.metadataPrefix, oai_set=:r.set, datestamp=:r.dateStamp " +
+            "set name=:r.name, url=:r.url, metadataPrefix=:r.metadataPrefix, oai_set=:r.set, datestamp=:r.dateStamp " +
             "where id = :id")
     void update(@Bind("id") Integer id, @BindBean("r") Repository repositoryConfig);
 

@@ -48,7 +48,8 @@ public class RepositoriesEndpoint {
     public Response create(Repository repositoryConfig) {
         final Integer id = dao.insert(repositoryConfig);
         repositoryNotifier.notifyUpdate();
-        return Response.created(URI.create("/repositories/" + id)).build();
+        repositoryConfig.setId(id);
+        return Response.created(URI.create("/repositories/" + id)).entity(repositoryConfig).build();
     }
 
     @PUT
@@ -57,7 +58,7 @@ public class RepositoriesEndpoint {
     public Response update(@PathParam("id") Integer id, Repository repositoryConfig) {
         dao.update(id, repositoryConfig);
         repositoryNotifier.notifyUpdate();
-        return Response.ok().build();
+        return Response.ok(repositoryConfig).build();
     }
 
     @PUT
