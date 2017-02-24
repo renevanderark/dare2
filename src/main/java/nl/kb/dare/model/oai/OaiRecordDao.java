@@ -29,7 +29,13 @@ public interface OaiRecordDao {
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
-    @SqlUpdate("delete from oai_records where repository_id = :repositoryId")
+    @SqlUpdate(
+        "DELETE rec.*, err.* " +
+        "FROM oai_records rec " +
+        "LEFT JOIN oai_record_errors err " +
+        "ON rec.identifier = err.record_identifier " +
+        "WHERE rec.repository_id = :repositoryId"
+    )
     void removeForRepository(@Bind("repositoryId") Integer repositoryId);
 
     @SqlUpdate("delete from oai_records where identifier = :oaiRecord.identifier")
