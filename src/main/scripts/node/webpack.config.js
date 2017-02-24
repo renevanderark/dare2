@@ -3,7 +3,7 @@ const webpack = require('webpack');
 module.exports = {
   entry: "./src/index.js",
   output: {
-    path: process.env.BUILD_TARGET || "../../resources/assets/javascripts",
+    path: process.env.BUILD_TARGET || "../../../../target/classes/assets/javascripts",
     filename: "index.js"
   },
   plugins: [

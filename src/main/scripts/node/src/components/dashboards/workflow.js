@@ -2,10 +2,17 @@ import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import InnerPanelSpacer from "../panels/inner-panel-spacer";
-import { numberFormat } from "../../util/format-number";
-import CounterBadge from "./counter-badge";
+import CounterBadge from "../widgets/counter-badge";
 
 class Workflow extends React.Component {
+
+    shouldComponentUpdate(nextProps) {
+        return this.props.collapsed !== nextProps.collapsed ||
+            this.props.pending !== nextProps.pending ||
+            this.props.processing !== nextProps.processing ||
+            this.props.processed !== nextProps.processed ||
+            this.props.failure !== nextProps.failure;
+    }
 
     render() {
         // panel actions

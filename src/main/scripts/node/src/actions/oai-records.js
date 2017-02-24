@@ -10,7 +10,7 @@ const fetchOaiRecords = (newQuery = null) => (dispatch, getState) => {
         .join("&");
 
     xhr({
-        url: `/records?${queryS}`,
+        url: `/records?${new Date().getTime()}${queryS}`,
         method: "GET",
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORDS, data: JSON.parse(body)}));
 };
@@ -42,7 +42,7 @@ const setRecordQueryOffset = (newOffset) => (dispatch, getState) => {
 
 const fetchOaiRecord = (identifier) => (dispatch) => {
     xhr({
-        url: `/records/${encodeURIComponent(identifier)}`,
+        url: `/records/${encodeURIComponent(identifier)}?${new Date().getTime()}`,
         method: "GET"
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
 };

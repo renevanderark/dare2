@@ -8,6 +8,7 @@ import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidatorTest;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
@@ -74,7 +75,7 @@ public class ScheduledOaiHarvesterTest {
                 mock(OaiRecordDao.class),
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
         when(repositoryDao.list()).thenReturn(Lists.newArrayList());
 
@@ -93,7 +94,7 @@ public class ScheduledOaiHarvesterTest {
                 mock(OaiRecordDao.class),
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
 
         instance.disable();
@@ -107,13 +108,14 @@ public class ScheduledOaiHarvesterTest {
     public void itShouldHarvestIdentifiersAGivenRepository() throws Exception {
         final RepositoryDao repositoryDao = mock(RepositoryDao.class);
         final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final ScheduledOaiHarvester instance = new ScheduledOaiHarvester(
                 repositoryDao,
                 mock(ErrorReportDao.class),
                 oaiRecordDao,
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), repositoryNotifier
         );
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
@@ -121,6 +123,8 @@ public class ScheduledOaiHarvesterTest {
         instance.enable();
         instance.runOneIteration();
 
+        verify(repositoryDao).update(repositoryConfig.getId(), repositoryConfig);
+        verify(repositoryNotifier).notifyUpdate();
         final ArgumentCaptor<OaiRecord> oaiRecordArgumentCaptor = ArgumentCaptor.forClass(OaiRecord.class);
         verify(oaiRecordDao, times(4)).insert(oaiRecordArgumentCaptor.capture());
         assertThat(oaiRecordArgumentCaptor.getAllValues(), containsInAnyOrder(
@@ -141,7 +145,7 @@ public class ScheduledOaiHarvesterTest {
                 mock(OaiRecordDao.class),
                 new MockHttpFetcher(corruptXml),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
@@ -171,7 +175,7 @@ public class ScheduledOaiHarvesterTest {
                 oaiRecordDao,
                 new MockHttpFetcher(withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
@@ -206,7 +210,7 @@ public class ScheduledOaiHarvesterTest {
                 oaiRecordDao,
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
@@ -272,7 +276,7 @@ public class ScheduledOaiHarvesterTest {
                 oaiRecordDao,
                 new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
                 new ResponseHandlerFactory(),
-                mock(FileStorage.class)
+                mock(FileStorage.class), mock(RepositoryNotifier.class)
         );
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
         when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));

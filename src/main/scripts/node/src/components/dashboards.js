@@ -4,6 +4,7 @@ import Workflow from "./dashboards/workflow";
 import ErrorReports from "./dashboards/error-reports";
 import Repositories from "./dashboards/repositories";
 import OaiRecords from "./dashboards/oai-records";
+import BreadCrumbs from "./layout/breadcrumbs";
 
 class DashBoards extends React.Component {
     componentDidMount() {
@@ -25,53 +26,35 @@ class DashBoards extends React.Component {
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
 
-        const repositories = (
-            <Repositories {...this.props.repositories}
-                onTogglePanelCollapse={onTogglePanelCollapse}
-                onEnableRepository={onEnableRepository}
-                onDisableRepository={onDisableRepository}
-            />
-        );
-
-        const workerControls = (
-            <WorkerControls {...this.props.workerControls}
-                onStartOaiHarvester={onStartOaiHarvester}
-                onDisableOaiHarvester={onDisableOaiHarvester}
-                onStartOaiRecordFetcher={onStartOaiRecordFetcher}
-                onDisableOaiRecordFetcher={onDisableOaiRecordFetcher}
-                onTogglePanelCollapse={onTogglePanelCollapse}
-            />);
-
-        const workFlow = (
-            <Workflow {...this.props.workflow}
-                onSetRecordQueryFilter={onSetRecordQueryFilter}
-                onTogglePanelCollapse={onTogglePanelCollapse} />
-        );
-
-        const errorReports = (
-            <ErrorReports {...this.props.errors}
-                          onSetRecordQueryFilter={onSetRecordQueryFilter}
-                          onTogglePanelCollapse={onTogglePanelCollapse} />
-        );
-
-        const oaiRecords = (
-            <OaiRecords {...this.props.records}
-                        onSetRecordQueryFilter={onSetRecordQueryFilter}
-                        onSetRecordQueryOffset={onSetRecordQueryOffset}
-                        onTogglePanelCollapse={onTogglePanelCollapse}
-                        onRefetchRecords={onRefetchRecords} />
-        );
-
         return (
-            <div>
-                <ol className="breadcrumb">
-                    <li className="active">Dashboard</li>
-                </ol>
-                {repositories}
-                {workerControls }
-                {workFlow}
-                {oaiRecords}
-                {errorReports}
+            <div className="container container-fluid" key="dashboards">
+                <BreadCrumbs />
+                <Repositories {...this.props.repositories} key="repositories"
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                    onEnableRepository={onEnableRepository}
+                    onDisableRepository={onDisableRepository}
+                />
+                <WorkerControls {...this.props.workerControls} key="worker-controls"
+                    onStartOaiHarvester={onStartOaiHarvester}
+                    onDisableOaiHarvester={onDisableOaiHarvester}
+                    onStartOaiRecordFetcher={onStartOaiRecordFetcher}
+                    onDisableOaiRecordFetcher={onDisableOaiRecordFetcher}
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                />
+                <Workflow {...this.props.workflow} key="workflow"
+                    onSetRecordQueryFilter={onSetRecordQueryFilter}
+                    onTogglePanelCollapse={onTogglePanelCollapse}
+                />
+                <OaiRecords {...this.props.records} key="oai-records"
+                            onSetRecordQueryFilter={onSetRecordQueryFilter}
+                            onSetRecordQueryOffset={onSetRecordQueryOffset}
+                            onTogglePanelCollapse={onTogglePanelCollapse}
+                            onRefetchRecords={onRefetchRecords}
+                />
+                <ErrorReports {...this.props.errors} key="error-reports"
+                      onSetRecordQueryFilter={onSetRecordQueryFilter}
+                      onTogglePanelCollapse={onTogglePanelCollapse}
+                />
             </div>
         )
     }

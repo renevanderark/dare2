@@ -1,10 +1,12 @@
 import store from "./store";
 import ActionTypes from "./action-types";
 import {fetchOaiRecords } from "./actions/oai-records";
+import {fetchRepositories} from "./actions/repositories";
 
 let initialized = false;
 const initialize = (onInitialize) => {
     store.dispatch(fetchOaiRecords());
+    store.dispatch(fetchRepositories());
     initialized = true;
     onInitialize();
 };
@@ -15,7 +17,13 @@ const connectSocket = (onInitialize) => {
     const webSocket = new WebSocket(globals.wsProtocol + "://" + globals.hostName + "/status-socket");
 
     webSocket.onmessage = ({data}) => {
-        store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: JSON.parse(data)});
+        const status = JSON.parse(data);
+
+        if (status.hasOwnProperty("repositoryStatus")) {
+            store.dispatch({type: ActionTypes.ON_REPOSITORY_STATUS_UPDATE, data: status.repositoryStatus});
+        }
+
+        store.dispatch({type: ActionTypes.ON_STATUS_UPDATE, data: status});
         if (!initialized) {
             initialize(onInitialize);
         }

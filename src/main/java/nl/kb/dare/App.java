@@ -21,6 +21,7 @@ import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidator;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
@@ -57,22 +58,27 @@ public class App extends Application<Config> {
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
 
         final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
+        final RepositoryNotifier repositoryNotifier = new RepositoryNotifier();
+        final RepositoryValidator repositoryValidator = new RepositoryValidator(httpFetcher, responseHandlerFactory);
+
+
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
-        // TODO: from database, reloadable
         final StreamSource didlToMetsXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl2mets-experimental-version.xsl"));
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToMetsXslt);
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
-                repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory, fileStorage);
+                repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory, fileStorage,
+                repositoryNotifier);
+
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                 config.getInSampleMode());
         final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db),
-                oaiHarvester, oaiRecordFetcher, repositoryDao);
+                oaiHarvester, oaiRecordFetcher, repositoryDao, repositoryNotifier);
 
 
         environment.lifecycle().manage(new ManagedPeriodicTask(oaiRecordFetcher));
@@ -82,13 +88,12 @@ public class App extends Application<Config> {
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
         register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, fileStorage));
-        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, new RepositoryValidator(httpFetcher, responseHandlerFactory)));
+        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, repositoryValidator, repositoryNotifier));
         register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new OaiRecordFetcherEndpoint(oaiRecordFetcher));
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");
-
     }
 
     private void register(Environment environment, Object component) {

@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.AbstractScheduledService;
 import nl.kb.dare.endpoints.websocket.StatusSocketRegistrations;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
 import nl.kb.dare.model.repository.RepositoryDao;
+import nl.kb.dare.model.repository.RepositoryNotifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,15 +24,18 @@ public class StatusUpdater extends AbstractScheduledService {
     private final ScheduledOaiHarvester oaiHarvester;
     private final ScheduledOaiRecordFetcher oaiRecordFetcher;
     private final RepositoryDao repositoryDao;
+    private final RepositoryNotifier repositoryNotifier;
 
     public StatusUpdater(OaiRecordStatusAggregator oaiRecordStatusAggregator,
                          ScheduledOaiHarvester oaiHarvester,
                          ScheduledOaiRecordFetcher oaiRecordFetcher,
-                         RepositoryDao repositoryDao) {
+                         RepositoryDao repositoryDao,
+                         RepositoryNotifier repositoryNotifier) {
         this.oaiRecordStatusAggregator = oaiRecordStatusAggregator;
         this.oaiHarvester = oaiHarvester;
         this.oaiRecordFetcher = oaiRecordFetcher;
         this.repositoryDao = repositoryDao;
+        this.repositoryNotifier = repositoryNotifier;
     }
 
     @Override
@@ -52,16 +56,18 @@ public class StatusUpdater extends AbstractScheduledService {
                 final Map<String, Object> statusUpdate = Maps.newHashMap();
                 statusUpdate.put("harvesterStatus", harvesterState);
                 statusUpdate.put("recordProcessingStatus", records);
-                statusUpdate.put("repositoryStatus",
-                    repositoryDao.list().stream().map(repository -> {
-                        final Map<String, Object> repoStatus = Maps.newHashMap();
-                        repoStatus.put("name", repository.getName());
-                        repoStatus.put("dateStamp", repository.getDateStamp());
-                        repoStatus.put("enabled", repository.getEnabled());
-                        repoStatus.put("id", repository.getId());
-                        return repoStatus;
-                    }).collect(toList()));
 
+                if (repositoryNotifier.wasUpdated()) {
+                    statusUpdate.put("repositoryStatus",
+                            repositoryDao.list().stream().map(repository -> {
+                                final Map<String, Object> repoStatus = Maps.newHashMap();
+                                repoStatus.put("name", repository.getName());
+                                repoStatus.put("dateStamp", repository.getDateStamp());
+                                repoStatus.put("enabled", repository.getEnabled());
+                                repoStatus.put("id", repository.getId());
+                                return repoStatus;
+                            }).collect(toList()));
+                }
                 registrations.broadcast(OBJECT_MAPPER.writeValueAsString(statusUpdate));
             } catch (Exception e) {
                 LOG.error("Status broadcast failed", e);
@@ -71,6 +77,6 @@ public class StatusUpdater extends AbstractScheduledService {
 
     @Override
     protected Scheduler scheduler() {
-        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 20, TimeUnit.MILLISECONDS);
+        return AbstractScheduledService.Scheduler.newFixedDelaySchedule(0, 32, TimeUnit.MILLISECONDS);
     }
 }

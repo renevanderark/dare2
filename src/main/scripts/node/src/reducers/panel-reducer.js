@@ -3,9 +3,9 @@ import ActionTypes from "../action-types";
 const initialState = {
     "workers-panel": {collapsed: false},
     "workflow-panel": {collapsed: false},
-    "error-panel": {collapsed: true},
-    "repositories-panel": {collapsed: false },
-    "oai-records-panel": {collapsed: true },
+    "error-panel": {collapsed: false},
+    "repositories-panel": {collapsed: false},
+    "oai-records-panel": {collapsed: false },
     "oai-record-panel": {collapsed: false },
     "data-provider-panel": {collapsed: false}
 };
