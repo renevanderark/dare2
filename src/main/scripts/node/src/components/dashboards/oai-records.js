@@ -8,29 +8,11 @@ import Query from "./oai-records/query";
 import ResultHeader from "./oai-records/result-header";
 import OaiRecordRow from "./oai-records/row";
 
-const shouldUpdateForPagination = (props, nextProps) =>
-    props.query.offset !== nextProps.query.offset ||
-    props.query.limit !== nextProps.query.limit ||
-    props.results.count !== nextProps.results.count;
 
-const serializeQuery = (query) =>
-    query.map(({label, key}) => `${key}-${label}`).join();
+class OaiRecords extends React.Component {
 
-const serializeResults = (results) => results.map(result =>
-    result.identifier + "-" +
-    result.repositoryName + "-" +
-    result.dateStamp + "-" +
-    result.processStatus + "-").join("|");
 
-    class OaiRecords extends React.Component {
 
-    shouldComponentUpdate(nextProps) {
-        return  this.props.collapsed !== nextProps.collapsed ||
-            this.props.activeRecordIdentifier !== nextProps.activeRecordIdentifier ||
-            shouldUpdateForPagination(this.props, nextProps) ||
-            serializeQuery(this.props.labeledQuery) !== serializeQuery(nextProps.labeledQuery) ||
-            serializeResults(this.props.results.result) !== serializeResults(nextProps.results.result);
-    }
 
     render() {
         // panel actions

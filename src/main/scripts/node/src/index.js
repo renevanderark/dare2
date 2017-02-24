@@ -3,19 +3,19 @@ import React from "react";
 import ReactDOM from "react-dom";
 import router from "./router";
 import { connectSocket } from "./bootstrap";
-/*import Perf from "react-addons-perf";
+// import Perf from "react-addons-perf";
 
 
-function runPerf() {
-    window.setTimeout(Perf.start, 2000);
+/*function runPerf() {
+    Perf.start()
     window.setTimeout(() => {
         Perf.stop();
         const measurements = Perf.getLastMeasurements();
         Perf.printInclusive(measurements);
-    }, 3000);
+    }, 1000);
 }
 
-setInterval(runPerf, 5500);*/
+setInterval(runPerf, 1100);*/
 
 document.addEventListener("DOMContentLoaded", () =>
     connectSocket(() => ReactDOM.render(router, document.getElementById("app"))));
