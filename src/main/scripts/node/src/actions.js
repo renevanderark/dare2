@@ -12,7 +12,9 @@ import {
     disableRepository,
     fetchRepository,
     validateRepository,
-    validateNewRepository, saveRepository
+    validateNewRepository,
+    saveRepository,
+    deleteRepository
 } from "./actions/repositories";
 
 import {
@@ -40,7 +42,7 @@ export default function actionsMaker(navigateTo, dispatch) {
         onSaveRepository: () => dispatch(saveRepository((id) => navigateTo("dataProvider", [id]))),
 
         onFetchDataProvider: (id) => dispatch(fetchRepository(id)),
-
+        onDeleteDataProvider: (id) => dispatch(deleteRepository(id, () => navigateTo("root", []))),
 
         onSetRecordQueryFilter: (field, value, repositoryId = null) => {
             dispatch(setRecordQueryFilter(field, value, repositoryId));

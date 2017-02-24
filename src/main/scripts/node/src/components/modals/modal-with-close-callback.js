@@ -1,14 +1,13 @@
 import React from "react";
-import { Link } from "react-router";
 
-const Modal  = ({closeLink, title, children}) => (
+const ModalCb  = ({closeCallback, title, children}) => (
     <div className="modal show" style={{backgroundColor: "#0002"}}>
         <div className="modal-lg modal-dialog">
             <div className="modal-content">
                 <div className="modal-header">
-                    <Link to={closeLink} className="close">
+                    <a onClick={closeCallback} className="close">
                         &times;
-                    </Link>
+                    </a>
                     <h4 className="modal-title">{title}</h4>
                 </div>
                 {children}
@@ -17,9 +16,9 @@ const Modal  = ({closeLink, title, children}) => (
     </div>
 );
 
-Modal.propTypes = {
-    closeLink: React.PropTypes.string.isRequired,
+ModalCb.propTypes = {
+    closeCallback: React.PropTypes.func.isRequired,
     title: React.PropTypes.string.isRequired
 };
 
-export default Modal;
+export default ModalCb;

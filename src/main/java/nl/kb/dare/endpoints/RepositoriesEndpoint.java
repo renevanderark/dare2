@@ -141,7 +141,7 @@ public class RepositoriesEndpoint {
             oaiRecordDao.removeForRepository(id);
             dao.remove(id);
             repositoryNotifier.notifyUpdate();
-            return Response.ok().build();
+            return Response.ok("{}").build();
         } catch (IOException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

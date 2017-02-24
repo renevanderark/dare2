@@ -21,7 +21,13 @@ class DataProvider extends React.Component {
         const { onTogglePanelCollapse } = this.props;
 
         // actions for data provider
-        const { onFetchDataProvider, onValidateRepository, onEnableRepository, onDisableRepository } = this.props;
+        const {
+            onFetchDataProvider,
+            onValidateRepository,
+            onEnableRepository,
+            onDisableRepository,
+            onDeleteDataProvider
+        } = this.props;
 
         const workFlow = (
             <Workflow {...this.props.workflow}
@@ -49,6 +55,7 @@ class DataProvider extends React.Component {
                        onValidateRepository={onValidateRepository}
                        onEnableRepository={onEnableRepository}
                        onDisableRepository={onDisableRepository}
+                       onDeleteDataProvider={onDeleteDataProvider}
             />
         );
 

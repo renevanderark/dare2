@@ -42,6 +42,13 @@ const saveRepository = (next) => (dispatch, getState) => {
     });
 };
 
+const deleteRepository = (id, next = () => {}) => (dispatch) => {
+    xhr({
+        url: `/repositories/${id}`,
+        method: "DELETE"
+    }, next);
+};
+
 const validateNewRepository = (repository) => (dispatch) =>
     xhr({
         url: `/repositories/validate`,
@@ -79,5 +86,6 @@ export {
     fetchRepository,
     validateRepository,
     validateNewRepository,
-    saveRepository
+    saveRepository,
+    deleteRepository
 };

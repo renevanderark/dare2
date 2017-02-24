@@ -1,7 +1,7 @@
 import React from "react";
 import CollapsiblePanel from "../panels/collapsible-panel";
 import EnableToggle from "../widgets/enable-toggle";
-
+import ButtonWithModalWarning from "../modals/button-with-modal-warning";
 import ValidationMarker from "../widgets/validation-marker";
 
 import { Link } from "react-router";
@@ -41,7 +41,8 @@ class DataProviderDashboard extends React.Component {
             onValidateRepository,
             onEnableRepository,
             onDisableRepository,
-            onFetchDataProvider
+            onFetchDataProvider,
+            onDeleteDataProvider
         } = this.props;
 
         const { setExists, metadataFormatSupported } = validationResults;
@@ -105,6 +106,14 @@ class DataProviderDashboard extends React.Component {
                     <Link to={urls.editDataProvider(repository.id)} className="btn btn-default">
                         Edit
                     </Link>
+
+                    <ButtonWithModalWarning
+                        className="btn btn-danger pull-right"
+                        label="Delete"
+                        onConfirm={() => onDeleteDataProvider(repository.id)}>
+                        <p>This operation will completely purge all records and error reports!</p>
+                        <p>Are you sure?</p>
+                    </ButtonWithModalWarning>
                 </div>
             ) : (<div>Loading...</div>);
         return (
