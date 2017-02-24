@@ -75,7 +75,8 @@ class DataProviderForm extends React.Component {
             metadataFormatSupported;
 
         return (
-            <Modal closeLink={urls.dataProvider(repository.id)} title="Edit repository">
+            <Modal closeLink={repository.id ? urls.dataProvider(repository.id) : "/"}
+                   title={repository.id ? "Edit repository" : "Create new repository"}>
                 <ModalBody>
                     <TextField label="Name" value={repository.name} onChange={this.onChange.bind(this, "name")} />
                     <TextField label="Url" value={repository.url} onChange={this.onChange.bind(this, "url")}>
