@@ -25,7 +25,8 @@ public class RepositoriesEndpointTest {
     @Test
     public void createShouldCreateANewRpository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class));
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
         when(dao.insert(repositoryConfig)).thenReturn(id);
@@ -33,6 +34,7 @@ public class RepositoriesEndpointTest {
         final Response response = instance.create(repositoryConfig);
 
         verify(dao).insert(repositoryConfig);
+        verify(repositoryNotifier).notifyUpdate();
         assertThat(response.getStatus(), equalTo(Response.Status.CREATED.getStatusCode()));
         assertThat(response.getHeaderString("Location"), equalTo("/repositories/" + id));
 
@@ -42,12 +44,14 @@ public class RepositoriesEndpointTest {
     public void deleteShouldDeleteTheRepositoryAndItsRecords() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, oaiRecordDao, mock(RepositoryValidator.class), mock(RepositoryNotifier.class));
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, oaiRecordDao, mock(RepositoryValidator.class), repositoryNotifier);
         final Integer id = 123;
 
         final Response response = instance.delete(id);
 
         verify(dao).remove(id);
+        verify(repositoryNotifier).notifyUpdate();
         verify(oaiRecordDao).removeForRepository(id);
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
@@ -83,13 +87,45 @@ public class RepositoriesEndpointTest {
     @Test
     public void updateShouldUpdateTheRepository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class));
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
 
         final Response response = instance.update(id, repositoryConfig);
 
         verify(dao).update(id, repositoryConfig);
+        verify(repositoryNotifier).notifyUpdate();
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+
+    @Test
+    public void enableShouldUpdateTheRepository() {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier);
+        final Integer id = 123;
+
+        final Response response = instance.enable(id);
+
+        verify(dao).enable(id);
+        verify(repositoryNotifier).notifyUpdate();
+
+        assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
+    }
+
+    @Test
+    public void disableShouldUpdateTheRepository() {
+        final RepositoryDao dao = mock(RepositoryDao.class);
+        final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier);
+        final Integer id = 123;
+
+        final Response response = instance.disable(id);
+
+        verify(dao).disable(id);
+        verify(repositoryNotifier).notifyUpdate();
 
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
