@@ -7,4 +7,6 @@ import java.io.IOException;
 public interface FileStorage {
 
     FileStorageHandle create(OaiRecord oaiRecord) throws IOException;
+
+    void purgeRepositoryFiles(Integer id) throws IOException;
 }

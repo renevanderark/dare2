@@ -88,7 +88,7 @@ public class App extends Application<Config> {
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
         register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, fileStorage));
-        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, repositoryValidator, repositoryNotifier));
+        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, repositoryValidator, repositoryNotifier, fileStorage));
         register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new OaiRecordFetcherEndpoint(oaiRecordFetcher));
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));

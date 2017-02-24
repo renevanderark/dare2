@@ -1,5 +1,6 @@
 package nl.kb.dare.endpoints;
 
+import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
@@ -27,13 +28,16 @@ public class RepositoriesEndpoint {
     private final OaiRecordDao oaiRecordDao;
     private RepositoryValidator validator;
     private final RepositoryNotifier repositoryNotifier;
+    private final FileStorage fileStorage;
 
-    public RepositoriesEndpoint(RepositoryDao dao, OaiRecordDao oaiRecordDao, RepositoryValidator validator, RepositoryNotifier repositoryNotifier) {
+    public RepositoriesEndpoint(RepositoryDao dao, OaiRecordDao oaiRecordDao, RepositoryValidator validator,
+                                RepositoryNotifier repositoryNotifier, FileStorage fileStorage) {
 
         this.dao = dao;
         this.oaiRecordDao = oaiRecordDao;
         this.validator = validator;
         this.repositoryNotifier = repositoryNotifier;
+        this.fileStorage = fileStorage;
     }
 
     @GET
@@ -132,12 +136,15 @@ public class RepositoriesEndpoint {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Integer id) {
-        dao.remove(id);
-        repositoryNotifier.notifyUpdate();
-        oaiRecordDao.removeForRepository(id);
-        // TODO remove oaiRecordErrors.
-        // TODO filestorage.delete all
-        return Response.ok().build();
+        try {
+            fileStorage.purgeRepositoryFiles(id);
+            oaiRecordDao.removeForRepository(id);
+            dao.remove(id);
+            repositoryNotifier.notifyUpdate();
+            return Response.ok().build();
+        } catch (IOException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     private Response notFoundResponse(Integer id) {
