@@ -456,7 +456,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
-        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+        when(handle.getOutputStream("manifest.xml")).thenReturn(sip);
         final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
         final GetRecordOperations instance = new GetRecordOperations(
@@ -471,7 +471,7 @@ public class GetRecordOperationsTest {
         final InOrder inOrder = inOrder(handle, sipFinalizer);
 
         inOrder.verify(handle).getFile("manifest.initial.xml");
-        inOrder.verify(handle).getOutputStream("sip.xml");
+        inOrder.verify(handle).getOutputStream("manifest.xml");
         inOrder.verify(sipFinalizer).writeResourcesToSip(
                 argThat(is(objectResources)),
                 argThat(allOf(is(instanceOf(InputStreamReader.class)), hasProperty("encoding", is("UTF8")))),
@@ -491,7 +491,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
-        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+        when(handle.getOutputStream("manifest.xml")).thenReturn(sip);
         final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
         final GetRecordOperations instance = new GetRecordOperations(
@@ -520,7 +520,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(mets);
         final ByteArrayOutputStream sip = new ByteArrayOutputStream();
-        when(handle.getOutputStream("sip.xml")).thenReturn(sip);
+        when(handle.getOutputStream("manifest.xml")).thenReturn(sip);
         final SipFinalizer sipFinalizer = mock(SipFinalizer.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(new ObjectResource());
         final GetRecordOperations instance = new GetRecordOperations(

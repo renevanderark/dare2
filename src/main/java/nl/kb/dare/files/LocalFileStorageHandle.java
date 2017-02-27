@@ -97,7 +97,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
         final ZipOutputStream zipOutputStream = new ZipOutputStream(output);
 
         zipFile(zipOutputStream, "metadata.xml");
-        zipFile(zipOutputStream, "sip.xml");
+        zipFile(zipOutputStream, "manifest.xml");
 
         final File resourceDir = new File(fileDir + "/resources");
         if (resourceDir.exists() && resourceDir.isDirectory()) {

@@ -180,7 +180,7 @@ class GetRecordOperations {
     boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
         try {
             final InputStream in = handle.getFile("manifest.initial.xml");
-            final OutputStream out = handle.getOutputStream("sip.xml");
+            final OutputStream out = handle.getOutputStream("manifest.xml");
             final Reader metadata = new InputStreamReader(in,"UTF-8");
             final Writer sip = new OutputStreamWriter(out, "UTF-8");
 
