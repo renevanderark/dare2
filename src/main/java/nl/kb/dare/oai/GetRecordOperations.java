@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
@@ -27,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -51,7 +53,7 @@ class GetRecordOperations {
     private final Repository repository;
     private final Consumer<ErrorReport> onError;
     private final GetRecordResourceOperations resourceOperations;
-    private final SipFinalizer sipFinalizer;
+    private final ManifestFinalizer manifestFinalizer;
 
     GetRecordOperations(FileStorage fileStorage,
                         HttpFetcher httpFetcher,
@@ -59,7 +61,7 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        SipFinalizer sipFinalizer, Consumer<ErrorReport> onError) {
+                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
@@ -67,7 +69,7 @@ class GetRecordOperations {
         this.xsltTransformer = xsltTransformer;
         this.repository = repository;
         this.resourceOperations = resourceOperations;
-        this.sipFinalizer = sipFinalizer;
+        this.manifestFinalizer = manifestFinalizer;
         this.onError = onError;
     }
 
@@ -83,38 +85,62 @@ class GetRecordOperations {
         }
     }
 
-    boolean downloadMetadata(FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
+    Optional<ObjectResource> downloadMetadata(FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
         try {
             final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
-            final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
+            final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+            // final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
             LOG.info("fetching record: {}", urlStr);
 
             final HttpResponseHandler responseHandler = responseHandlerFactory
-                    .getXsltTransformingHandler(new StreamResult(outputStreamWriter), xsltTransformer);
+                    .getStreamCopyingResponseHandler(out, checksumOut);
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 
             responseHandler.getExceptions().forEach(onError);
 
-            fileStorageHandle.syncFile(out);
+            final ObjectResource objectResource = new ObjectResource();
+            objectResource.setLocalFilename("metadata.xml");
+            objectResource.setChecksum(checksumOut.getChecksumString());
+            objectResource.setId("metadata");
+            return responseHandler.getExceptions().isEmpty()
+                    ? Optional.of(objectResource)
+                    : Optional.empty();
+        } catch (IOException | NoSuchAlgorithmException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
+            return Optional.empty();
+        }
+    }
 
-            return responseHandler.getExceptions().isEmpty();
+    boolean generateManifest(FileStorageHandle handle) {
+        try {
+            final InputStream metadata = handle.getFile("metadata.xml");
+            final OutputStream out = handle.getOutputStream("manifest.initial.xml");
+            final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
+
+            xsltTransformer.transform(metadata, new StreamResult(outputStreamWriter));
+
+            return true;
         } catch (IOException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
+            return false;
+        } catch (TransformerException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
             return false;
         }
     }
 
+
     List<ObjectResource> collectResources(FileStorageHandle fileStorageHandle) {
         try {
-            final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
+            final ManifestXmlHandler manifestXmlHandler = new ManifestXmlHandler();
             synchronized (saxParser) {
-                saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
+                saxParser.parse(fileStorageHandle.getFile("manifest.initial.xml"), manifestXmlHandler);
             }
-            final List<ObjectResource> objectResources = metsXmlHandler.getObjectResources();
+            final List<ObjectResource> objectResources = manifestXmlHandler.getObjectResources();
 
             if (objectResources.isEmpty()) {
                 onError.accept(new ErrorReport(
@@ -144,21 +170,22 @@ class GetRecordOperations {
             }
             errorReports.forEach(onError);
             return errorReports.isEmpty();
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
             return false;
         }
     }
 
 
-    boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
+    boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources,
+                                                 ObjectResource metadataResource) {
         try {
-            final InputStream in = handle.getFile("metadata.xml");
-            final OutputStream out = handle.getOutputStream("sip.xml");
+            final InputStream in = handle.getFile("manifest.initial.xml");
+            final OutputStream out = handle.getOutputStream("manifest.xml");
             final Reader metadata = new InputStreamReader(in,"UTF-8");
-            final Writer sip = new OutputStreamWriter(out, "UTF-8");
+            final Writer manifest = new OutputStreamWriter(out, "UTF-8");
 
-            sipFinalizer.writeResourcesToSip(objectResources, metadata, sip);
+            manifestFinalizer.writeResourcesToManifest(metadataResource, objectResources, metadata, manifest);
 
             return true;
         } catch (IOException e) {

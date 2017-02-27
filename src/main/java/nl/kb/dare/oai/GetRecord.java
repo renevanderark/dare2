@@ -32,7 +32,12 @@ class GetRecord {
         }
 
         final FileStorageHandle handle = fileStorageHandle.get();
-        if (!getRecordOperations.downloadMetadata(handle, oaiRecord)) {
+        final Optional<ObjectResource> metadataResource = getRecordOperations.downloadMetadata(handle, oaiRecord);
+        if (!metadataResource.isPresent()) {
+            return ProcessStatus.FAILED;
+        }
+
+        if (!getRecordOperations.generateManifest(handle)) {
             return ProcessStatus.FAILED;
         }
 
@@ -45,7 +50,7 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
-        if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources)) {
+        if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources, metadataResource.get())) {
             return ProcessStatus.FAILED;
         }
 

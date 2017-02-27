@@ -126,6 +126,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                         }
                         break;
 
+                    // TODO: specify logic for updated or deleted files which were already processed.
                     case DELETED_AFTER_PROCESSING: // in these cases do nothing, there was a problem already
                     case UPDATED_AFTER_PROCESSING:
                         break;

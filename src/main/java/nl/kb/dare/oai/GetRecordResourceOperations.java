@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
@@ -8,7 +9,6 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.reporting.ErrorReport;
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -16,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -30,12 +31,13 @@ class GetRecordResourceOperations {
         this.responseHandlerFactory = responseHandlerFactory;
     }
 
-    List<ErrorReport> downloadResource(ObjectResource objectResource, FileStorageHandle fileStorageHandle) throws IOException {
+    List<ErrorReport> downloadResource(ObjectResource objectResource, FileStorageHandle fileStorageHandle)
+            throws IOException, NoSuchAlgorithmException {
         final String fileLocation = objectResource.getXlinkHref();
         final String filename = createFilename(fileLocation);
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
-        final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
+        final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
 
         // First try to fetch the resource by encoding the url name one way (whitespace as '+')
         final String preparedUrlWithPluses = prepareUrl(fileLocation, false);
@@ -64,8 +66,8 @@ class GetRecordResourceOperations {
                 .collect(toList());
     }
 
-    private void writeChecksumAndFilename(ObjectResource objectResource, ByteArrayOutputStream checksumOut, String filename) throws UnsupportedEncodingException {
-        objectResource.setChecksum(checksumOut.toString("UTF8"));
+    private void writeChecksumAndFilename(ObjectResource objectResource, ChecksumOutputStream checksumOut, String filename) throws UnsupportedEncodingException {
+        objectResource.setChecksum(checksumOut.getChecksumString());
         objectResource.setChecksumType("MD5");
         objectResource.setLocalFilename(filename);
     }

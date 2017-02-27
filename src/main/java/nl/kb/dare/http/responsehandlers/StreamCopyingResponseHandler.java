@@ -1,45 +1,43 @@
 package nl.kb.dare.http.responsehandlers;
 
-import nl.kb.dare.checksum.ChecksumUtil;
+import com.google.common.collect.Lists;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
 
-    private final OutputStream outputStream;
-    private final OutputStream checksumOut;
+    private final List<OutputStream> outputStreams;
 
-    StreamCopyingResponseHandler(OutputStream outputStream, OutputStream checksumOut) {
-        this.outputStream = outputStream;
-        this.checksumOut = checksumOut;
+    StreamCopyingResponseHandler(OutputStream... outputStreams) {
+        this.outputStreams = Lists.newArrayList(outputStreams);
+
     }
 
     @Override
     public void onResponseData(Response.Status status, InputStream responseData) {
         try {
-
             byte[] buffer = new byte[1024];
             int numRead;
-            final MessageDigest md5 = MessageDigest.getInstance("MD5");
             do {
                 numRead = responseData.read(buffer);
                 if (numRead > 0) {
-                    md5.update(buffer, 0, numRead);
-                    outputStream.write(buffer, 0, numRead);
+                    for (OutputStream outputStream : outputStreams) {
+                        outputStream.write(buffer, 0, numRead);
+                    }
+
                 }
             } while (numRead != -1);
             responseData.close();
-            outputStream.close();
-            ChecksumUtil.saveChecksumString(checksumOut, md5.digest());
+            for (OutputStream outputStream : outputStreams) {
+                outputStream.close();
+            }
+
         } catch (IOException e) {
             ioExceptions.add(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Severe!!", e);
         }
     }
 

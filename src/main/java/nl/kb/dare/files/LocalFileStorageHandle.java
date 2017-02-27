@@ -88,11 +88,6 @@ class LocalFileStorageHandle implements FileStorageHandle {
     }
 
     @Override
-    public void syncFile(OutputStream out) throws IOException {
-        ((FileOutputStream) out).getFD().sync();
-    }
-
-    @Override
     public void deleteFiles() throws IOException {
         FileUtils.deleteDirectory(new File(fileDir));
     }
@@ -102,7 +97,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
         final ZipOutputStream zipOutputStream = new ZipOutputStream(output);
 
         zipFile(zipOutputStream, "metadata.xml");
-        zipFile(zipOutputStream, "sip.xml");
+        zipFile(zipOutputStream, "manifest.xml");
 
         final File resourceDir = new File(fileDir + "/resources");
         if (resourceDir.exists() && resourceDir.isDirectory()) {

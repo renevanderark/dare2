@@ -15,7 +15,6 @@ import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -32,7 +31,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -234,64 +232,5 @@ public class ScheduledOaiHarvesterTest {
         )));
     }
 
-    @Test
-    @Ignore
-    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing1() throws Exception {
-        fail("respecify");
-        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.PENDING, OaiStatus.DELETED, ProcessStatus.SKIP, DELETED_IDENTIFIER);
-    }
-
-    @Test
-    @Ignore
-    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing2() throws Exception {
-        fail("respecify");
-        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.FAILED, OaiStatus.DELETED, ProcessStatus.SKIP, DELETED_IDENTIFIER);
-    }
-
-    @Test
-    @Ignore
-    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing3() throws Exception {
-        fail("respecify");
-        verifyStatusUpdate(OaiStatus.AVAILABLE, ProcessStatus.FAILED, OaiStatus.AVAILABLE, ProcessStatus.PENDING, UPDATED_IDENTIFIER);
-    }
-
-    @Test
-    public void itShouldUpdateARecordWhenItIsNotAlreadyProcessedOrInProcessing4() throws Exception {
-        verifyStatusUpdate(OaiStatus.DELETED, ProcessStatus.SKIP, OaiStatus.AVAILABLE, ProcessStatus.PENDING, UPDATED_IDENTIFIER);
-    }
-
-
-    private void verifyStatusUpdate(
-            OaiStatus oaiStatusBefore,
-            ProcessStatus processStatusBefore,
-            OaiStatus oaiStatusAfter,
-            ProcessStatus processStatusAfter, String forIdentifier) throws Exception {
-
-        final RepositoryDao repositoryDao = mock(RepositoryDao.class);
-        final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
-        final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
-        final ScheduledOaiHarvester instance = new ScheduledOaiHarvester(
-                repositoryDao,
-                errorReportDao,
-                oaiRecordDao,
-                new MockHttpFetcher(withResumptionToken, withoutResumptionToken),
-                new ResponseHandlerFactory(),
-                mock(FileStorage.class), mock(RepositoryNotifier.class)
-        );
-        final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
-        when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
-        final String duplicateIdentifier = forIdentifier;
-        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:32Z", oaiStatusBefore, 123, processStatusBefore);
-        when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
-                .thenReturn(existingRecord);
-
-        instance.enable();
-        instance.runOneIteration();
-
-        verify(oaiRecordDao).update(argThat(allOf(
-                hasProperty("identifier", is(duplicateIdentifier)),
-                hasProperty("oaiStatus", is(oaiStatusAfter)),
-                hasProperty("processStatus", is(processStatusAfter))
-        )));
-    }
+    // TODO: specify logic for updated or deleted files which were already processed.
 }

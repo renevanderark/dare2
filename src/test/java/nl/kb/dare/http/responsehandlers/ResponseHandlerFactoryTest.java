@@ -1,12 +1,10 @@
 package nl.kb.dare.http.responsehandlers;
 
 import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.xslt.XsltTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.transform.Result;
 import java.io.OutputStream;
 
 import static org.hamcrest.core.Is.is;
@@ -37,10 +35,4 @@ public class ResponseHandlerFactoryTest {
         assertThat(handler, is(instanceOf(StreamCopyingResponseHandler.class)));
     }
 
-    @Test
-    public void getXsltTransformingHandlerShouldReturnXsltTransformingHandler() {
-        final HttpResponseHandler handler = instance.getXsltTransformingHandler(mock(Result.class), mock(XsltTransformer.class));
-
-        assertThat(handler, is(instanceOf(XsltTransformingResponseHandler.class)));
-    }
 }
