@@ -204,7 +204,6 @@ public class GetRecordOperationsTest {
                 mock(ManifestFinalizer.class), onError);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
-        when(responseHandlerFactory.getXsltTransformingHandler(any(), any())).thenReturn(responseHandler);
         when(storageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
         final Optional<ObjectResource> result = instance.downloadMetadata(storageHandle, oaiRecord);
