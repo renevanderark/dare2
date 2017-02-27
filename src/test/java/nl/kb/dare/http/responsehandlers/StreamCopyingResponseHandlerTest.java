@@ -19,25 +19,17 @@ import static org.mockito.Mockito.mock;
 public class StreamCopyingResponseHandlerTest {
 
     @Test
-    public void itShouldCopyTheBytesToTheOutputStream() {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
-        final HttpResponseHandler instance = new ResponseHandlerFactory().getStreamCopyingResponseHandler(out, checksumOut);
+    public void itShouldCopyTheBytesToTheOutputStreams() {
+        final ByteArrayOutputStream out1 = new ByteArrayOutputStream();
+        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+        final ByteArrayOutputStream out3 = new ByteArrayOutputStream();
+        final HttpResponseHandler instance = new ResponseHandlerFactory().getStreamCopyingResponseHandler(out1, out2, out3);
 
         instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"));
 
-        assertThat(new String(out.toByteArray(), Charset.forName("UTF8")), is("testing"));
-    }
-
-    @Test
-    public void itShouldCopyThehecksumToTheOtherOutputStream() {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
-        final HttpResponseHandler instance = new ResponseHandlerFactory().getStreamCopyingResponseHandler(out, checksumOut);
-
-        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"));
-
-        assertThat(new String(checksumOut.toByteArray(), Charset.forName("UTF8")), is("ae2b1fca515949e5d54fb22b8ed95575"));
+        assertThat(new String(out1.toByteArray(), Charset.forName("UTF8")), is("testing"));
+        assertThat(new String(out2.toByteArray(), Charset.forName("UTF8")), is("testing"));
+        assertThat(new String(out3.toByteArray(), Charset.forName("UTF8")), is("testing"));
     }
 
     @Test

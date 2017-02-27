@@ -13,8 +13,8 @@ public class ResponseHandlerFactory {
         return new SaxParsingResponseHandler(saxHandler);
     }
 
-    public HttpResponseHandler getStreamCopyingResponseHandler(OutputStream out, OutputStream checksumOut) {
-        return new StreamCopyingResponseHandler(out, checksumOut);
+    public HttpResponseHandler getStreamCopyingResponseHandler(OutputStream... outputStreams) {
+        return new StreamCopyingResponseHandler(outputStreams);
     }
 
     public HttpResponseHandler getXsltTransformingHandler(Result out, XsltTransformer xsltTransformer) {

@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -144,7 +145,7 @@ class GetRecordOperations {
             }
             errorReports.forEach(onError);
             return errorReports.isEmpty();
-        } catch (IOException e) {
+        } catch (IOException | NoSuchAlgorithmException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
             return false;
         }

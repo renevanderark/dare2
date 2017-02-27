@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
@@ -11,6 +12,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,14 +36,14 @@ public class GetRecordResourceOperationsTest {
     private static final String TRANSFORMED_ENC_FILE_2 = "file%201.ext";
 
     @Test
-    public void downloadResourceShouldSaveTheFileAndTheChecksum() throws IOException {
+    public void downloadResourceShouldSaveTheFileAndTheChecksum() throws IOException, NoSuchAlgorithmException {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any()))
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class)))
                 .thenReturn(responseHandler);
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList());
 
@@ -57,7 +59,7 @@ public class GetRecordResourceOperationsTest {
         inOrder.verify(fileStorageHandle).getOutputStream("resources", EXPECTED_FILENAME);
         // final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
         // final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
-        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any());
+        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class));
         inOrder.verify(httpFetcher).execute(
                 argThat(allOf(
                     hasProperty("host", is("example.com")),
@@ -76,7 +78,7 @@ public class GetRecordResourceOperationsTest {
     }
 
     @Test
-    public void downloadResourceShouldSaveTheFileAndTheChecksumAfterSecondAttempt() throws IOException {
+    public void downloadResourceShouldSaveTheFileAndTheChecksumAfterSecondAttempt() throws IOException, NoSuchAlgorithmException {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
@@ -116,7 +118,7 @@ public class GetRecordResourceOperationsTest {
     }
 
     @Test
-    public void itShouldReturnAllTheErrorReportsOfBothFailedAttempts() throws IOException {
+    public void itShouldReturnAllTheErrorReportsOfBothFailedAttempts() throws IOException, NoSuchAlgorithmException {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);

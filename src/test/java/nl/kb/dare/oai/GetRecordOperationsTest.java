@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -315,7 +316,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadResourcesShouldDownloadAllObjectResourcesAndReturnTrueUponSuccess() throws IOException {
+    public void downloadResourcesShouldDownloadAllObjectResourcesAndReturnTrueUponSuccess() throws IOException, NoSuchAlgorithmException {
         final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
@@ -337,7 +338,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadResourcesShouldReturnFalseUponAnyError() throws IOException {
+    public void downloadResourcesShouldReturnFalseUponAnyError() throws IOException, NoSuchAlgorithmException {
         final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
@@ -357,7 +358,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadResourcesShouldLogAllDownloadErrors() throws IOException {
+    public void downloadResourcesShouldLogAllDownloadErrors() throws IOException, NoSuchAlgorithmException {
         final List<ErrorReport> reports = Lists.newArrayList();
         final Consumer<ErrorReport> onError = reports::add;
         final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
@@ -383,7 +384,7 @@ public class GetRecordOperationsTest {
     }
 
     @Test
-    public void downloadResourcesShouldReturnFalseAndLogAnyCaughtIOException() throws IOException {
+    public void downloadResourcesShouldReturnFalseAndLogAnyCaughtIOException() throws IOException, NoSuchAlgorithmException {
         final List<ErrorReport> reports = Lists.newArrayList();
         final Consumer<ErrorReport> onError = reports::add;
         final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
