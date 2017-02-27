@@ -43,7 +43,7 @@ public class GetRecordTest {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(false);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.empty());
 
         final ProcessStatus result = instance.fetch();
 
@@ -64,7 +64,7 @@ public class GetRecordTest {
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.collectResources(any())).thenReturn(Lists.newArrayList());
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.downloadResources(any(), any())).thenReturn(false);
 
         final ProcessStatus result = instance.fetch();
@@ -88,7 +88,7 @@ public class GetRecordTest {
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.collectResources(any())).thenReturn(objectResources);
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.downloadResources(any(), any())).thenReturn(false);
 
         final ProcessStatus result = instance.fetch();
@@ -112,7 +112,7 @@ public class GetRecordTest {
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.collectResources(any())).thenReturn(objectResources);
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any())).thenReturn(false);
 
@@ -137,7 +137,7 @@ public class GetRecordTest {
         final List<ObjectResource> objectResources = Lists.newArrayList(mock(ObjectResource.class));
         final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.collectResources(fileStorageHandle)).thenReturn(objectResources);
         when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any())).thenReturn(true);
@@ -163,7 +163,7 @@ public class GetRecordTest {
         final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, true);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.collectResources(any())).thenReturn(Lists.newArrayList(mock(ObjectResource.class)));
-        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any())).thenReturn(true);
 

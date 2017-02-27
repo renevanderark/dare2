@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
@@ -18,7 +19,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -84,17 +84,18 @@ class GetRecordOperations {
         }
     }
 
-    boolean downloadMetadata(FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
+    Optional<ObjectResource> downloadMetadata(FileStorageHandle fileStorageHandle, OaiRecord oaiRecord) {
         try {
             final String urlStr = String.format("%s?verb=GetRecord&metadataPrefix=%s&identifier=%s",
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
-            final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
+            final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+            // final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
             LOG.info("fetching record: {}", urlStr);
 
             final HttpResponseHandler responseHandler = responseHandlerFactory
-                    .getXsltTransformingHandler(new StreamResult(outputStreamWriter), xsltTransformer);
+                    .getStreamCopyingResponseHandler(out, checksumOut);
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 
@@ -102,10 +103,16 @@ class GetRecordOperations {
 
             fileStorageHandle.syncFile(out);
 
-            return responseHandler.getExceptions().isEmpty();
-        } catch (IOException e) {
+            final ObjectResource objectResource = new ObjectResource();
+            objectResource.setLocalFilename("metadata.xml");
+            objectResource.setChecksum(checksumOut.getChecksumString());
+            objectResource.setId("metadata");
+            return responseHandler.getExceptions().isEmpty()
+                    ? Optional.of(objectResource)
+                    : Optional.empty();
+        } catch (IOException | NoSuchAlgorithmException e) {
             onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
-            return false;
+            return Optional.empty();
         }
     }
 

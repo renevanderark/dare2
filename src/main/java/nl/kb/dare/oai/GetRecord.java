@@ -32,7 +32,8 @@ class GetRecord {
         }
 
         final FileStorageHandle handle = fileStorageHandle.get();
-        if (!getRecordOperations.downloadMetadata(handle, oaiRecord)) {
+        final Optional<ObjectResource> metadataResource = getRecordOperations.downloadMetadata(handle, oaiRecord);
+        if (!metadataResource.isPresent()) {
             return ProcessStatus.FAILED;
         }
 
