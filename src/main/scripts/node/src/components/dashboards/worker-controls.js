@@ -10,12 +10,14 @@ class WorkerControls extends React.Component {
         return this.props.collapsed !== nextProps.collapsed ||
                 this.props.nextRun !== nextProps.nextRun ||
                 this.props.harvesterRunState !== nextProps.harvesterRunState ||
-                this.props.recordFetcherRunState !== nextProps.recordFetcherRunState;
+                this.props.recordFetcherRunState !== nextProps.recordFetcherRunState ||
+                this.props.currentRepository !== nextProps.currentRepository ||
+                this.props.currentDateStamp !== nextProps.currentDateStamp;
     }
 
     render() {
         // states
-        const { recordFetcherRunState, harvesterRunState, nextRun } = this.props;
+        const { recordFetcherRunState, harvesterRunState, nextRun, currentRepository, currentDateStamp } = this.props;
         // worker control actions
         const { onStartOaiHarvester, onDisableOaiHarvester, onStartOaiRecordFetcher, onDisableOaiRecordFetcher } = this.props;
         // panel actions
@@ -35,7 +37,10 @@ class WorkerControls extends React.Component {
 
         const nextRunMessage = harvesterRunState === "WAITING"
             ? `Next: run: ${nextRun}`
-            : (<span>&nbsp;</span>);
+            : null;
+
+        const currentRepositoryMessage = currentRepository && currentDateStamp ?
+            `${currentRepository} (${currentDateStamp})` : null;
 
         return (
             <CollapsiblePanel id="workers-panel" collapsed={this.props.collapsed} title="Workers"
@@ -44,7 +49,7 @@ class WorkerControls extends React.Component {
                     {harvesterButton}{harvesterDisableButton}
                     Harvesters <br /> ({harvesterRunState})
                     <br />
-                    {nextRunMessage}
+                    {nextRunMessage || currentRepositoryMessage}
                 </InnerPanel>
                 <InnerPanelSpacer />
                 <InnerPanel>

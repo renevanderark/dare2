@@ -1,5 +1,6 @@
 package nl.kb.dare.oai;
 
+import com.google.common.collect.Maps;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -25,6 +27,7 @@ class ListIdentifiers {
     private final Consumer<OaiRecord> onOaiRecord;
 
     private boolean interrupted = false;
+    private String lastDateStamp;
 
     ListIdentifiers(Repository repositoryConfig, HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                     Consumer<Repository> onHarvestComplete,
@@ -36,6 +39,7 @@ class ListIdentifiers {
         this.onHarvestComplete = onHarvestComplete;
         this.onException = onException;
         this.onOaiRecord = onOaiRecord;
+        lastDateStamp = repositoryConfig.getDateStamp();
     }
 
     private URL makeRequestUrl(String resumptionToken) throws MalformedURLException {
@@ -60,7 +64,7 @@ class ListIdentifiers {
         try {
 
             String resumptionToken = null;
-            String lastDateStamp = repositoryConfig.getDateStamp();
+            lastDateStamp = repositoryConfig.getDateStamp();
 
             while (!interrupted && (resumptionToken == null || resumptionToken.trim().length() > 0)) {
                 final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance(repositoryConfig.getId(), onOaiRecord);
@@ -78,9 +82,7 @@ class ListIdentifiers {
                     break;
                 }
 
-                if (optDateStamp.isPresent()) {
-                    lastDateStamp = optDateStamp.get();
-                }
+                optDateStamp.ifPresent(s -> lastDateStamp = s);
 
                 if (optResumptionToken.isPresent()) {
                     resumptionToken = optResumptionToken.get();
@@ -100,5 +102,12 @@ class ListIdentifiers {
 
     void interruptHarvest() {
         interrupted = true;
+    }
+
+    public Map<String, String> getHarvestStatus() {
+        Map<String, String> result = Maps.newHashMap();
+        result.put("dateStamp", lastDateStamp);
+        result.put("name", repositoryConfig.getName());
+        return result;
     }
 }

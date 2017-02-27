@@ -51,6 +51,8 @@ public class StatusUpdater extends AbstractScheduledService {
                 harvesterState.put("nextRunTime", oaiHarvester.getNextRunTime());
                 harvesterState.put("harvesterRunState", oaiHarvester.getRunState());
                 harvesterState.put("recordFetcherRunState", oaiRecordFetcher.getRunState());
+                oaiHarvester.getCurrentHarvester()
+                        .ifPresent(harvestStatus -> harvesterState.put("currentRepository", harvestStatus));
 
 
                 final Map<String, Object> statusUpdate = Maps.newHashMap();
