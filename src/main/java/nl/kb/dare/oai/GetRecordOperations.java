@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -101,8 +102,6 @@ class GetRecordOperations {
 
             responseHandler.getExceptions().forEach(onError);
 
-            fileStorageHandle.syncFile(out);
-
             final ObjectResource objectResource = new ObjectResource();
             objectResource.setLocalFilename("metadata.xml");
             objectResource.setChecksum(checksumOut.getChecksumString());
@@ -116,11 +115,30 @@ class GetRecordOperations {
         }
     }
 
+    boolean generateManifest(FileStorageHandle handle) {
+        try {
+            final InputStream metadata = handle.getFile("metadata.xml");
+            final OutputStream out = handle.getOutputStream("manifest.initial.xml");
+            final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
+
+            xsltTransformer.transform(metadata, new StreamResult(outputStreamWriter));
+
+            return true;
+        } catch (IOException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.IO_EXCEPTION));
+            return false;
+        } catch (TransformerException e) {
+            onError.accept(new ErrorReport(e, ErrorStatus.XML_PARSING_ERROR));
+            return false;
+        }
+    }
+
+
     List<ObjectResource> collectResources(FileStorageHandle fileStorageHandle) {
         try {
             final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
             synchronized (saxParser) {
-                saxParser.parse(fileStorageHandle.getFile("metadata.xml"), metsXmlHandler);
+                saxParser.parse(fileStorageHandle.getFile("manifest.initial.xml"), metsXmlHandler);
             }
             final List<ObjectResource> objectResources = metsXmlHandler.getObjectResources();
 
@@ -161,7 +179,7 @@ class GetRecordOperations {
 
     boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
         try {
-            final InputStream in = handle.getFile("metadata.xml");
+            final InputStream in = handle.getFile("manifest.initial.xml");
             final OutputStream out = handle.getOutputStream("sip.xml");
             final Reader metadata = new InputStreamReader(in,"UTF-8");
             final Writer sip = new OutputStreamWriter(out, "UTF-8");

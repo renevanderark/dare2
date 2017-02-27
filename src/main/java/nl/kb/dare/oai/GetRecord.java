@@ -37,6 +37,10 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
+        if (!getRecordOperations.generateManifest(handle)) {
+            return ProcessStatus.FAILED;
+        }
+
         final List<ObjectResource> objectResources = getRecordOperations.collectResources(handle);
         if (objectResources.isEmpty()) {
             return ProcessStatus.FAILED;

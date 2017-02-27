@@ -16,8 +16,6 @@ public interface FileStorageHandle {
 
     InputStream getFile(String filename) throws FileNotFoundException;
 
-    void syncFile(OutputStream out) throws IOException;
-
     void deleteFiles() throws IOException;
 
     void downloadZip(OutputStream output) throws IOException;
