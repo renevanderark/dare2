@@ -5,7 +5,7 @@ import { Link } from "react-router";
 class BreadCrumbs extends React.Component {
 
     shouldComponentUpdate(nextProps) {
-        return this.props.titles !== nextProps.titles;
+        return this.props.titles.join(",") !== nextProps.titles.join(",");
     }
 
     render() {
