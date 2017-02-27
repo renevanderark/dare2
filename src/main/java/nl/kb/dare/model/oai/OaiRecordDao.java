@@ -6,6 +6,7 @@ import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
+import java.util.Iterator;
 import java.util.List;
 
 @RegisterMapper(OaiRecordMapper.class)
@@ -29,15 +30,14 @@ public interface OaiRecordDao {
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
-    @SqlUpdate(
-        "DELETE rec.*, err.* " +
-        "FROM oai_records rec " +
-        "LEFT JOIN oai_record_errors err " +
-        "ON rec.identifier = err.record_identifier " +
-        "WHERE rec.repository_id = :repositoryId"
-    )
+    @SqlUpdate("delete from oai_records where repository_id = :repositoryId")
     void removeForRepository(@Bind("repositoryId") Integer repositoryId);
+
+    @SqlQuery("select identifier from oai_records where repository_id = :repositoryId")
+    Iterator<String> findAllForRepository(@Bind("repositoryId") Integer repositoryId);
 
     @SqlUpdate("delete from oai_records where identifier = :oaiRecord.identifier")
     void delete(@BindBean("oaiRecord") OaiRecord oaiRecord);
+
+
 }

@@ -3,6 +3,7 @@ package nl.kb.dare.endpoints;
 import com.google.common.collect.Lists;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
@@ -31,7 +32,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
         when(dao.insert(repositoryConfig)).thenReturn(id);
@@ -59,17 +60,23 @@ public class RepositoriesEndpointTest {
         final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
         final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, oaiRecordDao, mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
+        final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, oaiRecordDao, errorReportDao, mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
         final Integer id = 123;
+        when(oaiRecordDao.findAllForRepository(123)).thenReturn(Lists.newArrayList(
+                "testing"
+        ).iterator());
 
         final Response response = instance.delete(id);
 
-        final InOrder inOrder = inOrder(fileStorage, dao, repositoryNotifier, oaiRecordDao);
+        final InOrder inOrder = inOrder(fileStorage, dao, repositoryNotifier, oaiRecordDao, errorReportDao);
         inOrder.verify(fileStorage).purgeRepositoryFiles(id);
+        inOrder.verify(oaiRecordDao).findAllForRepository(id);
+        inOrder.verify(errorReportDao).removeForOaiRecord("testing");
         inOrder.verify(oaiRecordDao).removeForRepository(id);
         inOrder.verify(dao).remove(id);
         inOrder.verify(repositoryNotifier).notifyUpdate();
+        inOrder.verifyNoMoreInteractions();
         assertThat(response.getStatus(), equalTo(Response.Status.OK.getStatusCode()));
     }
 
@@ -77,7 +84,7 @@ public class RepositoriesEndpointTest {
     public void getShouldReturnTheRepository() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(repositoryConfig);
@@ -92,7 +99,7 @@ public class RepositoriesEndpointTest {
     public void getShouldReturnNotFoundWhenRepositoryIsNotFound() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(null);
 
@@ -108,7 +115,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
 
@@ -126,7 +133,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
         final Integer id = 123;
 
         final Response response = instance.enable(id);
@@ -142,7 +149,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = mock(RepositoryNotifier.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), repositoryNotifier, fileStorage);
         final Integer id = 123;
 
         final Response response = instance.disable(id);
@@ -157,7 +164,7 @@ public class RepositoriesEndpointTest {
     public void indexShouldRespondWithAListOfRepositories() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
         final Repository repositoryConfig1 = new Repository("http://example.com", "name", "prefix", "setname", "123", true, 1);
         final Repository repositoryConfig2 = new Repository("http://example.com", "name", "prefix", "setname", "123", true, 2);
         final List<Repository> repositories = Lists.newArrayList(repositoryConfig1, repositoryConfig2);
@@ -175,7 +182,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final Integer id = 123;
         final RepositoryValidator.ValidationResult validationResult = validator.new ValidationResult();
@@ -192,7 +199,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         final RepositoryValidator.ValidationResult validationResult = validator.new ValidationResult();
         when(validator.validate(repositoryConfig)).thenReturn(validationResult);
@@ -207,7 +214,7 @@ public class RepositoriesEndpointTest {
     public void validateShouldReturnNotFoundWhenRepositoryIsNotFound() {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), mock(RepositoryValidator.class), mock(RepositoryNotifier.class), fileStorage);
         final Integer id = 123;
         when(dao.findById(id)).thenReturn(null);
 
@@ -224,7 +231,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
         final Integer id = 123;
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         when(dao.findById(id)).thenReturn(repositoryConfig);
@@ -242,7 +249,7 @@ public class RepositoriesEndpointTest {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
-        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
+        final RepositoriesEndpoint instance = new RepositoriesEndpoint(dao, mock(OaiRecordDao.class), mock(ErrorReportDao.class), validator, mock(RepositoryNotifier.class), fileStorage);
         final Integer id = 123;
         final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "setname", "123", true);
         when(dao.findById(id)).thenReturn(repositoryConfig);

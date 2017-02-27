@@ -23,4 +23,7 @@ public interface ErrorReportDao {
     @SqlQuery("select * from oai_record_errors where record_identifier = :recordIdentifier")
     @Mapper(OaiRecordErrorReportMapper.class)
     List<OaiRecordErrorReport> findByRecordIdentifier(@Bind("recordIdentifier") String recordIdentifier);
+
+    @SqlUpdate("delete from oai_record_errors where record_identifier = :recordIdentifier")
+    void removeForOaiRecord(@Bind("recordIdentifier") String recordIdentifier);
 }

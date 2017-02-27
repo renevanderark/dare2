@@ -2,6 +2,7 @@ package nl.kb.dare.endpoints;
 
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
@@ -29,12 +30,15 @@ public class RepositoriesEndpoint {
     private RepositoryValidator validator;
     private final RepositoryNotifier repositoryNotifier;
     private final FileStorage fileStorage;
+    private ErrorReportDao errorReportDao;
 
-    public RepositoriesEndpoint(RepositoryDao dao, OaiRecordDao oaiRecordDao, RepositoryValidator validator,
-                                RepositoryNotifier repositoryNotifier, FileStorage fileStorage) {
+    public RepositoriesEndpoint(RepositoryDao dao, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
+                                RepositoryValidator validator, RepositoryNotifier repositoryNotifier,
+                                FileStorage fileStorage) {
 
         this.dao = dao;
         this.oaiRecordDao = oaiRecordDao;
+        this.errorReportDao = errorReportDao;
         this.validator = validator;
         this.repositoryNotifier = repositoryNotifier;
         this.fileStorage = fileStorage;
@@ -138,6 +142,8 @@ public class RepositoriesEndpoint {
     public Response delete(@PathParam("id") Integer id) {
         try {
             fileStorage.purgeRepositoryFiles(id);
+            oaiRecordDao.findAllForRepository(id)
+                    .forEachRemaining(errorReportDao::removeForOaiRecord);
             oaiRecordDao.removeForRepository(id);
             dao.remove(id);
             repositoryNotifier.notifyUpdate();
