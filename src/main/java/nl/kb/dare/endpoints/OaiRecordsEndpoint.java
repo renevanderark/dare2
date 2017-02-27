@@ -1,6 +1,6 @@
 package nl.kb.dare.endpoints;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
@@ -18,6 +18,7 @@ import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.GetRecord;
 import nl.kb.dare.xslt.XsltTransformer;
+import org.glassfish.jersey.server.ChunkedOutput;
 import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
@@ -131,23 +132,36 @@ public class OaiRecordsEndpoint {
 
     @GET
     @Path("/{identifier}/test")
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response testGetRecord(@PathParam("identifier") String identifier) {
-        final Map<String, Object> result = Maps.newHashMap();
 
-        final List<OaiRecordErrorReport> errors = Lists.newArrayList();
+        final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
         final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
         if (oaiRecord == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        final ProcessStatus andRun = GetRecord.getAndRun(repositoryDao, oaiRecord,
-                httpFetcher, responseHandlerFactory,
-                sampleFileStorage, xsltTransformer,
-                err -> errors.add(new OaiRecordErrorReport(err, oaiRecord)),
-                false);
 
-        result.put("errors", errors);
-        result.put("result", andRun);
-        return Response.ok(result).build();
+        new Thread(() -> {
+
+            final ProcessStatus result = GetRecord.getAndRun(repositoryDao, oaiRecord,
+                    httpFetcher, responseHandlerFactory,
+                    sampleFileStorage, xsltTransformer,
+                    err -> writeChunk(output, new OaiRecordErrorReport(err, oaiRecord), false),
+                    progressReport -> writeChunk(output, progressReport, false),
+                    false);
+            writeChunk(output, "{\"result\": \"" + result + "\"}", true);
+        }).start();
+
+        return Response.ok(output).build();
+    }
+
+    private void writeChunk(ChunkedOutput<String> output, Object progressReport, boolean andClose) {
+        try {
+            output.write(new ObjectMapper().writeValueAsString(progressReport));
+            output.write("\n");
+            if (andClose) { output.close(); }
+        } catch (IOException ignored) {
+
+        }
     }
 }
