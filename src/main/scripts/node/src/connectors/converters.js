@@ -15,7 +15,7 @@ const convertRecords = (state) => {
             count: state.oaiRecords.results.count,
             result: (state.oaiRecords.results.result || []).map(record => ({
                 ...record,
-                repositoryName: (repositories.find(repo => repo.id === record.repositoryId) || {}).name
+                repositoryName: (repositories.find(repo => repo.id === record.repositoryId) || {name: ""}).name
             }))
         },
         query: state.oaiRecords.query,
@@ -40,15 +40,17 @@ const convertWorkerControls = (state) => {
             harvesterStatus: {
                 recordFetcherRunState,
                 harvesterRunState,
-                nextRunTime
+                nextRunTime,
+                currentRepository
             }
         }
     }} = state;
-
     return {
         nextRun: getNextRun(nextRunTime),
         recordFetcherRunState: recordFetcherRunState,
         harvesterRunState: harvesterRunState,
+        currentRepository: (currentRepository || {}).name,
+        currentDateStamp: (currentRepository  || {}).dateStamp,
         collapsed: state.panels["workers-panel"].collapsed
     };
 };

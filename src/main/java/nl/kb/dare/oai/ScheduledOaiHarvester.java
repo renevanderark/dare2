@@ -26,6 +26,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -45,6 +47,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
     private final FileStorage fileStorage;
     private final RepositoryNotifier repositoryNotifier;
 
+    private ListIdentifiers currentHarvester;
     private RunState runState;
     private Instant lastRunTime = Instant.now();
 
@@ -65,6 +68,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         this.fileStorage = fileStorage;
         this.repositoryNotifier = repositoryNotifier;
         this.runState = RunState.DISABLED;
+        this.currentHarvester = null;
     }
 
     @Override
@@ -84,8 +88,13 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                         this::saveOaiRecord // onOaiRecord
                 )).collect(Collectors.toList());
 
-        runningHarvesters.forEach(ListIdentifiers::harvest);
+        runningHarvesters.forEach(harvester -> {
+            currentHarvester = harvester;
+            harvester.harvest();
+        });
+
         runningHarvesters = Lists.newArrayList();
+        currentHarvester = null;
 
         LOG.info("Harvest finished, time taken: {} seconds", timer.stop().elapsed(TimeUnit.SECONDS));
         lastRunTime = Instant.now();
@@ -178,7 +187,13 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         runningHarvesters.forEach(ListIdentifiers::interruptHarvest);
     }
 
-    public RunState getRunState() {
+    Optional<Map<String, String>> getCurrentHarvester() {
+        return currentHarvester == null
+                ? Optional.empty()
+                : Optional.of(currentHarvester.getHarvestStatus());
+    }
+
+    RunState getRunState() {
         return runState;
     }
 
