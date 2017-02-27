@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -14,7 +13,6 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -58,9 +56,25 @@ public class GetRecordTest {
     }
 
     @Test
-    @Ignore
     public void fetchShouldReturnFailedWhenGenerateManifestFails() {
-        fail("TODO: implement test");
+        final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
+        when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
+        when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(false);
+
+        final ProcessStatus result = instance.fetch();
+
+        final InOrder inOrder = inOrder(getRecordOperations, getRecordOperations);
+        inOrder.verify(getRecordOperations).getFileStorageHandle(oaiRecord);
+        inOrder.verify(getRecordOperations).downloadMetadata(fileStorageHandle, oaiRecord);
+        inOrder.verify(getRecordOperations).generateManifest(fileStorageHandle);
+
+        verifyNoMoreInteractions(getRecordOperations);
+
+        assertThat(result, is(ProcessStatus.FAILED));
     }
 
     @Test

@@ -76,22 +76,11 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
             final Thread worker = new Thread(() -> {
                 final Stopwatch timer = Stopwatch.createStarted();
 
-                final Repository repositoryConfig = repositoryDao.findById(oaiRecord.getRepositoryId());
-                if (repositoryConfig == null) {
-                    LOG.error("SEVERE! OaiRecord missing repository configuration in database: {}", oaiRecord);
-                    // TODO error report
-                    finishRecord(oaiRecord, ProcessStatus.FAILED, timer.elapsed(TimeUnit.SECONDS));
-                    return;
-                }
-
-                final GetRecordResourceOperations resourceOperations = new GetRecordResourceOperations(
-                        httpFetcher, responseHandlerFactory);
-                final GetRecordOperations getRecordOperations = new GetRecordOperations(
-                        fileStorage, httpFetcher, responseHandlerFactory, xsltTransformer,
-                        repositoryConfig, resourceOperations, new ManifestFinalizer(),
-                        (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord) // on error
+                ProcessStatus result = GetRecord.getAndRun(
+                        repositoryDao, oaiRecord, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
+                        (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord), // on error
+                        inSampleMode
                 );
-                final ProcessStatus result = new GetRecord(getRecordOperations, oaiRecord, inSampleMode).fetch();
 
                 finishRecord(oaiRecord, result, timer.elapsed(TimeUnit.SECONDS));
                 runningWorkers.getAndDecrement();
