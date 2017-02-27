@@ -106,6 +106,7 @@ class GetRecordOperations {
             objectResource.setLocalFilename("metadata.xml");
             objectResource.setChecksum(checksumOut.getChecksumString());
             objectResource.setId("metadata");
+            objectResource.setChecksumType("MD5");
             return responseHandler.getExceptions().isEmpty()
                     ? Optional.of(objectResource)
                     : Optional.empty();
