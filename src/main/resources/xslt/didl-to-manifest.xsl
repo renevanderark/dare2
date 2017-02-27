@@ -10,23 +10,15 @@
 
     <xsl:template match="/">
         <mets:mets>
-            <mets:dmdSec ID="dmd1">
-                <mets:mdWrap MDTYPE="MODS">
-                    <mets:xmlData>
-                        <xsl:apply-templates select="/didl:DIDL/didl:Item/didl:Item/didl:Descriptor/didl:Statement/rdf:type[@rdf:resource='info:eu-repo/semantics/descriptiveMetadata']" />
-                    </mets:xmlData>
-                </mets:mdWrap>
-            </mets:dmdSec>
             <mets:fileSec USE="storage/preservation">
                 <mets:fileGrp>
+                    <mets:file ID="metadata" MIMETYPE="text/xml">
+                        <mets:FLocat LOCTYPE="URL" xlink:href="file://./metadata.xml" />
+                    </mets:file>
                     <xsl:apply-templates select="/didl:DIDL/didl:Item/didl:Item/didl:Descriptor/didl:Statement/rdf:type[@rdf:resource='info:eu-repo/semantics/objectFile']" />
                 </mets:fileGrp>
             </mets:fileSec>
         </mets:mets>
-    </xsl:template>
-
-    <xsl:template match="/didl:DIDL/didl:Item/didl:Item/didl:Descriptor/didl:Statement/rdf:type[@rdf:resource='info:eu-repo/semantics/descriptiveMetadata']">
-        <xsl:copy-of select="../../../didl:Component/didl:Resource/node()" />
     </xsl:template>
 
     <xsl:template match="/didl:DIDL/didl:Item/didl:Item/didl:Descriptor/didl:Statement/rdf:type[@rdf:resource='info:eu-repo/semantics/objectFile']">

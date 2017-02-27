@@ -50,7 +50,7 @@ class GetRecord {
             return ProcessStatus.FAILED;
         }
 
-        if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources)) {
+        if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources, metadataResource.get())) {
             return ProcessStatus.FAILED;
         }
 

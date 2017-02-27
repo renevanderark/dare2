@@ -7,7 +7,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.List;
 
-public class MetsXmlHandler extends DefaultHandler {
+import static java.util.stream.Collectors.toList;
+
+public class ManifestXmlHandler extends DefaultHandler {
 
 
     private ObjectResource currentResource = new ObjectResource();
@@ -31,6 +33,8 @@ public class MetsXmlHandler extends DefaultHandler {
     }
 
     public List<ObjectResource> getObjectResources() {
-        return objectResources;
+        return objectResources.stream()
+                .filter(objectResource -> !objectResource.getId().equals("metadata"))
+                .collect(toList());
     }
 }

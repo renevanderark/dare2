@@ -88,7 +88,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                         httpFetcher, responseHandlerFactory);
                 final GetRecordOperations getRecordOperations = new GetRecordOperations(
                         fileStorage, httpFetcher, responseHandlerFactory, xsltTransformer,
-                        repositoryConfig, resourceOperations, new SipFinalizer(),
+                        repositoryConfig, resourceOperations, new ManifestFinalizer(),
                         (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord) // on error
                 );
                 final ProcessStatus result = new GetRecord(getRecordOperations, oaiRecord, inSampleMode).fetch();

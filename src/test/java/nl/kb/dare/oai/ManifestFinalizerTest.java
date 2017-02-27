@@ -21,12 +21,12 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 
-import static nl.kb.dare.oai.SipFinalizer.METS_NS;
-import static nl.kb.dare.oai.SipFinalizer.XLINK_NS;
+import static nl.kb.dare.oai.ManifestFinalizer.METS_NS;
+import static nl.kb.dare.oai.ManifestFinalizer.XLINK_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-public class SipFinalizerTest {
+public class ManifestFinalizerTest {
     private static final DocumentBuilder docBuilder;
     static {
         try {
@@ -39,21 +39,22 @@ public class SipFinalizerTest {
     }
 
     @Test
-    public void writeResourcesToSipShouldCreateASipFileFromTheMetadataXML() throws IOException, SAXException, TransformerException {
-        final InputStream in = GetRecordOperationsTest.class.getResourceAsStream("/oai/mets-experimental.xml");
+    public void writeResourcesToManifestShouldCreateAManifestFileFromTheMetadataXML() throws IOException, SAXException, TransformerException {
+        final InputStream in = GetRecordOperationsTest.class.getResourceAsStream("/oai/manifest.xml");
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Reader metadata = new InputStreamReader(in,"UTF-8");
-        final Writer sip = new OutputStreamWriter(out, "UTF-8");
+        final Writer manifest = new OutputStreamWriter(out, "UTF-8");
 
+        final ObjectResource metadataResource = getObjectResource("metadata", "check-md", "type-md", "metadata.xml");
         final ObjectResource file0001 = getObjectResource("FILE_0001", "check-1", "type-1", "test 1.html");
         final ObjectResource file0002 = getObjectResource("FILE_0002", "check-2", "type-2", "test 2.pdf");
         final ObjectResource file0003 = getObjectResource("FILE_0003", "check-3", "type-3", "test 3.txt");
         final List<ObjectResource> objectResources = Lists.newArrayList(
                 file0001, file0002, file0003
         );
-        final SipFinalizer instance = new SipFinalizer();
+        final ManifestFinalizer instance = new ManifestFinalizer();
 
-        instance.writeResourcesToSip(objectResources, metadata, sip);
+        instance.writeResourcesToManifest(metadataResource, objectResources, metadata, manifest);
 
 
         final Document resultDoc = docBuilder.parse(new InputSource(new InputStreamReader(new ByteArrayInputStream(out.toByteArray()), "UTF8")));
@@ -68,9 +69,10 @@ public class SipFinalizerTest {
             checksumTypes.add(fileNode.getAttributes().getNamedItem("CHECKSUMTYPE").getNodeValue());
         }
 
-        assertThat(checksums, contains("check-1", "check-2", "check-3"));
-        assertThat(checksumTypes, contains("type-1", "type-2", "type-3"));
+        assertThat(checksums, contains("check-md", "check-1", "check-2", "check-3"));
+        assertThat(checksumTypes, contains("type-md", "type-1", "type-2", "type-3"));
         assertThat(fileUrls, contains(
+                "file://./metadata.xml",
                 "file://./resources/test%201.html",
                 "file://./resources/test%202.pdf",
                 "file://./resources/test%203.txt"

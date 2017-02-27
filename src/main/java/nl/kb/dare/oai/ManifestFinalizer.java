@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 
-class SipFinalizer {
+class ManifestFinalizer {
 
     private static final DocumentBuilder docBuilder;
     private static final TransformerFactory transformerFactory;
@@ -40,7 +40,7 @@ class SipFinalizer {
     static final String METS_NS = "http://www.loc.gov/METS/";
     static final String XLINK_NS = "http://www.w3.org/1999/xlink";
 
-    void writeResourcesToSip(List<ObjectResource> objectResources, Reader metadata, Writer sip)
+    void writeResourcesToManifest(ObjectResource metadataResource, List<ObjectResource> objectResources, Reader metadata, Writer manifest)
             throws IOException, SAXException, TransformerException {
 
         synchronized (docBuilder) {
@@ -55,18 +55,26 @@ class SipFinalizer {
                 if (!fileId.isPresent()) {
                     throw new IOException("ID attribute not set for file node in metadata.xml");
                 }
-
-                final Optional<ObjectResource> currentResource = findObjectResourceForFileId(objectResources, fileId.get());
-                if (!currentResource.isPresent()) {
-                    throw new IOException("Expected file resource is not present for metadata.xml: " + fileId.get());
+                if (fileId.get().equals("metadata")) {
+                    setAttribute(document, fileNode, "CHECKSUM", metadataResource.getChecksum());
+                    setAttribute(document, fileNode, "CHECKSUMTYPE", metadataResource.getChecksumType());
+                } else {
+                    writeResourceFile(objectResources, document, fileNode, fileId.get());
                 }
-
-                setAttribute(document, fileNode, "CHECKSUM", currentResource.get().getChecksum());
-                setAttribute(document, fileNode, "CHECKSUMTYPE", currentResource.get().getChecksumType());
-                setXlinkHref(fileNode, currentResource.get());
             }
-            transformer.transform(new DOMSource(document), new StreamResult(sip));
+            transformer.transform(new DOMSource(document), new StreamResult(manifest));
         }
+    }
+
+    private void writeResourceFile(List<ObjectResource> objectResources, Document document, Node fileNode, String fileId) throws IOException {
+        final Optional<ObjectResource> currentResource = findObjectResourceForFileId(objectResources, fileId);
+        if (!currentResource.isPresent()) {
+            throw new IOException("Expected file resource is not present for metadata.xml: " + fileId);
+        }
+
+        setAttribute(document, fileNode, "CHECKSUM", currentResource.get().getChecksum());
+        setAttribute(document, fileNode, "CHECKSUMTYPE", currentResource.get().getChecksumType());
+        setXlinkHref(fileNode, currentResource.get());
     }
 
     private void setXlinkHref(Node fileNode, ObjectResource currentResource) throws IOException {

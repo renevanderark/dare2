@@ -66,9 +66,9 @@ public class App extends Application<Config> {
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
-        final StreamSource didlToMetsXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl2mets-experimental-version.xsl"));
+        final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
 
-        final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToMetsXslt);
+        final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
                 repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory, fileStorage,

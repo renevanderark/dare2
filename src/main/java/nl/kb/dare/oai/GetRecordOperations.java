@@ -53,7 +53,7 @@ class GetRecordOperations {
     private final Repository repository;
     private final Consumer<ErrorReport> onError;
     private final GetRecordResourceOperations resourceOperations;
-    private final SipFinalizer sipFinalizer;
+    private final ManifestFinalizer manifestFinalizer;
 
     GetRecordOperations(FileStorage fileStorage,
                         HttpFetcher httpFetcher,
@@ -61,7 +61,7 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        SipFinalizer sipFinalizer, Consumer<ErrorReport> onError) {
+                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
@@ -69,7 +69,7 @@ class GetRecordOperations {
         this.xsltTransformer = xsltTransformer;
         this.repository = repository;
         this.resourceOperations = resourceOperations;
-        this.sipFinalizer = sipFinalizer;
+        this.manifestFinalizer = manifestFinalizer;
         this.onError = onError;
     }
 
@@ -136,11 +136,11 @@ class GetRecordOperations {
 
     List<ObjectResource> collectResources(FileStorageHandle fileStorageHandle) {
         try {
-            final MetsXmlHandler metsXmlHandler = new MetsXmlHandler();
+            final ManifestXmlHandler manifestXmlHandler = new ManifestXmlHandler();
             synchronized (saxParser) {
-                saxParser.parse(fileStorageHandle.getFile("manifest.initial.xml"), metsXmlHandler);
+                saxParser.parse(fileStorageHandle.getFile("manifest.initial.xml"), manifestXmlHandler);
             }
-            final List<ObjectResource> objectResources = metsXmlHandler.getObjectResources();
+            final List<ObjectResource> objectResources = manifestXmlHandler.getObjectResources();
 
             if (objectResources.isEmpty()) {
                 onError.accept(new ErrorReport(
@@ -177,14 +177,15 @@ class GetRecordOperations {
     }
 
 
-    boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources) {
+    boolean writeFilenamesAndChecksumsToMetadata(FileStorageHandle handle, List<ObjectResource> objectResources,
+                                                 ObjectResource metadataResource) {
         try {
             final InputStream in = handle.getFile("manifest.initial.xml");
             final OutputStream out = handle.getOutputStream("manifest.xml");
             final Reader metadata = new InputStreamReader(in,"UTF-8");
-            final Writer sip = new OutputStreamWriter(out, "UTF-8");
+            final Writer manifest = new OutputStreamWriter(out, "UTF-8");
 
-            sipFinalizer.writeResourcesToSip(objectResources, metadata, sip);
+            manifestFinalizer.writeResourcesToManifest(metadataResource, objectResources, metadata, manifest);
 
             return true;
         } catch (IOException e) {
