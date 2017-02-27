@@ -1,17 +1,23 @@
 package nl.kb.dare.endpoints;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
 import nl.kb.dare.model.oai.OaiRecordResult;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
+import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.dare.oai.GetRecord;
+import nl.kb.dare.xslt.XsltTransformer;
 import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
@@ -34,13 +40,25 @@ public class OaiRecordsEndpoint {
     private final OaiRecordDao oaiRecordDao;
     private final ErrorReportDao errorReportDao;
     private final FileStorage fileStorage;
+    private RepositoryDao repositoryDao;
+    private HttpFetcher httpFetcher;
+    private ResponseHandlerFactory responseHandlerFactory;
+    private XsltTransformer xsltTransformer;
+    private final FileStorage sampleFileStorage;
 
     public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
-                              FileStorage fileStorage) {
+                              FileStorage fileStorage, RepositoryDao repositoryDao,
+                              HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                              XsltTransformer xsltTransformer, FileStorage sampleFileStorage) {
         this.dbi = dbi;
         this.oaiRecordDao = oaiRecordDao;
         this.errorReportDao = errorReportDao;
         this.fileStorage = fileStorage;
+        this.repositoryDao = repositoryDao;
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
+        this.xsltTransformer = xsltTransformer;
+        this.sampleFileStorage = sampleFileStorage;
     }
 
     @GET
@@ -109,5 +127,27 @@ public class OaiRecordsEndpoint {
         } catch (IOException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+    }
+
+    @GET
+    @Path("/{identifier}/test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response testGetRecord(@PathParam("identifier") String identifier) {
+        final Map<String, Object> result = Maps.newHashMap();
+
+        final List<OaiRecordErrorReport> errors = Lists.newArrayList();
+        final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
+        if (oaiRecord == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        final ProcessStatus andRun = GetRecord.getAndRun(repositoryDao, oaiRecord,
+                httpFetcher, responseHandlerFactory,
+                sampleFileStorage, xsltTransformer,
+                err -> errors.add(new OaiRecordErrorReport(err, oaiRecord)),
+                false);
+
+        result.put("errors", errors);
+        result.put("result", andRun);
+        return Response.ok(result).build();
     }
 }

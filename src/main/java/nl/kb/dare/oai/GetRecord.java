@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-class GetRecord {
+public class GetRecord {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecord.class);
 
 
@@ -32,7 +32,7 @@ class GetRecord {
         this.inSampleMode = inSampleMode;
     }
 
-    static ProcessStatus getAndRun(RepositoryDao repositoryDao, OaiRecord oaiRecord,
+    public static ProcessStatus getAndRun(RepositoryDao repositoryDao, OaiRecord oaiRecord,
                                           HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
                                           FileStorage fileStorage, XsltTransformer xsltTransformer,
                                           Consumer<ErrorReport> onError, boolean inSampleMode) {

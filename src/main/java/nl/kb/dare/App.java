@@ -65,6 +65,7 @@ public class App extends Application<Config> {
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
+        final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
         final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
 
@@ -87,7 +88,8 @@ public class App extends Application<Config> {
 
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
-        register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, fileStorage));
+        register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, fileStorage,
+                repositoryDao, httpFetcher, responseHandlerFactory, xsltTransformer, sampleFileStorage));
         register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, errorReportDao, repositoryValidator, repositoryNotifier, fileStorage));
         register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new OaiRecordFetcherEndpoint(oaiRecordFetcher));

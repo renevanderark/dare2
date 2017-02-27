@@ -11,16 +11,27 @@ public class FileStorageFactory {
     @JsonProperty
     private String storageDir;
 
-    public FileStorage getFileStorage() {
+    @JsonProperty
+    private String sampleFileDir;
+
+    public FileStorage getFileStorage(String dir) {
         switch (storageType) {
             case "local":
-                final File fStorageDir = new File(storageDir);
-                if (!fStorageDir.exists()) { throw new RuntimeException("Directory does not exist: " + storageDir); }
-                if (!fStorageDir.isDirectory()) { throw new RuntimeException("File is not a directory: " + storageDir); }
-                if (!fStorageDir.canWrite()) { throw new RuntimeException("No write permissions for directory: " + storageDir); }
-                return new LocalFileStorage(storageDir);
+                final File fStorageDir = new File(dir);
+                if (!fStorageDir.exists()) { throw new RuntimeException("Directory does not exist: " + dir); }
+                if (!fStorageDir.isDirectory()) { throw new RuntimeException("File is not a directory: " + dir); }
+                if (!fStorageDir.canWrite()) { throw new RuntimeException("No write permissions for directory: " + dir); }
+                return new LocalFileStorage(dir);
             default:
                 throw new RuntimeException("Unsupported file storage type");
         }
+    }
+
+    public FileStorage getFileStorage() {
+        return getFileStorage(storageDir);
+    }
+
+    public FileStorage sampleFileStorage() {
+        return getFileStorage(sampleFileDir);
     }
 }
