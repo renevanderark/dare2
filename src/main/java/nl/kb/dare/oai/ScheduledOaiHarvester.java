@@ -123,11 +123,13 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                     case FAILED:  // in this case we got lucky, maybe the update fixed the data
                         if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
                             oaiRecordDao.delete(newOaiRecord);
+                            // TODO delete from file system
                         } else {
                             oaiRecordDao.update(newOaiRecord);
                             if (existingRecord.getProcessStatus() == ProcessStatus.FAILED) {
                                 try {
                                     fileStorage.create(newOaiRecord).deleteFiles();
+                                    // TODO delete previsous version from file system
                                 } catch (IOException e) {
                                     LOG.warn("Failed to delete failed record", e);
                                 }
@@ -150,6 +152,9 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                                     newOaiRecord, ErrorStatus.UPDATED_AFTER_PROCESSING));
                             newOaiRecord.setProcessStatus(ProcessStatus.UPDATED_AFTER_PROCESSING);
                         }
+                        // FIXME: the datestamp is currently used to look up files in the filesystem,
+                        // therefore the original datestamp must be maintained...
+                        newOaiRecord.setDateStamp(existingRecord.getDateStamp());
                         oaiRecordDao.update(newOaiRecord);
                         break;
 

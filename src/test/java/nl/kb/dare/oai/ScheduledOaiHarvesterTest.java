@@ -193,7 +193,8 @@ public class ScheduledOaiHarvesterTest {
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
                 hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
-                hasProperty("oaiStatus", is(OaiStatus.AVAILABLE))
+                hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
+                hasProperty("dateStamp", is("2017-01-18T01:00:32Z"))
         )));
     }
 
@@ -228,7 +229,8 @@ public class ScheduledOaiHarvesterTest {
         verify(oaiRecordDao).update(argThat(allOf(
                 hasProperty("identifier", is(duplicateIdentifier)),
                 hasProperty("processStatus", is(ProcessStatus.DELETED_AFTER_PROCESSING)),
-                hasProperty("oaiStatus", is(OaiStatus.DELETED))
+                hasProperty("oaiStatus", is(OaiStatus.DELETED)),
+                hasProperty("dateStamp", is("2017-01-18T01:00:32Z"))
         )));
     }
 
