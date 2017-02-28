@@ -1,20 +1,15 @@
 package nl.kb.dare.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.kb.dare.App;
+import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
-import nl.kb.dare.model.oai.OaiRecordResult;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -22,20 +17,23 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -45,7 +43,7 @@ import static org.junit.Assert.fail;
 
 public class IntegrationTest {
     private static final String APP_HOST = "localhost:4567";
-    private static final String APP_URL = "http://" + APP_HOST;
+    public static final String APP_URL = "http://" + APP_HOST;
     private static final String OAI_URL = "http://localhost:18081/oai";
 
     private static final IntegrationSocketClientStatus socketStatus = new IntegrationSocketClientStatus();
@@ -76,18 +74,26 @@ public class IntegrationTest {
         statement.close();
     }
 
-    @Test
-    public void run() throws Exception {
+    @AfterClass
+    public static void tearDown() throws IOException {
+        FileUtils.deleteDirectory(new File("./1"));
+    }
 
+    @Before
+    public void startWebsocket() throws Exception {
         // Add a websocket client to keep track of progress
         final WebSocketClient webSocketClient = new WebSocketClient();
         final StatusClientSocket socket = new StatusClientSocket();
-
         webSocketClient.start();
         webSocketClient.connect(socket, new URI(String.format("ws://%s/status-socket", APP_HOST)), new ClientUpgradeRequest());
 
+    }
+
+    @Test
+    public void run() throws Exception {
+
         // First create a new repository configuration via HTTP POST to app url
-        final String locationOfNewlyCreatedRepository = createRepository(new Repository(
+        final String locationOfNewlyCreatedRepository = CrudOperations.createRepository(new Repository(
                 OAI_URL,
                 "Integration test OAI",
                 "nl_didl_norm",
@@ -96,69 +102,74 @@ public class IntegrationTest {
                 false));
 
         // Next enable it by executing a PUT to the returned location
-        if (!enableRepository(locationOfNewlyCreatedRepository)) {
+        if (!CrudOperations.enableRepository(locationOfNewlyCreatedRepository)) {
             fail("failed to enable repository: " + locationOfNewlyCreatedRepository);
         }
 
+        // Make sure initial harvest for this repository is succesful
+        testInitialHarvest();
+
+        // Make sure records are processed properly
+        testFirstRecordProcessingRun();
+
+    }
+
+
+    private void testInitialHarvest() throws IOException, InterruptedException {
         // Start a waiter thread for the first harvest to finish
         final Thread waitForFirstHarvest = getFirstHarvestWaiter();
         waitForFirstHarvest.start();
 
         // Then start the harvester (which is disabled by default)
-        if (!startHarvester()) { fail("failed to start the harvester"); }
+        if (!CrudOperations.startHarvester()) { fail("failed to start the harvester"); }
 
         // Wait for the first harvest to finish
         waitForFirstHarvest.join();
 
-        // Make some assertions now
-        final List<OaiRecord> records = getRecords().getResult();
-        assertThat(records, containsInAnyOrder(
+        // Based on the mock responses there should be 4 records pending
+        assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
                 hasProperty("processStatus", is(ProcessStatus.PENDING)),
                 hasProperty("processStatus", is(ProcessStatus.PENDING)),
                 hasProperty("processStatus", is(ProcessStatus.PENDING)),
                 hasProperty("processStatus", is(ProcessStatus.PENDING))
         ));
-
-
     }
 
-    private boolean startHarvester() throws IOException {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
-        final HttpPut httpPut = new HttpPut(String.format("%s/harvesters/start", APP_URL));
-        httpPut.addHeader("Accept", "application/json");
+    private void testFirstRecordProcessingRun() throws IOException, InterruptedException {
+        // Start a waiter thread for all records to be processed
+        final Thread waitForRecordsProcessed = getRecordProcessingWaiter();
+        waitForRecordsProcessed.start();
 
-        final HttpResponse response = httpClient.execute(httpPut);
-        return response.getStatusLine().getStatusCode() == 200;
+        // Then start the record processor (which is disabled by default)
+        if (!CrudOperations.startRecordProcessor()) { fail("failed to start the record processor"); }
+
+        // Wait for all records to be processed
+        waitForRecordsProcessed.join();
+
+        // Based on the mock responses all 4 records should be succesfully processed
+        assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED))
+        ));
+
+        // So a download of its packages should be valid
+        for (OaiRecord oaiRecord : CrudOperations.getRecords().getResult()) {
+            validatePackage(oaiRecord);
+        }
     }
 
-    private boolean enableRepository(String locationOfNewlyCreatedRepository) throws IOException {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
+    private void validatePackage(OaiRecord oaiRecord) throws IOException {
+        System.out.println("Downloading and validating package");
+        final ZipInputStream zip = new ZipInputStream(CrudOperations.download(oaiRecord.getIdentifier()));
 
-        final HttpPut httpPut = new HttpPut(String.format("%s/%s", locationOfNewlyCreatedRepository, "enable"));
-        final HttpResponse response = httpClient.execute(httpPut);
-        return response.getStatusLine().getStatusCode() == 200;
-    }
+        ZipEntry entry;
+        while((entry = zip.getNextEntry())!=null) {
+            System.out.println(entry.getName());
+        }
 
-    private String createRepository(Repository repository) throws IOException {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
-        final HttpPost httpPost = new HttpPost(String.format("%s/repositories", APP_URL));
-        httpPost.addHeader("Content-Type", "application/json");
-        httpPost.addHeader("Accept", "application/json");
-        httpPost.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(repository)));
-        final HttpResponse httpResponse = httpClient.execute(httpPost);
-
-        return httpResponse.getFirstHeader("Location").getValue();
-    }
-
-    private OaiRecordResult getRecords() throws IOException {
-        final HttpClient httpClient = HttpClientBuilder.create().build();
-        final HttpGet httpGet = new HttpGet(String.format("%s/records", APP_URL));
-        httpGet.addHeader("Accept", "application/json");
-        final HttpResponse response = httpClient.execute(httpGet);
-
-        final String data = IOUtils.toString(response.getEntity().getContent(), "UTF8");
-
-        return new ObjectMapper().readValue(data, OaiRecordResult.class);
+        zip.close();
     }
 
     private Thread getFirstHarvestWaiter() {
@@ -185,17 +196,33 @@ public class IntegrationTest {
         });
     }
 
+    private Thread getRecordProcessingWaiter() {
+        //socketStatus.getStatus().recordProcessingStatus.recordStatus
+        return new Thread(() -> {
+            boolean processingEncountered = false;
+            boolean waitingForRecords = true;
+            while (waitingForRecords) {
+                final Map<String, Map<String, Long>> recordStatus =
+                        socketStatus.getStatus().recordProcessingStatus.recordStatus;
+
+                final Map<String, Long> statusForRepo = recordStatus.getOrDefault("1", Maps.newHashMap());
+                if (statusForRepo.containsKey("processing")) {
+                    processingEncountered = true;
+                } else if (processingEncountered && !statusForRepo.containsKey("pending")) {
+                    waitingForRecords = false;
+                }
+                try {
+                    Thread.sleep(5L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
     @WebSocket
     public class StatusClientSocket {
-        private final CountDownLatch closeLatch;
-
-        StatusClientSocket() {
-            this.closeLatch = new CountDownLatch(1);
-        }
-
-        public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
-            return this.closeLatch.await(duration,unit);
-        }
 
         @OnWebSocketClose
         public void onClose(int statusCode, String reason) {
@@ -211,7 +238,6 @@ public class IntegrationTest {
         public void onMessage(String msg) {
             synchronized (socketStatus) {
                 try {
-                    // System.out.println(msg);
                     socketStatus.setStatus(new ObjectMapper().readValue(msg, SocketStatusUpdate.class));
                 } catch (IOException e) {
                     e.printStackTrace();
