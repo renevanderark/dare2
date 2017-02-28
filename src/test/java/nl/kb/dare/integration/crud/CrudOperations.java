@@ -61,7 +61,6 @@ public class CrudOperations {
         final HttpResponse response = httpClient.execute(httpGet);
 
         final String data = IOUtils.toString(response.getEntity().getContent(), "UTF8");
-
         return new ObjectMapper().readValue(data, OaiRecordResult.class);
     }
 

@@ -31,7 +31,7 @@ public enum OaiStatus {
 
     public static OaiStatus forString(String oaiStatus) {
         for (OaiStatus s : OaiStatus.values()) {
-            if (s.status.equalsIgnoreCase(oaiStatus)) {
+            if (s.status.equalsIgnoreCase(oaiStatus) || s.name().equals(oaiStatus)) {
                 return s;
             }
         }

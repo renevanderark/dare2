@@ -29,12 +29,13 @@ public class OaiEndpoint {
     public Response get(
             @QueryParam("verb") String verb,
             @QueryParam("resumptionToken") String resumptionToken,
+            @QueryParam("from") String from,
             @QueryParam("identifier") String identifier
     ) {
 
         switch (verb) {
             case "ListIdentifiers":
-                return listIdentifiers(resumptionToken);
+                return listIdentifiers(resumptionToken, from);
             case "GetRecord":
                 return getRecord(identifier);
             default:
@@ -48,9 +49,12 @@ public class OaiEndpoint {
         return Response.ok(responseData).build();
     }
 
-    private Response listIdentifiers(String resumptionToken) {
+    private Response listIdentifiers(String resumptionToken, String from) {
+
         final InputStream in = resumptionToken == null
-                ? OaiEndpoint.class.getResourceAsStream("/oai/ListIdentifiersWithResumptionToken.xml")
+                ? from == null
+                    ? OaiEndpoint.class.getResourceAsStream("/oai/ListIdentifiersWithResumptionToken.xml")
+                    :  OaiEndpoint.class.getResourceAsStream("/oai/ListIdentifiersWithUpdates.xml")
                 :  OaiEndpoint.class.getResourceAsStream("/oai/ListIdentifiersWithoutResumptionToken.xml");
         final StreamingOutput responseData = output -> IOUtils.copy(in, output);
         return Response.ok(responseData).build();

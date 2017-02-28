@@ -11,6 +11,7 @@ import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.ManifestXmlHandler;
 import nl.kb.dare.oai.ObjectResource;
+import nl.kb.dare.oai.ScheduledOaiHarvester;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.websocket.api.Session;
@@ -20,9 +21,9 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -34,10 +35,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -61,29 +62,48 @@ public class IntegrationTest {
 
     private static final SAXParser saxParser;
 
+    @ClassRule
+    public static final TestRule oaiRule;
+
+    @ClassRule
+    public static final TestRule instanceRule;
+
     static {
         try {
             saxParser = SAXParserFactory.newInstance().newSAXParser();
+            oaiRule = new DropwizardAppRule<>(OaiTestServer.class,
+                    Paths.get(IntegrationTest.class.getResource("/integration/oai-test-server.yaml").toURI()).toString());
+            instanceRule  = new DropwizardAppRule<>(App.class,
+                    Paths.get(IntegrationTest.class.getResource("/integration/integration.yaml").toURI()).toString());
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize sax parser", e);
         }
     }
 
-    @ClassRule
-    public static TestRule oaiRule = new DropwizardAppRule<>(OaiTestServer.class,
-            IntegrationTest.class.getResource("/integration/oai-test-server.yaml").getPath());
+    private StatusClientSocket socket;
+    private static Connection connection;
 
-    @ClassRule
-    public static TestRule instanceRule = new DropwizardAppRule<>(App.class,
-            IntegrationTest.class.getResource("/integration/integration.yaml").getPath());
 
-    @BeforeClass
-    public static void setup() throws ClassNotFoundException, SQLException, IOException {
+    @AfterClass
+    public static void teardown()  {
+        cleanFiles();
+    }
+
+    private static void cleanFiles() {
+        try {
+            FileUtils.deleteDirectory(new File("./1"));
+        } catch (IOException ignored) {
+
+        }
+    }
+
+    @Before
+    public void setUp() throws Exception {
         Class.forName("org.h2.Driver");
-        final Connection con = DriverManager.getConnection(
+        connection = DriverManager.getConnection(
                 "jdbc:h2:mem:dareintegration", "daredev", "daredev");
 
-        final Statement statement = con.createStatement();
+        final Statement statement = connection.createStatement();
 
         final String schemaSql = IOUtils.toString(IntegrationTest.class.getResourceAsStream("/integration/db/schema.sql"), "UTF8");
 
@@ -93,26 +113,25 @@ public class IntegrationTest {
 
         statement.executeBatch();
         statement.close();
-    }
 
-    @AfterClass
-    public static void tearDown() throws IOException {
-        FileUtils.deleteDirectory(new File("./1"));
-    }
-
-    @Before
-    public void startWebsocket() throws Exception {
         // Add a websocket client to keep track of progress
         final WebSocketClient webSocketClient = new WebSocketClient();
-        final StatusClientSocket socket = new StatusClientSocket();
+        socket = new StatusClientSocket();
         webSocketClient.start();
         webSocketClient.connect(socket, new URI(String.format("ws://%s/status-socket", APP_HOST)), new ClientUpgradeRequest());
+        cleanFiles();
+    }
 
+    @After
+    public void tearDown() throws InterruptedException {
+        socket.closeSession();
+        while (socket.isOpen()) {
+            Thread.sleep(5L);
+        }
     }
 
     @Test
-    public void run() throws Exception {
-
+    public void runHappyFlow() throws Exception {
         // First create a new repository configuration via HTTP POST to app url
         final String locationOfNewlyCreatedRepository = CrudOperations.createRepository(new Repository(
                 OAI_URL,
@@ -137,20 +156,43 @@ public class IntegrationTest {
         for (OaiRecord oaiRecord : CrudOperations.getRecords().getResult()) {
             validatePackage(oaiRecord);
         }
+    }
 
+    @Test
+    public void runUpdatesEncounteredFlow() throws IOException, InterruptedException {
+        // First create a new repository configuration via HTTP POST to app url
+        final String locationOfNewlyCreatedRepository = CrudOperations.createRepository(new Repository(
+                OAI_URL,
+                "Integration test OAI",
+                "nl_didl_norm",
+                "test-updating",
+                null,
+                false));
+
+        // Next enable it by executing a PUT to the returned location
+        if (!CrudOperations.enableRepository(locationOfNewlyCreatedRepository)) {
+            fail("failed to enable repository: " + locationOfNewlyCreatedRepository);
+        }
+
+        runHarvester();
+        runRecordProcessor();
+        runHarvester();
+
+
+        System.out.println(CrudOperations.getRecords().getResult());
+        // Based on the mock responses there should be 4 records pending
+        assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
+                hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
+                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
+                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING))
+        ));
     }
 
 
     private void testInitialHarvest() throws IOException, InterruptedException {
-        // Start a waiter thread for the first harvest to finish
-        final Thread waitForFirstHarvest = getFirstHarvestWaiter();
-        waitForFirstHarvest.start();
+        runHarvester();
 
-        // Then start the harvester (which is disabled by default)
-        if (!CrudOperations.startHarvester()) { fail("failed to start the harvester"); }
-
-        // Wait for the first harvest to finish
-        waitForFirstHarvest.join();
 
         // Based on the mock responses there should be 4 records pending
         assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
@@ -161,16 +203,21 @@ public class IntegrationTest {
         ));
     }
 
+    private void runHarvester() throws IOException, InterruptedException {
+        // Start a waiter thread for the first harvest to finish
+        final Thread waitForHarvest = getHarvestWaiter();
+        waitForHarvest.start();
+
+        // Then start the harvester (which is disabled by default)
+        if (!CrudOperations.startHarvester()) { fail("failed to start the harvester"); }
+
+        // Wait for the first harvest to finish
+        waitForHarvest.join();
+    }
+
     private void testFirstRecordProcessingRun() throws IOException, InterruptedException, SAXException {
-        // Start a waiter thread for all records to be processed
-        final Thread waitForRecordsProcessed = getRecordProcessingWaiter();
-        waitForRecordsProcessed.start();
+        runRecordProcessor();
 
-        // Then start the record processor (which is disabled by default)
-        if (!CrudOperations.startRecordProcessor()) { fail("failed to start the record processor"); }
-
-        // Wait for all records to be processed
-        waitForRecordsProcessed.join();
 
         // Based on the mock responses all 4 records should be succesfully processed
         assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
@@ -181,6 +228,17 @@ public class IntegrationTest {
         ));
     }
 
+    private void runRecordProcessor() throws IOException, InterruptedException {
+        // Start a waiter thread for all records to be processed
+        final Thread waitForRecordsProcessed = getRecordProcessingWaiter();
+        waitForRecordsProcessed.start();
+
+        // Then start the record processor (which is disabled by default)
+        if (!CrudOperations.startRecordProcessor()) { fail("failed to start the record processor"); }
+
+        // Wait for all records to be processed
+        waitForRecordsProcessed.join();
+    }
 
 
     private void validatePackage(OaiRecord oaiRecord) throws IOException, SAXException, NoSuchAlgorithmException {
@@ -235,21 +293,22 @@ public class IntegrationTest {
 
     }
 
-    private Thread getFirstHarvestWaiter() {
+    private Thread getHarvestWaiter() {
         return new Thread(() -> {
 
-            boolean isRunning = false;
-            boolean hasRun = false;
+            boolean hasRun = false, isRunning = false;
             while (!hasRun) {
-                switch (socketStatus.getStatus().harvesterStatus.harvesterRunState) {
-                    case RUNNING:
-                        isRunning = true;
-                        break;
-                    case WAITING:
-                        hasRun = isRunning;
-                        break;
-                    default:
+                final SocketStatusUpdate.HarvesterStatus harvesterStatus = socketStatus.getStatus().harvesterStatus;
+
+                if (harvesterStatus.harvesterRunState == ScheduledOaiHarvester.RunState.WAITING
+                        && harvesterStatus.nextRunTime > 0) {
+                    hasRun = isRunning;
+                } else if (harvesterStatus.harvesterRunState == ScheduledOaiHarvester.RunState.RUNNING || (
+                        harvesterStatus.harvesterRunState == ScheduledOaiHarvester.RunState.WAITING
+                        && harvesterStatus.nextRunTime <= 0)) {
+                    isRunning = true;
                 }
+
                 try {
                     Thread.sleep(5L);
                 } catch (InterruptedException e) {
@@ -260,7 +319,6 @@ public class IntegrationTest {
     }
 
     private Thread getRecordProcessingWaiter() {
-        //socketStatus.getStatus().recordProcessingStatus.recordStatus
         return new Thread(() -> {
             boolean processingEncountered = false;
             boolean waitingForRecords = true;
@@ -287,6 +345,8 @@ public class IntegrationTest {
     @WebSocket
     public class StatusClientSocket {
 
+        private Session session;
+
         @OnWebSocketClose
         public void onClose(int statusCode, String reason) {
             System.out.println("Wesbocket connection closed");
@@ -294,6 +354,7 @@ public class IntegrationTest {
 
         @OnWebSocketConnect
         public void onConnect(Session session) {
+            this.session = session;
             System.out.println("Websocket connected");
         }
 
@@ -301,6 +362,9 @@ public class IntegrationTest {
         public void onMessage(String msg) {
             synchronized (socketStatus) {
                 try {
+/*
+                    System.out.println(msg);
+*/
                     socketStatus.setStatus(new ObjectMapper().readValue(msg, SocketStatusUpdate.class));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -308,6 +372,13 @@ public class IntegrationTest {
             }
         }
 
+        void closeSession() {
+            session.close();
+        }
+
+        boolean isOpen() {
+            return session.isOpen();
+        }
     }
 
     private class NonClosingZipInputStream extends ZipInputStream {

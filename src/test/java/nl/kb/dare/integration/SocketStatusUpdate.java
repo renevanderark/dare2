@@ -19,6 +19,9 @@ public class SocketStatusUpdate {
         }
         @JsonProperty
         public ScheduledOaiHarvester.RunState harvesterRunState;
+        @JsonProperty
+        public Long nextRunTime;
+
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

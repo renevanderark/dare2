@@ -60,9 +60,9 @@ public enum ErrorStatus {
         return null;
     }
 
-    public static ErrorStatus forString(String oaiStatus) {
+    public static ErrorStatus forString(String errorStatus) {
         for (ErrorStatus s : ErrorStatus.values()) {
-            if (s.status.equalsIgnoreCase(oaiStatus)) {
+            if (s.status.equalsIgnoreCase(errorStatus) || s.name().equals(errorStatus)) {
                 return s;
             }
         }
