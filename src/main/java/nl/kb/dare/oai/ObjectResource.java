@@ -1,7 +1,7 @@
 package nl.kb.dare.oai;
 
 // Represents a file node in Manifest, used to download and ship files with
-class ObjectResource {
+public class ObjectResource {
 
     private String id;
     private String xlinkHref;

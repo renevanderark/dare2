@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.kb.dare.App;
+import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.dare.oai.ManifestXmlHandler;
+import nl.kb.dare.oai.ObjectResource;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.websocket.api.Session;
@@ -23,14 +26,20 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -38,7 +47,9 @@ import java.util.zip.ZipInputStream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.fail;
 
 public class IntegrationTest {
@@ -47,6 +58,16 @@ public class IntegrationTest {
     private static final String OAI_URL = "http://localhost:18081/oai";
 
     private static final IntegrationSocketClientStatus socketStatus = new IntegrationSocketClientStatus();
+
+    private static final SAXParser saxParser;
+
+    static {
+        try {
+            saxParser = SAXParserFactory.newInstance().newSAXParser();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize sax parser", e);
+        }
+    }
 
     @ClassRule
     public static TestRule oaiRule = new DropwizardAppRule<>(OaiTestServer.class,
@@ -112,6 +133,11 @@ public class IntegrationTest {
         // Make sure records are processed properly
         testFirstRecordProcessingRun();
 
+        // So a download of its packages should be valid
+        for (OaiRecord oaiRecord : CrudOperations.getRecords().getResult()) {
+            validatePackage(oaiRecord);
+        }
+
     }
 
 
@@ -135,7 +161,7 @@ public class IntegrationTest {
         ));
     }
 
-    private void testFirstRecordProcessingRun() throws IOException, InterruptedException {
+    private void testFirstRecordProcessingRun() throws IOException, InterruptedException, SAXException {
         // Start a waiter thread for all records to be processed
         final Thread waitForRecordsProcessed = getRecordProcessingWaiter();
         waitForRecordsProcessed.start();
@@ -153,23 +179,60 @@ public class IntegrationTest {
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED))
         ));
-
-        // So a download of its packages should be valid
-        for (OaiRecord oaiRecord : CrudOperations.getRecords().getResult()) {
-            validatePackage(oaiRecord);
-        }
     }
 
-    private void validatePackage(OaiRecord oaiRecord) throws IOException {
+
+
+    private void validatePackage(OaiRecord oaiRecord) throws IOException, SAXException, NoSuchAlgorithmException {
         System.out.println("Downloading and validating package");
-        final ZipInputStream zip = new ZipInputStream(CrudOperations.download(oaiRecord.getIdentifier()));
+        final NonClosingZipInputStream zip = new NonClosingZipInputStream(CrudOperations.download(oaiRecord.getIdentifier()));
 
         ZipEntry entry;
-        while((entry = zip.getNextEntry())!=null) {
-            System.out.println(entry.getName());
+        List<ObjectResource> objectResourcesInManifest = null;
+        Map<String, String> downloadedChecksums = Maps.newHashMap();
+        while((entry = zip.getNextEntry())!= null) {
+            final String filename = entry.getName();
+            final ChecksumOutputStream out = new ChecksumOutputStream("MD5");
+            if (filename.equals("manifest.xml")) {
+                final ManifestXmlHandler manifestXmlHandler = new ManifestXmlHandler();
+                synchronized (saxParser) {
+                    saxParser.parse(zip, manifestXmlHandler);
+                }
+                objectResourcesInManifest = manifestXmlHandler.getObjectResourcesIncludingMetadata();
+            } else {
+                IOUtils.copy(zip, out);
+                downloadedChecksums.put("file://./" + filename, out.getChecksumString());
+            }
         }
 
-        zip.close();
+        zip.closeAfter();
+
+        // Ensure a manifest.xml was encountered in the zip file
+        assertThat(objectResourcesInManifest, notNullValue());
+        // Ensure a metadata.xml was encountered in the zip file
+        assertThat(downloadedChecksums.containsKey("file://./metadata.xml"), is (true));
+
+        assert objectResourcesInManifest != null;
+
+        // Ensure that each file in the manifest is present in the zip
+        for (ObjectResource objectResource : objectResourcesInManifest) {
+            final boolean isInZipFile = downloadedChecksums.containsKey(objectResource.getXlinkHref());
+            assertThat(isInZipFile, is(true));
+            System.out.println("File is present: " + objectResource.getXlinkHref());
+
+            // also check the checksum of the downloaded file against the checksum in the manifest
+            assertThat(downloadedChecksums.get(objectResource.getXlinkHref()), equalTo(objectResource.getChecksum()));
+            System.out.println("Checksums match: " + objectResource.getChecksum());
+        }
+
+        // Ensure that each file in the zip is also present in the manifest
+        for (String filename : downloadedChecksums.keySet()) {
+            final boolean isMentionedInManifest = objectResourcesInManifest.stream().map(ObjectResource::getXlinkHref)
+                    .anyMatch(s -> s.equals(filename));
+            assertThat(isMentionedInManifest, is(true));
+        }
+
+
     }
 
     private Thread getFirstHarvestWaiter() {
@@ -245,5 +308,21 @@ public class IntegrationTest {
             }
         }
 
+    }
+
+    private class NonClosingZipInputStream extends ZipInputStream {
+
+        NonClosingZipInputStream(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public void close() throws IOException {
+
+        }
+
+        void closeAfter() throws IOException {
+            super.close();
+        }
     }
 }
