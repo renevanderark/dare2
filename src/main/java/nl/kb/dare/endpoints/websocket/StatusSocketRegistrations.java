@@ -1,6 +1,7 @@
 package nl.kb.dare.endpoints.websocket;
 
 import com.google.common.collect.Sets;
+import org.eclipse.jetty.websocket.api.WebSocketException;
 
 import java.io.IOException;
 import java.util.Set;
@@ -32,7 +33,7 @@ public class StatusSocketRegistrations {
         StatusSocketRegistrations.getInstance().get().forEach(registration -> {
             try {
                 registration.session.getRemote().sendString(msg);
-            } catch (IOException ignored) {
+            } catch (IOException | WebSocketException ignored) {
             }
         });
     }

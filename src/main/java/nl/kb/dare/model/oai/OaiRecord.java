@@ -1,8 +1,11 @@
 package nl.kb.dare.model.oai;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OaiRecord {
     private String identifier;
     private String dateStamp;
@@ -65,6 +68,16 @@ public class OaiRecord {
     public Integer getOaiStatusCode() { return oaiStatus.getCode(); }
 
     public Integer getProcessStatusCode() { return processStatus.getCode(); }
+
+    @JsonProperty
+    public void setOaiStatus(String oaiStatus) {
+        this.oaiStatus = OaiStatus.forString(oaiStatus);
+    }
+
+    @JsonProperty
+    public void setProcessStatus(String processStatus) {
+        this.processStatus = ProcessStatus.forString(processStatus);
+    }
 
     @Override
     public boolean equals(Object o) {
