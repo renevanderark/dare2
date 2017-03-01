@@ -8,6 +8,7 @@ import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.ManifestXmlHandler;
 import nl.kb.dare.oai.ObjectResource;
@@ -193,7 +194,8 @@ public class IntegrationTest {
                     hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
                 ),
                 allOf(
-                    hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                    hasProperty("oaiStatus", is(OaiStatus.DELETED)),
+                    hasProperty("processStatus", is(ProcessStatus.SKIP)),
                     hasProperty("updateCount", is(1)),
                     hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
                 )
@@ -373,9 +375,6 @@ public class IntegrationTest {
         public void onMessage(String msg) {
             synchronized (socketStatus) {
                 try {
-/*
-                    System.out.println(msg);
-*/
                     socketStatus.setStatus(new ObjectMapper().readValue(msg, SocketStatusUpdate.class));
                 } catch (IOException e) {
                     e.printStackTrace();

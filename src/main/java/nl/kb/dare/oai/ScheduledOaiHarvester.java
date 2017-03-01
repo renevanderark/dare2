@@ -141,7 +141,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                         }
                         // INTENTIONAL CASCADE!!!
                     case PENDING:
-                    case SKIP:
+                    case SKIP: // not expected, but possible (provider _undeleted_ the record)
                     default: // update the database record, recording the amount of updates
 
                         newOaiRecord.setUpdateCount(existingRecord.getUpdateCount() + 1);

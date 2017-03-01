@@ -34,6 +34,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
@@ -230,6 +231,78 @@ public class ScheduledOaiHarvesterTest {
                 hasProperty("processStatus", is(ProcessStatus.SKIP)),
                 hasProperty("oaiStatus", is(OaiStatus.DELETED)),
                 hasProperty("dateStamp", is("2017-01-13T01:05:49Z")),
+                hasProperty("updateCount", is(1))
+        )));
+    }
+
+    @Test
+    public void itShouldHandleARecordThatIsUpdatedByTheDataProviderWhenItIsStillPending() throws Exception {
+        final RepositoryDao repositoryDao = mock(RepositoryDao.class);
+        final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
+        final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
+        final FileStorage fileStorage = mock(FileStorage.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final ScheduledOaiHarvester instance = new ScheduledOaiHarvester(
+                repositoryDao,
+                errorReportDao,
+                oaiRecordDao,
+                new MockHttpFetcher(withoutResumptionToken),
+                new ResponseHandlerFactory(),
+                fileStorage, mock(RepositoryNotifier.class)
+        );
+        final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
+        when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
+        final String duplicateIdentifier = UPDATED_IDENTIFIER;
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PENDING);
+        when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
+                .thenReturn(existingRecord);
+        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+
+        instance.enable();
+        instance.runOneIteration();
+
+        verifyNoMoreInteractions(fileStorageHandle);
+        verify(oaiRecordDao).update(argThat(allOf(
+                hasProperty("identifier", is(duplicateIdentifier)),
+                hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
+                hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
+                hasProperty("updateCount", is(1))
+        )));
+    }
+
+    @Test
+    public void itShouldHandleARecordThatIsUpdatedByTheDataProviderWhenItWasDeletedBefore() throws Exception {
+        final RepositoryDao repositoryDao = mock(RepositoryDao.class);
+        final ErrorReportDao errorReportDao = mock(ErrorReportDao.class);
+        final OaiRecordDao oaiRecordDao = mock(OaiRecordDao.class);
+        final FileStorage fileStorage = mock(FileStorage.class);
+        final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
+        final ScheduledOaiHarvester instance = new ScheduledOaiHarvester(
+                repositoryDao,
+                errorReportDao,
+                oaiRecordDao,
+                new MockHttpFetcher(withoutResumptionToken),
+                new ResponseHandlerFactory(),
+                fileStorage, mock(RepositoryNotifier.class)
+        );
+        final Repository repositoryConfig = new Repository("http://example.com", "name", "prefix", "set", null, true, 123);
+        when(repositoryDao.list()).thenReturn(Lists.newArrayList(repositoryConfig));
+        final String duplicateIdentifier = UPDATED_IDENTIFIER;
+        final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.DELETED, 123, ProcessStatus.SKIP);
+        when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
+                .thenReturn(existingRecord);
+        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+
+        instance.enable();
+        instance.runOneIteration();
+
+        verifyNoMoreInteractions(fileStorageHandle);
+        verify(oaiRecordDao).update(argThat(allOf(
+                hasProperty("identifier", is(duplicateIdentifier)),
+                hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                hasProperty("oaiStatus", is(OaiStatus.AVAILABLE)),
+                hasProperty("dateStamp", is("2017-01-18T01:00:31Z")),
                 hasProperty("updateCount", is(1))
         )));
     }
