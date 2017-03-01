@@ -11,7 +11,8 @@ const initialState = {
         result: [],
         count: 0
     },
-    current: null
+    current: null,
+    testResults: null
 };
 
 
@@ -30,7 +31,30 @@ export default function(state=initialState, action) {
         case ActionTypes.RECEIVE_OAI_RECORD:
             return {
                 ...state,
+                testResults: null,
                 current: action.data
+            };
+
+        case ActionTypes.SET_RECORD_TEST_PENDING:
+            return {
+                ...state,
+                testResults: action.identifier === (state.current.record || {}).identifier
+                    ? {pending : true}
+                    : null
+            };
+        case ActionTypes.UPDATE_RECORD_TEST_RESULTS:
+            return {
+                ...state,
+                testResults: action.identifier === (state.current.record || {}).identifier
+                    ? {pending : true, results: action.payload}
+                    : null
+            };
+        case ActionTypes.SET_RECORD_TEST_DONE:
+            return {
+                ...state,
+                testResults: action.identifier === (state.current.record || {}).identifier
+                    ? {...state.testResults, pending : false}
+                    : null
             };
         default:
     }

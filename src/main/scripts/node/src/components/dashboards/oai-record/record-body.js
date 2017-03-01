@@ -7,7 +7,8 @@ class RecordBody extends React.Component {
             this.props.processStatus !== nextProps.processStatus ||
             this.props.dateStamp !== nextProps.dateStamp ||
             this.props.repositoryName !== nextProps.repositoryName ||
-            this.props.updateCount !== nextProps.updateCount;
+            this.props.updateCount !== nextProps.updateCount ||
+            this.props.testResultsPending !== nextProps.testResultsPending;
     }
     
     render() {
@@ -16,7 +17,12 @@ class RecordBody extends React.Component {
             processStatus,
             dateStamp,
             repositoryName,
-            updateCount
+            updateCount,
+            testResultsPending
+        } = this.props;
+
+        const {
+            onTestRecord
         } = this.props;
 
         return (
@@ -50,6 +56,15 @@ class RecordBody extends React.Component {
                     <li className="row list-group-item">
                         <strong className="col-md-4">Update count</strong>
                         <span className="col-md-16">{updateCount}</span>
+                    </li>
+                    <li className="row list-group-item">
+                        <strong className="col-md-4">Test record</strong>
+                        <span className="col-md-16">
+                            {testResultsPending
+                                ? (<span>Test is running</span>)
+                                : (<a onClick={() => onTestRecord(identifier)}>Start test</a>)
+                            }
+                        </span>
                     </li>
                 </ul>
             </div>

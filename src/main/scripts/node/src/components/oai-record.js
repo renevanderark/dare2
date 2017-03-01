@@ -13,10 +13,18 @@ class OaiRecord extends React.Component {
         const { onTogglePanelCollapse } = this.props;
 
         // actions for records
-        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset, onFetchOaiRecord } = this.props;
+        const {
+            onSetRecordQueryFilter,
+            onRefetchRecords,
+            onSetRecordQueryOffset,
+            onFetchOaiRecord,
+            onTestRecord
+        } = this.props;
 
         const oaiRecordPanel =
-            <OaiRecordDashboard identifier={identifier} oaiRecord={oaiRecord} onFetchOaiRecord={onFetchOaiRecord}
+            <OaiRecordDashboard identifier={identifier} oaiRecord={oaiRecord}
+                                onFetchOaiRecord={onFetchOaiRecord}
+                                onTestRecord={onTestRecord}
                                 onTogglePanelCollapse={onTogglePanelCollapse} />;
 
         const oaiRecords = (

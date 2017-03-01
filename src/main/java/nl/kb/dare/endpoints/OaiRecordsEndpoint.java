@@ -149,16 +149,23 @@ public class OaiRecordsEndpoint {
                     err -> writeChunk(output, new OaiRecordErrorReport(err, oaiRecord), false),
                     progressReport -> writeChunk(output, progressReport, false),
                     false);
-            writeChunk(output, "{\"result\": \"" + result + "\"}", true);
+
+            final Map<String, ProcessStatus> resultMap = Maps.newHashMap();
+            resultMap.put("result", result);
+            writeChunk(output, resultMap, true);
         }).start();
 
-        return Response.ok(output).build();
+        return Response
+                .ok(output)
+                .header(HttpHeaders.CONTENT_ENCODING, "identity")
+                .build();
     }
 
     private void writeChunk(ChunkedOutput<String> output, Object progressReport, boolean andClose) {
         try {
-            output.write(new ObjectMapper().writeValueAsString(progressReport));
-            output.write("\n");
+            output.write("\n" +
+                new ObjectMapper().writeValueAsString(progressReport) + "!--end-chunk--!\n"
+            );
             if (andClose) { output.close(); }
         } catch (IOException ignored) {
 
