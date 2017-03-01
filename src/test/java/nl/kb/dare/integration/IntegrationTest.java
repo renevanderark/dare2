@@ -25,7 +25,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.xml.sax.SAXException;
@@ -161,7 +160,6 @@ public class IntegrationTest {
     }
 
     @Test
-    @Ignore
     public void runUpdatesEncounteredFlow() throws IOException, InterruptedException {
         // First create a new repository configuration via HTTP POST to app url
         final String locationOfNewlyCreatedRepository = CrudOperations.createRepository(new Repository(
@@ -179,8 +177,11 @@ public class IntegrationTest {
 
         runHarvester();
         runRecordProcessor();
-        runHarvester();
+        if (!CrudOperations.stopRecordProcessor()) {
+            fail("Failed to stop the record processor");
+        }
 
+        runHarvester();
 
         // Based on the mock responses there should be 4 records pending
         assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(

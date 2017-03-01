@@ -5,9 +5,7 @@ public enum ProcessStatus {
     PENDING(10, "pending"),
     PROCESSING(20, "processing"),
     FAILED(90, "failure"),
-    PROCESSED(100, "processed"),
-    UPDATED_AFTER_PROCESSING(1001, "updated-after-processing"),
-    DELETED_AFTER_PROCESSING(1002, "deleted-after-processing");
+    PROCESSED(100, "processed");
 
     private final int code;
     private final String status;

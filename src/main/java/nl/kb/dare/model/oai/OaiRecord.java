@@ -116,6 +116,7 @@ public class OaiRecord {
                 ", oaiStatus=" + oaiStatus +
                 ", repositoryId=" + repositoryId +
                 ", processStatus=" + processStatus +
+                ", updateCount=" + updateCount +
                 '}';
     }
 
