@@ -79,6 +79,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                 ProcessStatus result = GetRecord.getAndRun(
                         repositoryDao, oaiRecord, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                         (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord), // on error
+                        progressReport -> { },
                         inSampleMode
                 );
 

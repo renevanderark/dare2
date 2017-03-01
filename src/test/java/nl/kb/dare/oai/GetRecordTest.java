@@ -3,6 +3,7 @@ package nl.kb.dare.oai;
 import com.google.common.collect.Lists;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.model.oai.OaiRecord;
+import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -10,6 +11,7 @@ import org.mockito.InOrder;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -22,11 +24,13 @@ import static org.mockito.Mockito.when;
 
 public class GetRecordTest {
 
+    private Consumer<ProgressReport> onProgress = progressReport -> { };
+
     @Test
     public void fetchShouldReturnFailedWhenNoFileStorageHandleCouldBeCreated()  {
         final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.empty());
 
         final ProcessStatus result = instance.fetch();
@@ -41,7 +45,7 @@ public class GetRecordTest {
         final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.empty());
 
@@ -60,7 +64,7 @@ public class GetRecordTest {
         final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(false);
@@ -82,7 +86,7 @@ public class GetRecordTest {
         final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
@@ -108,7 +112,7 @@ public class GetRecordTest {
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(mock(ObjectResource.class));
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
@@ -134,7 +138,7 @@ public class GetRecordTest {
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(mock(ObjectResource.class));
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
         final ObjectResource metadataResource = mock(ObjectResource.class);
 
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
@@ -166,7 +170,7 @@ public class GetRecordTest {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ObjectResource metadataResource = mock(ObjectResource.class);
         final List<ObjectResource> objectResources = Lists.newArrayList(mock(ObjectResource.class));
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, false);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, false);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(metadataResource));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
@@ -194,7 +198,7 @@ public class GetRecordTest {
         final GetRecordOperations getRecordOperations = mock(GetRecordOperations.class);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, true);
+        final GetRecord instance = new GetRecord(getRecordOperations, oaiRecord, onProgress, true);
         when(getRecordOperations.getFileStorageHandle(any())).thenReturn(Optional.of(fileStorageHandle));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(any())).thenReturn(Lists.newArrayList(mock(ObjectResource.class)));

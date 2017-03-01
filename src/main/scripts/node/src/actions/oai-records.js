@@ -47,6 +47,40 @@ const fetchOaiRecord = (identifier) => (dispatch) => {
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
 };
 
-export { fetchOaiRecords, setRecordQueryFilter, setRecordQueryOffset, fetchOaiRecord }
+const testOaiRecord = (identifier) => (dispatch) => {
+    const url = `/records/${encodeURIComponent(identifier)}/test?${new Date().getTime()}`;
+    const req = new XMLHttpRequest();
+
+    dispatch({type: ActionTypes.SET_RECORD_TEST_PENDING, identifier: identifier});
+    req.open('GET', url);
+
+    const parseJson = (chunk) => {
+        try {
+            return JSON.parse(chunk);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    req.onreadystatechange = function() {
+        const payload = req.responseText;
+        dispatch({
+            type: ActionTypes.UPDATE_RECORD_TEST_RESULTS,
+            payload: payload
+                .split("!--end-chunk--!")
+                .map(chunk => parseJson(chunk))
+                .filter(x => x !== null),
+            identifier: identifier
+        });
+    };
+
+    req.onload = function() {
+        dispatch({type: ActionTypes.SET_RECORD_TEST_DONE, identifier: identifier});
+    };
+
+    req.send();
+};
+
+export { fetchOaiRecords, setRecordQueryFilter, setRecordQueryOffset, fetchOaiRecord, testOaiRecord }
 
 

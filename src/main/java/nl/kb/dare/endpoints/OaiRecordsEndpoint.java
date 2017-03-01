@@ -1,17 +1,24 @@
 package nl.kb.dare.endpoints;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
+import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
 import nl.kb.dare.model.oai.OaiRecordResult;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
+import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.dare.oai.GetRecord;
+import nl.kb.dare.xslt.XsltTransformer;
+import org.glassfish.jersey.server.ChunkedOutput;
 import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
@@ -34,13 +41,25 @@ public class OaiRecordsEndpoint {
     private final OaiRecordDao oaiRecordDao;
     private final ErrorReportDao errorReportDao;
     private final FileStorage fileStorage;
+    private RepositoryDao repositoryDao;
+    private HttpFetcher httpFetcher;
+    private ResponseHandlerFactory responseHandlerFactory;
+    private XsltTransformer xsltTransformer;
+    private final FileStorage sampleFileStorage;
 
     public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
-                              FileStorage fileStorage) {
+                              FileStorage fileStorage, RepositoryDao repositoryDao,
+                              HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                              XsltTransformer xsltTransformer, FileStorage sampleFileStorage) {
         this.dbi = dbi;
         this.oaiRecordDao = oaiRecordDao;
         this.errorReportDao = errorReportDao;
         this.fileStorage = fileStorage;
+        this.repositoryDao = repositoryDao;
+        this.httpFetcher = httpFetcher;
+        this.responseHandlerFactory = responseHandlerFactory;
+        this.xsltTransformer = xsltTransformer;
+        this.sampleFileStorage = sampleFileStorage;
     }
 
     @GET
@@ -108,6 +127,48 @@ public class OaiRecordsEndpoint {
                     .build();
         } catch (IOException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    @GET
+    @Path("/{identifier}/test")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response testGetRecord(@PathParam("identifier") String identifier) {
+
+        final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+        final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
+        if (oaiRecord == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        new Thread(() -> {
+
+            final ProcessStatus result = GetRecord.getAndRun(repositoryDao, oaiRecord,
+                    httpFetcher, responseHandlerFactory,
+                    sampleFileStorage, xsltTransformer,
+                    err -> writeChunk(output, new OaiRecordErrorReport(err, oaiRecord), false),
+                    progressReport -> writeChunk(output, progressReport, false),
+                    false);
+
+            final Map<String, ProcessStatus> resultMap = Maps.newHashMap();
+            resultMap.put("result", result);
+            writeChunk(output, resultMap, true);
+        }).start();
+
+        return Response
+                .ok(output)
+                .header(HttpHeaders.CONTENT_ENCODING, "identity")
+                .build();
+    }
+
+    private void writeChunk(ChunkedOutput<String> output, Object progressReport, boolean andClose) {
+        try {
+            output.write("\n" +
+                new ObjectMapper().writeValueAsString(progressReport) + "!--end-chunk--!\n"
+            );
+            if (andClose) { output.close(); }
+        } catch (IOException ignored) {
+
         }
     }
 }

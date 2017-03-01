@@ -1,12 +1,19 @@
 package nl.kb.dare.oai;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 // Represents a file node in Manifest, used to download and ship files with
 public class ObjectResource {
 
+    @JsonProperty
     private String id;
+    @JsonProperty
     private String xlinkHref;
+    @JsonProperty
     private String checksum;
+    @JsonProperty
     private String checksumType;
+    @JsonProperty
     private String localFilename;
 
     public String getId() {

@@ -3,13 +3,9 @@ import CollapsiblePanel from "../panels/collapsible-panel";
 
 import RecordBody from "./oai-record/record-body";
 import ErrorList from "./oai-record/error-list";
+import OaiRecordTestResults from "./oai-record/test-results";
 
 class OaiRecordDashboard extends React.Component {
-
-    shouldComponentUpdate(nextProps) {
-        return this.props.identifier !== nextProps.identifier ||
-                this.props.oaiRecord !== nextProps.oaiRecord;
-    }
 
     componentWillReceiveProps(nextProps) {
         const {onFetchOaiRecord} = this.props;
@@ -28,14 +24,16 @@ class OaiRecordDashboard extends React.Component {
     }
 
     render() {
-        const { oaiRecord: { record, collapsed, errorReports, repositoryName }, identifier } = this.props;
-        const { onTogglePanelCollapse } = this.props;
-
+        const { oaiRecord: { record, collapsed, errorReports, repositoryName, testResults }, identifier } = this.props;
+        const { onTogglePanelCollapse, onTestRecord } = this.props;
 
         const body = !record
             ? (<div>Loading: {identifier}</div>)
             : (<div>
-                <RecordBody {...record} repositoryName={repositoryName} />
+                <RecordBody {...record}
+                            testResultsPending={(testResults || {}).pending}
+                            onTestRecord={onTestRecord} repositoryName={repositoryName} />
+                <OaiRecordTestResults {...testResults} />
                 <ErrorList recordIdentifier={record.identifier} errorReports={errorReports} />
             </div>);
 
