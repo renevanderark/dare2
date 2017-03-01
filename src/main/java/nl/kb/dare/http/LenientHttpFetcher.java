@@ -24,11 +24,12 @@ public class LenientHttpFetcher implements HttpFetcher {
         if (proactivelyClosing) {
             connection.setRequestProperty("Connection", "close");
         }
-        connection.setInstanceFollowRedirects(true);
+        connection.setInstanceFollowRedirects(false);
         final Optional<Integer> responseCode = getResponseCode(connection, responseHandler);
         if (!responseCode.isPresent()) { return; }
 
         final Integer statusCode = responseCode.get();
+
         if (statusCode < 200 || statusCode >= 400) {
             responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), null);
             return;
@@ -39,7 +40,9 @@ public class LenientHttpFetcher implements HttpFetcher {
             responseHandler.onRedirect(url.toString(), redirectLocation);
 
             try {
-                execute(new URL(redirectLocation), responseHandler);
+                final String fixedUrl = CrappyUrlFixingHelper.fixCrappyLocationHeaderValue(url, redirectLocation);
+                execute(new URL(fixedUrl), responseHandler);
+                return;
             } catch (Exception e) {
                 responseHandler.onRequestError(e);
             }

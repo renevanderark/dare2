@@ -5,6 +5,8 @@ import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.Response;
@@ -17,6 +19,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 public abstract class ErrorReportingResponseHandler implements HttpResponseHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(ErrorReportingResponseHandler.class);
+
     final List<SAXException> saxExceptions = Lists.newArrayList();
     final List<IOException> ioExceptions = Lists.newArrayList();
     private final List<HttpResponseException> httpResponseExceptions = Lists.newArrayList();
@@ -37,7 +41,9 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
 
     @Override
     public void onRedirect(String sourceLocation, String targetLocation) {
-        // not expected in standard OAI endpoint
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Redirect detected from {} to {}", sourceLocation, targetLocation);
+        }
     }
 
     @Override
