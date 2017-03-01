@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.xml.sax.SAXException;
@@ -46,6 +47,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
@@ -159,6 +161,7 @@ public class IntegrationTest {
     }
 
     @Test
+    @Ignore
     public void runUpdatesEncounteredFlow() throws IOException, InterruptedException {
         // First create a new repository configuration via HTTP POST to app url
         final String locationOfNewlyCreatedRepository = CrudOperations.createRepository(new Repository(
@@ -179,13 +182,20 @@ public class IntegrationTest {
         runHarvester();
 
 
-        System.out.println(CrudOperations.getRecords().getResult());
         // Based on the mock responses there should be 4 records pending
         assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
-                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
-                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING))
+                allOf(
+                    hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                    hasProperty("updateCount", is(1)),
+                    hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
+                ),
+                allOf(
+                    hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                    hasProperty("updateCount", is(1)),
+                    hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
+                )
         ));
     }
 

@@ -18,8 +18,10 @@ public class OaiRecordMapper implements ResultSetMapper<OaiRecord> {
         final String dateStamp = resultSet.getString("datestamp");
         final Integer repositoryId = resultSet.getInt("repository_id");
         final Integer processStatusCode = resultSet.getInt("process_status_code");
+        final Integer updateCount = resultSet.getInt("update_count");
 
-        return new OaiRecord(identifier, dateStamp, OaiStatus.forCode(oaiStatusCode), repositoryId, ProcessStatus.forCode(processStatusCode));
+        return new OaiRecord(identifier, dateStamp, OaiStatus.forCode(oaiStatusCode), repositoryId,
+                ProcessStatus.forCode(processStatusCode), updateCount);
 
     }
 }
