@@ -6,7 +6,8 @@ class RecordBody extends React.Component {
         return this.props.identifier !== nextProps.identifier ||
             this.props.processStatus !== nextProps.processStatus ||
             this.props.dateStamp !== nextProps.dateStamp ||
-            this.props.repositoryName !== nextProps.repositoryName;
+            this.props.repositoryName !== nextProps.repositoryName ||
+            this.props.updateCount !== nextProps.updateCount;
     }
     
     render() {
@@ -14,7 +15,8 @@ class RecordBody extends React.Component {
             identifier,
             processStatus,
             dateStamp,
-            repositoryName
+            repositoryName,
+            updateCount
         } = this.props;
 
         return (
@@ -44,6 +46,10 @@ class RecordBody extends React.Component {
                     <li className="row list-group-item">
                         <strong className="col-md-4">Data provider</strong>
                         <span className="col-md-16">{repositoryName}</span>
+                    </li>
+                    <li className="row list-group-item">
+                        <strong className="col-md-4">Update count</strong>
+                        <span className="col-md-16">{updateCount}</span>
                     </li>
                 </ul>
             </div>

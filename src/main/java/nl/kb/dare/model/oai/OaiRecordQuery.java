@@ -1,6 +1,7 @@
 package nl.kb.dare.model.oai;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
@@ -17,13 +18,18 @@ import java.util.Map;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OaiRecordQuery {
-    private final Integer repositoryId;
-    private final Integer offset;
-    private final Integer limit;
-    private final ProcessStatus processStatus;
-    private final OaiStatus oaiStatus;
-    private final ErrorStatus errorStatus;
+    private Integer repositoryId;
+    private Integer offset;
+    private Integer limit;
+    private ProcessStatus processStatus;
+    private OaiStatus oaiStatus;
+    private ErrorStatus errorStatus;
+
+    public OaiRecordQuery() {
+
+    }
 
     public OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
                           OaiStatus oaiStatus, ErrorStatus errorStatus) {
@@ -59,6 +65,21 @@ public class OaiRecordQuery {
     @JsonProperty
     public String getOaiStatus() {
         return oaiStatus != null ? oaiStatus.getStatus() : "<< no supported parameter defined >>";
+    }
+
+    @JsonProperty
+    public void setProcessStatus(String processStatus) {
+        this.processStatus = ProcessStatus.forString(processStatus);
+    }
+
+    @JsonProperty
+    public void setOaiStatus(String oaiStatus) {
+        this.oaiStatus = OaiStatus.forString(oaiStatus);
+    }
+
+    @JsonProperty
+    public void setErrorStatus(String errorStatus) {
+        this.errorStatus = ErrorStatus.forString(errorStatus);
     }
 
     @JsonProperty

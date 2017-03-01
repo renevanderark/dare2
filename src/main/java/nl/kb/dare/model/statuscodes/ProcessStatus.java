@@ -5,9 +5,7 @@ public enum ProcessStatus {
     PENDING(10, "pending"),
     PROCESSING(20, "processing"),
     FAILED(90, "failure"),
-    PROCESSED(100, "processed"),
-    UPDATED_AFTER_PROCESSING(1001, "updated-after-processing"),
-    DELETED_AFTER_PROCESSING(1002, "deleted-after-processing");
+    PROCESSED(100, "processed");
 
     private final int code;
     private final String status;
@@ -34,9 +32,9 @@ public enum ProcessStatus {
         return null;
     }
 
-    public static ProcessStatus forString(String oaiStatus) {
+    public static ProcessStatus forString(String processStatus) {
         for (ProcessStatus s : ProcessStatus.values()) {
-            if (s.status.equalsIgnoreCase(oaiStatus)) {
+            if (s.status.equalsIgnoreCase(processStatus) || s.name().equals(processStatus)) {
                 return s;
             }
         }

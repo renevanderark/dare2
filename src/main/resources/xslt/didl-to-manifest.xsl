@@ -2,11 +2,12 @@
 
 <xsl:stylesheet version="1.0"
                 xmlns:mets="http://www.loc.gov/METS/"
-                xmlns="http://i.still.have.a.lot.to.do/ok"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:didl="urn:mpeg:mpeg21:2002:02-DIDL-NS"
                 xmlns:xlink="http://www.w3.org/1999/xlink"
-                xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                exclude-result-prefixes="rdf didl"
+>
 
     <xsl:template match="/">
         <mets:mets>

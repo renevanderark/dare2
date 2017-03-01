@@ -5,9 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class OaiRecordResult {
-    private final OaiRecordQuery oaiRecordQuery;
-    private final List<OaiRecord> result;
-    private final Long count;
+    private OaiRecordQuery oaiRecordQuery;
+    private List<OaiRecord> result;
+    private Long count;
+
+    public OaiRecordResult() {
+
+    }
 
     public OaiRecordResult(OaiRecordQuery oaiRecordQuery, List<OaiRecord> result, Long count) {
         this.oaiRecordQuery = oaiRecordQuery;
