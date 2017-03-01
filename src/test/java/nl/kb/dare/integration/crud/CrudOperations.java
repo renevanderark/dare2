@@ -24,7 +24,17 @@ public class CrudOperations {
         httpPut.addHeader("Accept", "application/json");
 
         final HttpResponse response = httpClient.execute(httpPut);
-        return response.getStatusLine().getStatusCode() == 200;    }
+        return response.getStatusLine().getStatusCode() == 200;
+    }
+
+    public static boolean stopRecordProcessor() throws IOException {
+        final HttpClient httpClient = HttpClientBuilder.create().build();
+        final HttpPut httpPut = new HttpPut(String.format("%s/workers/disable", IntegrationTest.APP_URL));
+        httpPut.addHeader("Accept", "application/json");
+
+        final HttpResponse response = httpClient.execute(httpPut);
+        return response.getStatusLine().getStatusCode() == 200;
+    }
 
     public static boolean startHarvester() throws IOException {
         final HttpClient httpClient = HttpClientBuilder.create().build();
@@ -72,4 +82,6 @@ public class CrudOperations {
 
         return response.getEntity().getContent();
     }
+
+
 }

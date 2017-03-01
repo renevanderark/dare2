@@ -12,17 +12,24 @@ public class OaiRecord {
     private OaiStatus oaiStatus;
     private Integer repositoryId;
     private ProcessStatus processStatus;
+    private Integer updateCount = 0;
 
     public OaiRecord() {
 
     }
-
-    public OaiRecord(String identifier, String dateStamp, OaiStatus oaiStatus, Integer repositoryId, ProcessStatus processStatus) {
+    public OaiRecord(String identifier, String dateStamp, OaiStatus oaiStatus, Integer repositoryId,
+                     ProcessStatus processStatus) {
         this.identifier = identifier;
         this.dateStamp = dateStamp;
         this.oaiStatus = oaiStatus;
         this.repositoryId = repositoryId;
         this.processStatus = processStatus;
+    }
+
+    public OaiRecord(String identifier, String dateStamp, OaiStatus oaiStatus, Integer repositoryId,
+                     ProcessStatus processStatus, Integer updateCount) {
+        this(identifier, dateStamp, oaiStatus, repositoryId, processStatus);
+        this.updateCount = updateCount;
     }
 
     public void setIdentifier(String identifier) {
@@ -109,6 +116,15 @@ public class OaiRecord {
                 ", oaiStatus=" + oaiStatus +
                 ", repositoryId=" + repositoryId +
                 ", processStatus=" + processStatus +
+                ", updateCount=" + updateCount +
                 '}';
+    }
+
+    public Integer getUpdateCount() {
+        return updateCount;
+    }
+
+    public void setUpdateCount(Integer updateCount) {
+        this.updateCount = updateCount;
     }
 }

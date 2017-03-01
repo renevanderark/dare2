@@ -8,6 +8,7 @@ import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
+import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.ManifestXmlHandler;
 import nl.kb.dare.oai.ObjectResource;
@@ -46,6 +47,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.notNullValue;
@@ -176,16 +178,27 @@ public class IntegrationTest {
 
         runHarvester();
         runRecordProcessor();
+        if (!CrudOperations.stopRecordProcessor()) {
+            fail("Failed to stop the record processor");
+        }
+
         runHarvester();
 
-
-        System.out.println(CrudOperations.getRecords().getResult());
         // Based on the mock responses there should be 4 records pending
         assertThat(CrudOperations.getRecords().getResult(), containsInAnyOrder(
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
                 hasProperty("processStatus", is(ProcessStatus.PROCESSED)),
-                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING)),
-                hasProperty("processStatus", is(ProcessStatus.UPDATED_AFTER_PROCESSING))
+                allOf(
+                    hasProperty("processStatus", is(ProcessStatus.PENDING)),
+                    hasProperty("updateCount", is(1)),
+                    hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
+                ),
+                allOf(
+                    hasProperty("oaiStatus", is(OaiStatus.DELETED)),
+                    hasProperty("processStatus", is(ProcessStatus.SKIP)),
+                    hasProperty("updateCount", is(1)),
+                    hasProperty("dateStamp", is("2017-01-20T01:00:31Z"))
+                )
         ));
     }
 
@@ -362,9 +375,6 @@ public class IntegrationTest {
         public void onMessage(String msg) {
             synchronized (socketStatus) {
                 try {
-/*
-                    System.out.println(msg);
-*/
                     socketStatus.setStatus(new ObjectMapper().readValue(msg, SocketStatusUpdate.class));
                 } catch (IOException e) {
                     e.printStackTrace();

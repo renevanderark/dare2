@@ -11,7 +11,8 @@ class Workflow extends React.Component {
             this.props.pending !== nextProps.pending ||
             this.props.processing !== nextProps.processing ||
             this.props.processed !== nextProps.processed ||
-            this.props.failure !== nextProps.failure;
+            this.props.failure !== nextProps.failure ||
+            this.props.skip !== nextProps.skip;
     }
 
     render() {
@@ -69,6 +70,14 @@ class Workflow extends React.Component {
                                   filterKey="processStatus"
                                   filterValue="failure"
                                   count={this.props.failure} />
+                </InnerPanel>
+                <InnerPanelSpacer spacing="col-md-13 col-sm-10 col-xs-4" />
+                <InnerPanel spacing="col-md-6 col-sm-5 col-xs-7" className="panel-danger bg-danger">
+                    Deleted
+                    <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
+                                  filterKey="processStatus"
+                                  filterValue="skip"
+                                  count={this.props.skip} />
                 </InnerPanel>
 
             </CollapsiblePanel>

@@ -26,7 +26,11 @@ public interface OaiRecordDao {
     void insert(@BindBean("oaiRecord") OaiRecord oaiRecord);
 
     @SqlUpdate("update oai_records " +
-            "set datestamp = :oaiRecord.dateStamp, oai_status_code = :oaiRecord.oaiStatusCode, repository_id = :oaiRecord.repositoryId, process_status_code = :oaiRecord.processStatusCode " +
+            "set datestamp = :oaiRecord.dateStamp, " +
+            "   oai_status_code = :oaiRecord.oaiStatusCode, " +
+            "   repository_id = :oaiRecord.repositoryId, " +
+            "   process_status_code = :oaiRecord.processStatusCode, " +
+            "   update_count = :oaiRecord.updateCount " +
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 

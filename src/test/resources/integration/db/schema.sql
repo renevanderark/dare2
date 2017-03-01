@@ -23,6 +23,7 @@ CREATE TABLE `oai_records` (
   `repository_id` int(11) DEFAULT NULL,
   `oai_status_code` int(11) DEFAULT NULL,
   `process_status_code` int(11) DEFAULT NULL,
+  `update_count` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`identifier`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `repositories`;

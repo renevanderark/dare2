@@ -28,8 +28,8 @@ public enum ErrorStatus {
     HTTP_VERSION_NOT_SUPPORTED(505, "HTTP Version Not Supported"),
 
     // PROCESSING ERRORS
-    UPDATED_AFTER_PROCESSING(1001, "record was updated by provider after processing"),
-    DELETED_AFTER_PROCESSING(1002, "record was deleted by provider after processing"),
+    UPDATED_DURING_PROCESSING(1001, "record was updated by provider during processing"),
+    DELETED_DURING_PROCESSING(1002, "record was deleted by provider during processing"),
     XML_PARSING_ERROR(1003, "failed to parse XML"),
     IO_EXCEPTION(1004, "I/O exception occurred"),
     NO_RESOURCES(1005, "record ships no object files");

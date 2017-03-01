@@ -17,7 +17,7 @@
             <setSpec>ru:com_2066_119633</setSpec>
             <setSpec>ru:col_2066_119644</setSpec>
         </header>
-        <header>
+        <header status="deleted">
             <identifier>ru:oai:repository.ubn.ru.nl:2066/161841</identifier>
             <datestamp>2017-01-20T01:00:31Z</datestamp>
             <setSpec>ru</setSpec>

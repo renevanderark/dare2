@@ -118,58 +118,39 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
 
                 // Check the processing status of the record we already have.
                 switch (existingRecord.getProcessStatus()) {
-                    case PENDING: // in this case just overwrite the record with new the data
-                    case SKIP:    // in this the record would have been _undeleted_, pretty sure that's bad practice.
-                    case FAILED:  // in this case we got lucky, maybe the update fixed the data
-                        if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
-                            oaiRecordDao.delete(newOaiRecord);
-                            // TODO delete from file system
-                        } else {
-                            oaiRecordDao.update(newOaiRecord);
-                            if (existingRecord.getProcessStatus() == ProcessStatus.FAILED) {
-                                try {
-                                    fileStorage.create(newOaiRecord).deleteFiles();
-                                    // TODO delete previsous version from file system
-                                } catch (IOException e) {
-                                    LOG.warn("Failed to delete failed record", e);
-                                }
-                            }
-                        }
-                        break;
-
-                    // TODO: specify logic for updated or deleted files which were already processed.
-                    case DELETED_AFTER_PROCESSING: // in these cases do nothing, there was a problem already
-                    case UPDATED_AFTER_PROCESSING:
-                        break;
-
-                    case PROCESSED: // in this case we can set the status to deleted|updated after processing
-                        if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
-                            errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.DELETED_AFTER_PROCESSING));
-                            newOaiRecord.setProcessStatus(ProcessStatus.DELETED_AFTER_PROCESSING);
-                        } else {
-                            errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.UPDATED_AFTER_PROCESSING));
-                            newOaiRecord.setProcessStatus(ProcessStatus.UPDATED_AFTER_PROCESSING);
-                        }
-                        // FIXME: the datestamp is currently used to look up files in the filesystem,
-                        // therefore the original datestamp must be maintained...
-                        newOaiRecord.setDateStamp(existingRecord.getDateStamp());
-                        oaiRecordDao.update(newOaiRecord);
-                        break;
-
                     case PROCESSING:
-                    default: // in all other cases the record is already being processed, so log the error. (maybe add pending status to be set after processing is finished?)
                         if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
                             errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.DELETED_AFTER_PROCESSING));
-                            // TODO? newOaiRecord.setPendingStatus(ProcessStatus.DELETED_AFTER_PROCESSING)
+                                    newOaiRecord, ErrorStatus.DELETED_DURING_PROCESSING));
+                            // TODO? newOaiRecord.setPendingStatus(ProcessStatus.DELETED_DURING_PROCESSING)
                         } else {
                             errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.UPDATED_AFTER_PROCESSING));
-                            // TODO? newOaiRecord.setPendingStatus(ProcessStatus.UPDATED_AFTER_PROCESSING)
+                                    newOaiRecord, ErrorStatus.UPDATED_DURING_PROCESSING));
+                            // TODO? newOaiRecord.setPendingStatus(ProcessStatus.UPDATED_DURING_PROCESSING)
                         }
                         // TODO? oaiRecordDao.update(newOaiRecord);
+                        break;
+
+
+                    case FAILED: // when the record is present on the file system, remove it.
+                    case PROCESSED:
+                        try {
+                            fileStorage.create(existingRecord).deleteFiles();
+                        } catch (IOException e) {
+                            LOG.warn("Failed to delete failed record", e);
+                        }
+                        // INTENTIONAL CASCADE!!!
+                    case PENDING:
+                    case SKIP: // not expected, but possible (provider _undeleted_ the record)
+                    default: // update the database record, recording the amount of updates
+
+                        newOaiRecord.setUpdateCount(existingRecord.getUpdateCount() + 1);
+                        if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
+                            newOaiRecord.setProcessStatus(ProcessStatus.SKIP);
+                        } else {
+                            newOaiRecord.setProcessStatus(ProcessStatus.PENDING);
+                        }
+                        oaiRecordDao.update(newOaiRecord);
                         break;
                 }
             }

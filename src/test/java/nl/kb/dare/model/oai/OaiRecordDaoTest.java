@@ -30,7 +30,8 @@ public class OaiRecordDaoTest {
             "  `datestamp` varchar(50) DEFAULT NULL,\n" +
             "  `repository_id` int(11) DEFAULT NULL,\n" +
             "  `oai_status_code` int(11) DEFAULT NULL,\n" +
-            "  `process_status_code` int(11) DEFAULT NULL)";
+            "  `process_status_code` int(11) DEFAULT NULL,\n" +
+            "  `update_count` int(11) NOT NULL DEFAULT 0)";
 
     private JdbcConnectionPool dataSource;
     private OaiRecordDao oaiRecordDao;
