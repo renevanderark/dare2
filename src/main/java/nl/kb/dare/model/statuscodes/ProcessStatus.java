@@ -34,9 +34,9 @@ public enum ProcessStatus {
         return null;
     }
 
-    public static ProcessStatus forString(String oaiStatus) {
+    public static ProcessStatus forString(String processStatus) {
         for (ProcessStatus s : ProcessStatus.values()) {
-            if (s.status.equalsIgnoreCase(oaiStatus)) {
+            if (s.status.equalsIgnoreCase(processStatus) || s.name().equals(processStatus)) {
                 return s;
             }
         }

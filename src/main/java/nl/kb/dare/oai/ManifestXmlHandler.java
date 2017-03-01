@@ -20,6 +20,8 @@ public class ManifestXmlHandler extends DefaultHandler {
         if (qName.equals("mets:file")) {
             currentResource = new ObjectResource();
             currentResource.setId(attributes.getValue("ID"));
+            currentResource.setChecksumType(attributes.getValue("CHECKSUMTYPE"));
+            currentResource.setChecksum(attributes.getValue("CHECKSUM"));
         } else if (qName.equals("mets:FLocat")) {
             currentResource.setXlinkHref(attributes.getValue("xlink:href"));
         }
@@ -36,5 +38,9 @@ public class ManifestXmlHandler extends DefaultHandler {
         return objectResources.stream()
                 .filter(objectResource -> !objectResource.getId().equals("metadata"))
                 .collect(toList());
+    }
+
+    public List<ObjectResource> getObjectResourcesIncludingMetadata() {
+        return objectResources.stream().collect(toList());
     }
 }
