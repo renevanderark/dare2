@@ -10,6 +10,8 @@ import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.Query;
+import org.skife.jdbi.v2.SQLStatement;
+import org.skife.jdbi.v2.Update;
 import org.skife.jdbi.v2.util.LongMapper;
 
 import java.util.List;
@@ -92,7 +94,7 @@ public class OaiRecordQuery {
     @JsonIgnore
     public List<OaiRecord> getResults(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return getBaseFilter(h, "select distinct oai_records.* from oai_records")
+            return getBaseFilter(h, "select distinct oai_records.* from oai_records", null)
                     .withLimit(limit)
                     .withOffset(offset)
                     .build()
@@ -104,33 +106,49 @@ public class OaiRecordQuery {
     @JsonIgnore
     public Long getCount(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return getBaseFilter(h, "select count(distinct(identifier)) from oai_records")
+            return getBaseFilter(h, "select count(distinct(identifier)) from oai_records",null)
                     .build()
                     .getCount();
         }
     }
 
-    private Builder getBaseFilter(Handle h, String selectClause) {
-        return new Builder(h, selectClause)
+    public void resetToPending(DBI dbi) {
+        try (final Handle h = dbi.open()) {
+            getBaseFilter(h,
+                    "select distinct oai_records.* from oai_records",
+                    "set oai_records.process_status_code = " + ProcessStatus.PENDING.getCode())
+                .build()
+                .executeUpdate();
+        }
+    }
+
+    private Builder getBaseFilter(Handle h, String selectClause, String updateClause) {
+        return new Builder(h, selectClause, updateClause)
                 .withFilter("repository_id", repositoryId)
                 .withFilter("process_status_code", processStatus)
                 .withFilter("oai_status_code", oaiStatus)
                 .withErrorFilter(errorStatus);
     }
 
+
+
     private class Builder {
         private final Map<String, Object> filters = Maps.newLinkedHashMap();
         private final String selectClause;
+        private final String updateClause;
         private final Handle h;
         private Integer limit = null;
         private Integer offset = null;
-        private Query<Map<String, Object>> query;
         private boolean withErrorSelect = false;
         private Integer withErrorStatus = null;
 
-        private Builder(Handle h, String selectClause) {
+        private Query<Map<String, Object>> query;
+        private Update update;
+
+        private Builder(Handle h, String selectClause, String updateClause) {
             this.h = h;
             this.selectClause = selectClause;
+            this.updateClause = updateClause;
         }
 
         Builder withFilter(String field, Object filterValue) {
@@ -190,18 +208,30 @@ public class OaiRecordQuery {
             if (this.offset != null) {
                 sb.append(" offset :offset");
             }
-            query = h.createQuery(sb.toString());
-            filters.keySet().forEach(key -> query.bind(key, filters.get(key)));
+
+
+
+            if (updateClause == null) {
+                query = h.createQuery(sb.toString());
+            } else {
+                final String updateSql = String.format("update oai_records, (%s) selection %s where selection.identifier = oai_records.identifier", sb.toString(), updateClause);
+                update = h.createStatement(updateSql);
+
+            }
+
+            final SQLStatement statement = updateClause == null ? query : update;
+
+            filters.keySet().forEach(key -> statement.bind(key, filters.get(key)));
 
             if (withErrorSelect) {
-                query.bind("error_status_code", withErrorStatus);
+                statement.bind("error_status_code", withErrorStatus);
             }
 
             if (this.limit != null) {
-                query.bind("limit", limit);
+                statement.bind("limit", limit);
             }
             if (this.offset != null) {
-                query.bind("offset", offset);
+                statement.bind("offset", offset);
             }
 
             return this;
@@ -223,6 +253,10 @@ public class OaiRecordQuery {
 
         Long getCount() {
             return query.map(LongMapper.FIRST).first();
+        }
+
+        void executeUpdate() {
+            update.execute();
         }
 
     }

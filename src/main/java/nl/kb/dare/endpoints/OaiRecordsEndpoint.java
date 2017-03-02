@@ -75,13 +75,9 @@ public class OaiRecordsEndpoint {
 
         final Integer offset = offsetParam == null ? 0 : offsetParam;
         final Integer limit = limitParam == null ? 10 : limitParam;
+        final OaiRecordQuery oaiRecordQuery = getOaiRecordQuery(
+                repositoryId, offset, limit, processStatusParam, errorStatusParam, oaiStatusParam);
 
-        final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
-        final ProcessStatus processStatus = ProcessStatus.forString(processStatusParam);
-        final ErrorStatus errorStatus = errorStatusParam == null ?
-                null : ErrorStatus.forCode(errorStatusParam);
-
-        final OaiRecordQuery oaiRecordQuery = new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
         final OaiRecordResult result = new OaiRecordResult(
                 oaiRecordQuery,
                 oaiRecordQuery.getResults(dbi),
@@ -89,6 +85,47 @@ public class OaiRecordsEndpoint {
         );
 
         return Response.ok(result).build();
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkReset(
+            @QueryParam("repositoryId") Integer repositoryId,
+            @QueryParam("processStatus") String processStatusParam,
+            @QueryParam("errorStatus") Integer errorStatusParam,
+            @QueryParam("oaiStatus") String oaiStatusParam) {
+
+        final OaiRecordQuery oaiRecordQuery = getOaiRecordQuery(
+                repositoryId, null, null, processStatusParam, errorStatusParam, oaiStatusParam);
+
+        final List<OaiRecord> results = oaiRecordQuery.getResults(dbi);
+
+        oaiRecordQuery.resetToPending(dbi);
+
+        results.forEach(oaiRecord -> errorReportDao.removeForOaiRecord(oaiRecord.getIdentifier()));
+
+
+        final OaiRecordResult result = new OaiRecordResult(
+                oaiRecordQuery,
+                oaiRecordQuery.getResults(dbi),
+                oaiRecordQuery.getCount(dbi)
+        );
+
+        return Response.ok(result).build();
+    }
+
+    private OaiRecordQuery getOaiRecordQuery(Integer repositoryId, Integer offset, Integer limit,
+                                             String processStatusParam, Integer errorStatusParam,
+                                             String oaiStatusParam) {
+
+
+
+        final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
+        final ProcessStatus processStatus = ProcessStatus.forString(processStatusParam);
+        final ErrorStatus errorStatus = errorStatusParam == null ?
+                null : ErrorStatus.forCode(errorStatusParam);
+
+        return new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
     }
 
 
