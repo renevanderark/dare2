@@ -1,4 +1,5 @@
 import React from "react";
+import ValidationMarker from "../../widgets/validation-marker";
 
 const toHuman = (str) =>
     str.split("_").map(x => x.toLowerCase().replace(/^./, y => y.toUpperCase())).join(" ");
@@ -20,7 +21,10 @@ const TestResult = (props) => {
                     {toHuman(progressStep)}
                 </span>
                 <span className="col-md-1 col-sm-1 col-xs-1">
-                  {success ? "v" : "x"}
+                  <ValidationMarker validates={success}
+                      messageOk={`${toHuman(progressStep)} Succeeded`}
+                      messageFail={`${toHuman(progressStep)} Failed`}
+                  />
                 </span>
             </li>
         );
@@ -31,7 +35,10 @@ const TestResult = (props) => {
                     Result status
                 </span>
                 <span className="col-md-1 col-sm-1 col-xs-1">
-                  {result}
+                  <ValidationMarker validates={result === "PROCESSED"}
+                                    messageOk={`Get Record Succeeded`}
+                                    messageFail={`Get Record Failed`}
+                  />
                 </span>
             </li>
         );
@@ -41,9 +48,19 @@ const TestResult = (props) => {
                 <span className="col-md-8 col-sm-12 col-xs-15">
                     {errorStatusCode} - {toHuman(errorStatus)}
                 </span>
-                <span
-                    style={{display: "inline-block", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap"}}
-                    className="col-md-24 col-sm-20 col-xs-17">
+                <span className="col-md-1 col-sm-1 col-xs-1">
+                  <ValidationMarker validates={false}
+                                    messageOk=""
+                                    messageFail={toHuman(errorStatus)}
+                  />
+                </span>
+                <span style={{
+                        paddingLeft: "10px",
+                        display: "inline-block",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        whiteSpace: "nowrap"
+                    }} className="col-md-23 col-sm-19 col-xs-16">
                     <a href={url} target="_blank">{url}</a>
                 </span>
             </li>
