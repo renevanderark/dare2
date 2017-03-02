@@ -88,6 +88,7 @@ public class OaiRecordsEndpoint {
     }
 
     @PUT
+    @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
     public Response bulkReset(
             @QueryParam("repositoryId") Integer repositoryId,
