@@ -22,6 +22,8 @@ import static java.util.stream.Collectors.toList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OaiRecordQuery {
+    public static final String UPDATE_SELECTION_SQL =
+            "update oai_records %s where identifier in (select identifier from (%s) as intermediary_alias)";
     private Integer repositoryId;
     private Integer offset;
     private Integer limit;
@@ -115,7 +117,7 @@ public class OaiRecordQuery {
     public void resetToPending(DBI dbi) {
         try (final Handle h = dbi.open()) {
             getBaseFilter(h,
-                    "select distinct oai_records.* from oai_records",
+                    "select identifier from oai_records",
                     "set oai_records.process_status_code = " + ProcessStatus.PENDING.getCode())
                 .build()
                 .executeUpdate();
@@ -214,7 +216,8 @@ public class OaiRecordQuery {
             if (updateClause == null) {
                 query = h.createQuery(sb.toString());
             } else {
-                final String updateSql = String.format("update oai_records, (%s) selection %s where selection.identifier = oai_records.identifier", sb.toString(), updateClause);
+                final String updateSql = String.format(UPDATE_SELECTION_SQL, updateClause, sb.toString());
+
                 update = h.createStatement(updateSql);
 
             }
