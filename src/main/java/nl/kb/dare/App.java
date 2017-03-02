@@ -18,6 +18,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.LenientHttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
@@ -64,6 +65,7 @@ public class App extends Application<Config> {
 
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
+        final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory();
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
@@ -88,9 +90,13 @@ public class App extends Application<Config> {
 
         environment.lifecycle().manage(new ManagedPeriodicTask(statusUpdater));
 
-        register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, fileStorage,
-                repositoryDao, httpFetcher, responseHandlerFactory, xsltTransformer, sampleFileStorage));
-        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, errorReportDao, repositoryValidator, repositoryNotifier, fileStorage));
+
+        register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, oaiRecordQueryFactory,
+                fileStorage, repositoryDao, httpFetcher, responseHandlerFactory, xsltTransformer, sampleFileStorage));
+
+        register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, errorReportDao, repositoryValidator,
+                repositoryNotifier, fileStorage));
+
         register(environment, new OaiHarvesterEndpoint(oaiHarvester));
         register(environment, new OaiRecordFetcherEndpoint(oaiRecordFetcher));
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));

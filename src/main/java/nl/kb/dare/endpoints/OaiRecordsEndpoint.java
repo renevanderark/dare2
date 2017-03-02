@@ -9,6 +9,7 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
+import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordResult;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
@@ -42,19 +43,27 @@ public class OaiRecordsEndpoint {
     private final OaiRecordDao oaiRecordDao;
     private final ErrorReportDao errorReportDao;
     private final FileStorage fileStorage;
+    private final OaiRecordQueryFactory oaiRecordQueryFactory;
     private RepositoryDao repositoryDao;
     private HttpFetcher httpFetcher;
     private ResponseHandlerFactory responseHandlerFactory;
     private XsltTransformer xsltTransformer;
     private final FileStorage sampleFileStorage;
 
-    public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
-                              FileStorage fileStorage, RepositoryDao repositoryDao,
-                              HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-                              XsltTransformer xsltTransformer, FileStorage sampleFileStorage) {
+    public OaiRecordsEndpoint(DBI dbi,
+                              OaiRecordDao oaiRecordDao,
+                              ErrorReportDao errorReportDao,
+                              OaiRecordQueryFactory oaiRecordQueryFactory,
+                              FileStorage fileStorage,
+                              RepositoryDao repositoryDao,
+                              HttpFetcher httpFetcher,
+                              ResponseHandlerFactory responseHandlerFactory,
+                              XsltTransformer xsltTransformer,
+                              FileStorage sampleFileStorage) {
         this.dbi = dbi;
         this.oaiRecordDao = oaiRecordDao;
         this.errorReportDao = errorReportDao;
+        this.oaiRecordQueryFactory = oaiRecordQueryFactory;
         this.fileStorage = fileStorage;
         this.repositoryDao = repositoryDao;
         this.httpFetcher = httpFetcher;
@@ -75,13 +84,9 @@ public class OaiRecordsEndpoint {
 
         final Integer offset = offsetParam == null ? 0 : offsetParam;
         final Integer limit = limitParam == null ? 10 : limitParam;
+        final OaiRecordQuery oaiRecordQuery = getOaiRecordQuery(
+                repositoryId, offset, limit, processStatusParam, errorStatusParam, oaiStatusParam);
 
-        final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
-        final ProcessStatus processStatus = ProcessStatus.forString(processStatusParam);
-        final ErrorStatus errorStatus = errorStatusParam == null ?
-                null : ErrorStatus.forCode(errorStatusParam);
-
-        final OaiRecordQuery oaiRecordQuery = new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
         final OaiRecordResult result = new OaiRecordResult(
                 oaiRecordQuery,
                 oaiRecordQuery.getResults(dbi),
@@ -89,6 +94,48 @@ public class OaiRecordsEndpoint {
         );
 
         return Response.ok(result).build();
+    }
+
+    @PUT
+    @Path("/reset")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkReset(
+            @QueryParam("repositoryId") Integer repositoryId,
+            @QueryParam("processStatus") String processStatusParam,
+            @QueryParam("errorStatus") Integer errorStatusParam,
+            @QueryParam("oaiStatus") String oaiStatusParam) {
+
+        final OaiRecordQuery oaiRecordQuery = getOaiRecordQuery(
+                repositoryId, null, null, processStatusParam, errorStatusParam, oaiStatusParam);
+
+        final List<OaiRecord> results = oaiRecordQuery.getResults(dbi);
+
+        oaiRecordQuery.resetToPending(dbi);
+
+        results.forEach(oaiRecord -> errorReportDao.removeForOaiRecord(oaiRecord.getIdentifier()));
+
+
+        final OaiRecordResult result = new OaiRecordResult(
+                oaiRecordQuery,
+                oaiRecordQuery.getResults(dbi),
+                oaiRecordQuery.getCount(dbi)
+        );
+
+        return Response.ok(result).build();
+    }
+
+    private OaiRecordQuery getOaiRecordQuery(Integer repositoryId, Integer offset, Integer limit,
+                                             String processStatusParam, Integer errorStatusParam,
+                                             String oaiStatusParam) {
+
+
+
+        final OaiStatus oaiStatus = OaiStatus.forString(oaiStatusParam);
+        final ProcessStatus processStatus = ProcessStatus.forString(processStatusParam);
+        final ErrorStatus errorStatus = errorStatusParam == null ?
+                null : ErrorStatus.forCode(errorStatusParam);
+
+        return oaiRecordQueryFactory.getInstance(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
     }
 
 
