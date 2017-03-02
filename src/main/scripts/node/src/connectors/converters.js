@@ -10,6 +10,14 @@ const convertRecords = (state) => {
                 : state.oaiRecords.query[key]
         }));
 
+    const { status: {
+        status: {
+            harvesterStatus: {
+                recordFetcherRunState
+            }
+        }
+    }} = state;
+
     return {
         results: {
             count: state.oaiRecords.results.count,
@@ -20,6 +28,7 @@ const convertRecords = (state) => {
         },
         query: state.oaiRecords.query,
         labeledQuery: query,
+        bulkResetEnabled: recordFetcherRunState === "DISABLED",
         collapsed: state.panels["oai-records-panel"].collapsed
     };
 };

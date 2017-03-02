@@ -21,7 +21,7 @@ class DashBoards extends React.Component {
         const { onEnableRepository, onDisableRepository } = this.props;
 
         // actions for records
-        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset } = this.props;
+        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset, onResetRecords } = this.props;
 
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
@@ -50,6 +50,7 @@ class DashBoards extends React.Component {
                             onSetRecordQueryOffset={onSetRecordQueryOffset}
                             onTogglePanelCollapse={onTogglePanelCollapse}
                             onRefetchRecords={onRefetchRecords}
+                            onResetRecords={onResetRecords}
                 />
                 <ErrorReports {...this.props.errors} key="error-reports"
                       onSetRecordQueryFilter={onSetRecordQueryFilter}

@@ -1,18 +1,33 @@
 import xhr from "xhr";
 import ActionTypes from "../action-types";
 
-const fetchOaiRecords = (newQuery = null) => (dispatch, getState) => {
-    const query = newQuery || getState().oaiRecords.query;
-
-    const queryS = Object.keys(query)
+function queryToParams(query) {
+    return Object.keys(query)
         .filter((key) => query[key] !== null)
         .map((key) => `${key}=${query[key]}`)
         .join("&");
+}
+const fetchOaiRecords = (newQuery = null) => (dispatch, getState) => {
+    const query = newQuery || getState().oaiRecords.query;
+    const queryS = queryToParams(query);
 
     xhr({
         url: `/records?${new Date().getTime()}${queryS}`,
         method: "GET",
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORDS, data: JSON.parse(body)}));
+};
+
+const resetOaiRecords = (callback = () => {}) => (dispatch, getState) => {
+    const query = getState().oaiRecords.query;
+    const queryS = queryToParams(query);
+
+    xhr({
+        url: `/records/reset?${new Date().getTime()}${queryS}`,
+        method: "PUT",
+    }, (err, resp, body) => {
+        dispatch({type: ActionTypes.RECEIVE_OAI_RECORDS, data: JSON.parse(body)});
+        callback();
+    });
 };
 
 const setRecordQueryFilter = (field, value, repositoryId = null) => (dispatch, getState) => {
@@ -88,6 +103,14 @@ const testOaiRecord = (identifier) => (dispatch) => {
     req.send();
 };
 
-export { fetchOaiRecords, setRecordQueryFilter, setRecordQueryOffset, fetchOaiRecord, testOaiRecord, resetOaiRecord }
+export {
+    fetchOaiRecords,
+    resetOaiRecords,
+    setRecordQueryFilter,
+    setRecordQueryOffset,
+    fetchOaiRecord,
+    testOaiRecord,
+    resetOaiRecord
+}
 
 

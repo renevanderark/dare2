@@ -10,6 +10,10 @@ class ButtonWithModalWarning extends React.Component {
         }
     }
 
+    closeDialogue() {
+        this.setState({dialogueOpen: false});
+    }
+
     render() {
         const { dialogueOpen } = this.state;
 
@@ -19,7 +23,7 @@ class ButtonWithModalWarning extends React.Component {
                     {this.props.children}
                 </div>
                 <div className="modal-footer">
-                    <button className={this.props.className} onClick={this.props.onConfirm}>
+                    <button className={this.props.className} onClick={() => this.props.onConfirm(this.closeDialogue.bind(this))}>
                         {this.props.label}
                     </button>
                     <button className="btn btn-default pull-right" onClick={() => this.setState({dialogueOpen: false})}>

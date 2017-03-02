@@ -15,7 +15,7 @@ class DataProvider extends React.Component {
 
     render() {
         // actions for records
-        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset } = this.props;
+        const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset, onResetRecords } = this.props;
 
         // actions for panels
         const { onTogglePanelCollapse } = this.props;
@@ -39,7 +39,9 @@ class DataProvider extends React.Component {
                         onSetRecordQueryFilter={onSetRecordQueryFilter}
                         onSetRecordQueryOffset={onSetRecordQueryOffset}
                         onTogglePanelCollapse={onTogglePanelCollapse}
-                        onRefetchRecords={onRefetchRecords} />
+                        onRefetchRecords={onRefetchRecords}
+                        onResetRecords={onResetRecords}
+            />
         );
 
         const errorReports = (
