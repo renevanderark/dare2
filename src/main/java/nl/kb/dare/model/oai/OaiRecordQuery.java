@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OaiRecordQuery {
-    public static final String UPDATE_SELECTION_SQL =
+    private static final String UPDATE_SELECTION_SQL =
             "update oai_records %s where identifier in (select identifier from (%s) as intermediary_alias)";
     private Integer repositoryId;
     private Integer offset;
@@ -35,8 +35,8 @@ public class OaiRecordQuery {
 
     }
 
-    public OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
-                          OaiStatus oaiStatus, ErrorStatus errorStatus) {
+    OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
+                   OaiStatus oaiStatus, ErrorStatus errorStatus) {
 
         this.repositoryId = repositoryId;
         this.offset = offset;

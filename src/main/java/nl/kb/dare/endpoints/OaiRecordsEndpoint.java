@@ -9,6 +9,7 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
+import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordResult;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
@@ -42,19 +43,27 @@ public class OaiRecordsEndpoint {
     private final OaiRecordDao oaiRecordDao;
     private final ErrorReportDao errorReportDao;
     private final FileStorage fileStorage;
+    private final OaiRecordQueryFactory oaiRecordQueryFactory;
     private RepositoryDao repositoryDao;
     private HttpFetcher httpFetcher;
     private ResponseHandlerFactory responseHandlerFactory;
     private XsltTransformer xsltTransformer;
     private final FileStorage sampleFileStorage;
 
-    public OaiRecordsEndpoint(DBI dbi, OaiRecordDao oaiRecordDao, ErrorReportDao errorReportDao,
-                              FileStorage fileStorage, RepositoryDao repositoryDao,
-                              HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-                              XsltTransformer xsltTransformer, FileStorage sampleFileStorage) {
+    public OaiRecordsEndpoint(DBI dbi,
+                              OaiRecordDao oaiRecordDao,
+                              ErrorReportDao errorReportDao,
+                              OaiRecordQueryFactory oaiRecordQueryFactory,
+                              FileStorage fileStorage,
+                              RepositoryDao repositoryDao,
+                              HttpFetcher httpFetcher,
+                              ResponseHandlerFactory responseHandlerFactory,
+                              XsltTransformer xsltTransformer,
+                              FileStorage sampleFileStorage) {
         this.dbi = dbi;
         this.oaiRecordDao = oaiRecordDao;
         this.errorReportDao = errorReportDao;
+        this.oaiRecordQueryFactory = oaiRecordQueryFactory;
         this.fileStorage = fileStorage;
         this.repositoryDao = repositoryDao;
         this.httpFetcher = httpFetcher;
@@ -126,7 +135,7 @@ public class OaiRecordsEndpoint {
         final ErrorStatus errorStatus = errorStatusParam == null ?
                 null : ErrorStatus.forCode(errorStatusParam);
 
-        return new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
+        return oaiRecordQueryFactory.getInstance(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
     }
 
 
