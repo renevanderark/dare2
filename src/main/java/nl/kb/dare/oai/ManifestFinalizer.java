@@ -58,6 +58,7 @@ class ManifestFinalizer {
                 if (fileId.get().equals("metadata")) {
                     setAttribute(document, fileNode, "CHECKSUM", metadataResource.getChecksum());
                     setAttribute(document, fileNode, "CHECKSUMTYPE", metadataResource.getChecksumType());
+                    setAttribute(document, fileNode, "SIZE", "" + metadataResource.getSize());
                 } else {
                     writeResourceFile(objectResources, document, fileNode, fileId.get());
                 }
@@ -74,6 +75,7 @@ class ManifestFinalizer {
 
         setAttribute(document, fileNode, "CHECKSUM", currentResource.get().getChecksum());
         setAttribute(document, fileNode, "CHECKSUMTYPE", currentResource.get().getChecksumType());
+        setAttribute(document, fileNode, "SIZE", "" + currentResource.get().getSize());
         setXlinkHref(fileNode, currentResource.get());
     }
 

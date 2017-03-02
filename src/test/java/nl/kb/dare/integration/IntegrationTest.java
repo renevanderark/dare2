@@ -261,6 +261,8 @@ public class IntegrationTest {
         ZipEntry entry;
         List<ObjectResource> objectResourcesInManifest = null;
         Map<String, String> downloadedChecksums = Maps.newHashMap();
+        Map<String, Long> fileSizes = Maps.newHashMap();
+
         while((entry = zip.getNextEntry())!= null) {
             final String filename = entry.getName();
             final ChecksumOutputStream out = new ChecksumOutputStream("MD5");
@@ -271,8 +273,10 @@ public class IntegrationTest {
                 }
                 objectResourcesInManifest = manifestXmlHandler.getObjectResourcesIncludingMetadata();
             } else {
-                IOUtils.copy(zip, out);
+                final byte[] bytes = IOUtils.toByteArray(zip);
+                out.write(bytes);
                 downloadedChecksums.put("file://./" + filename, out.getChecksumString());
+                fileSizes.put("file://./" + filename, (long) bytes.length);
             }
         }
 
@@ -294,6 +298,10 @@ public class IntegrationTest {
             // also check the checksum of the downloaded file against the checksum in the manifest
             assertThat(downloadedChecksums.get(objectResource.getXlinkHref()), equalTo(objectResource.getChecksum()));
             System.out.println("Checksums match: " + objectResource.getChecksum());
+
+            assertThat(fileSizes.get(objectResource.getXlinkHref()), equalTo(objectResource.getSize()));
+            System.out.println("Filesizes match: " + objectResource.getSize());
+
         }
 
         // Ensure that each file in the zip is also present in the manifest

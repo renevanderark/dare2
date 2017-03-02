@@ -15,6 +15,8 @@ public class ObjectResource {
     private String checksumType;
     @JsonProperty
     private String localFilename;
+    @JsonProperty
+    private long size;
 
     public String getId() {
         return id;
@@ -54,5 +56,13 @@ public class ObjectResource {
 
     public String getLocalFilename() {
         return localFilename;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public long getSize() {
+        return size;
     }
 }

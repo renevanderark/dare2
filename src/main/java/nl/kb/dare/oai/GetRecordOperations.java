@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ByteCountOutputStream;
 import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
@@ -92,11 +93,12 @@ class GetRecordOperations {
 
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
             final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+            final ByteCountOutputStream byteCountOut = new ByteCountOutputStream();
             // final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
             LOG.info("fetching record: {}", urlStr);
 
             final HttpResponseHandler responseHandler = responseHandlerFactory
-                    .getStreamCopyingResponseHandler(out, checksumOut);
+                    .getStreamCopyingResponseHandler(out, checksumOut, byteCountOut);
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 
@@ -107,6 +109,7 @@ class GetRecordOperations {
             objectResource.setChecksum(checksumOut.getChecksumString());
             objectResource.setId("metadata");
             objectResource.setChecksumType("MD5");
+            objectResource.setSize(byteCountOut.getTotalSize());
             return responseHandler.getExceptions().isEmpty()
                     ? Optional.of(objectResource)
                     : Optional.empty();

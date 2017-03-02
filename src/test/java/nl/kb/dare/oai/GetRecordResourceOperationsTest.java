@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ByteCountOutputStream;
 import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
@@ -43,8 +44,8 @@ public class GetRecordResourceOperationsTest {
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class)))
-                .thenReturn(responseHandler);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class),
+                any(ByteCountOutputStream.class))).thenReturn(responseHandler);
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList());
 
 
@@ -59,7 +60,8 @@ public class GetRecordResourceOperationsTest {
         inOrder.verify(fileStorageHandle).getOutputStream("resources", EXPECTED_FILENAME);
         // final ByteArrayOutputStream checksumOut = new ByteArrayOutputStream();
         // final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
-        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class));
+        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(),
+                any(ChecksumOutputStream.class), any(ByteCountOutputStream.class));
         inOrder.verify(httpFetcher).execute(
                 argThat(allOf(
                     hasProperty("host", is("example.com")),
@@ -85,7 +87,7 @@ public class GetRecordResourceOperationsTest {
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any()))
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         when(responseHandler.getExceptions())
                 .thenReturn(Lists.newArrayList(mock(ErrorReport.class)))
@@ -99,7 +101,7 @@ public class GetRecordResourceOperationsTest {
         // final List<ErrorReport> firstAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, false);
         inOrder.verify(httpFetcher).execute(any(), any());
         // final List<ErrorReport> secondAttemptErrors = attemptDownload(fileLocation, objectOut, checksumOut, true);
-        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any());
+        inOrder.verify(responseHandlerFactory).getStreamCopyingResponseHandler(any(), any(), any());
         inOrder.verify(httpFetcher).execute(
                 argThat(allOf(
                         hasProperty("host", is("example.com")),
@@ -125,7 +127,7 @@ public class GetRecordResourceOperationsTest {
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any()))
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         final ErrorReport report1 = mock(ErrorReport.class);
         final ErrorReport report2 = mock(ErrorReport.class);

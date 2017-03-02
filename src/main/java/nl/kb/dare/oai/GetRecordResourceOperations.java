@@ -1,6 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ByteCountOutputStream;
 import nl.kb.dare.checksum.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
@@ -38,13 +39,15 @@ class GetRecordResourceOperations {
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+        final ByteCountOutputStream byteCountOut = new ByteCountOutputStream();
 
         // First try to fetch the resource by encoding the url name one way (whitespace as '+')
         final String preparedUrlWithPluses = prepareUrl(fileLocation, false);
-        final List<ErrorReport> firstAttemptErrors = attemptDownload(objectOut, checksumOut, preparedUrlWithPluses);
+        final List<ErrorReport> firstAttemptErrors = attemptDownload(objectOut, checksumOut, byteCountOut,
+                preparedUrlWithPluses);
 
         if (firstAttemptErrors.isEmpty()) {
-            writeChecksumAndFilename(objectResource, checksumOut, filename);
+            writeChecksumAndFilename(objectResource, checksumOut, byteCountOut, filename);
             return Lists.newArrayList();
         }
 
@@ -54,10 +57,11 @@ class GetRecordResourceOperations {
             return firstAttemptErrors;
         }
 
-        final List<ErrorReport> secondAttemptErrors = attemptDownload(objectOut, checksumOut, preparedUrlWithPercents);
+        final List<ErrorReport> secondAttemptErrors = attemptDownload(objectOut, checksumOut, byteCountOut,
+                preparedUrlWithPercents);
 
         if (secondAttemptErrors.isEmpty()) {
-            writeChecksumAndFilename(objectResource, checksumOut, filename);
+            writeChecksumAndFilename(objectResource, checksumOut, byteCountOut, filename);
             return Lists.newArrayList();
         }
 
@@ -66,15 +70,21 @@ class GetRecordResourceOperations {
                 .collect(toList());
     }
 
-    private void writeChecksumAndFilename(ObjectResource objectResource, ChecksumOutputStream checksumOut, String filename) throws UnsupportedEncodingException {
+    private void writeChecksumAndFilename(ObjectResource objectResource,
+                                          ChecksumOutputStream checksumOut,
+                                          ByteCountOutputStream byteCountOut,
+                                          String filename) throws UnsupportedEncodingException {
+
         objectResource.setChecksum(checksumOut.getChecksumString());
         objectResource.setChecksumType("MD5");
         objectResource.setLocalFilename(filename);
+        objectResource.setSize(byteCountOut.getTotalSize());
     }
 
-    private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut, String preparedUrl) throws UnsupportedEncodingException, MalformedURLException {
+    private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut, OutputStream byteCountOut,
+                                              String preparedUrl) throws UnsupportedEncodingException, MalformedURLException {
         final HttpResponseHandler responseHandler = responseHandlerFactory
-                .getStreamCopyingResponseHandler(objectOut, checksumOut);
+                .getStreamCopyingResponseHandler(objectOut, checksumOut, byteCountOut);
         final URL objectUrl = new URL(preparedUrl);
 
         httpFetcher.execute(objectUrl, responseHandler);

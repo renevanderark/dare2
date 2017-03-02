@@ -22,6 +22,10 @@ public class ManifestXmlHandler extends DefaultHandler {
             currentResource.setId(attributes.getValue("ID"));
             currentResource.setChecksumType(attributes.getValue("CHECKSUMTYPE"));
             currentResource.setChecksum(attributes.getValue("CHECKSUM"));
+            final String size = attributes.getValue("SIZE");
+            if (size != null) {
+                currentResource.setSize(Long.parseLong(size));
+            }
         } else if (qName.equals("mets:FLocat")) {
             currentResource.setXlinkHref(attributes.getValue("xlink:href"));
         }

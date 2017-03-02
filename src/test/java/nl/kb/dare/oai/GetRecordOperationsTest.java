@@ -95,7 +95,8 @@ public class GetRecordOperationsTest {
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any())).thenReturn(responseHandler);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
+                .thenReturn(responseHandler);
         when(fileStorageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
         instance.downloadMetadata(fileStorageHandle, oaiRecord);
@@ -124,7 +125,8 @@ public class GetRecordOperationsTest {
                 repository,
                 mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError);
 
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any())).thenReturn(responseHandler);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
+                .thenReturn(responseHandler);
         when(responseHandler.getExceptions()).thenReturn(returnedReports);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
@@ -156,7 +158,8 @@ public class GetRecordOperationsTest {
                 repository,
                 mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
 
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any())).thenReturn(responseHandler);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
+                .thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
@@ -179,7 +182,8 @@ public class GetRecordOperationsTest {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
-        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any())).thenReturn(responseHandler);
+        when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
+                .thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
