@@ -18,13 +18,15 @@ class OaiRecord extends React.Component {
             onRefetchRecords,
             onSetRecordQueryOffset,
             onFetchOaiRecord,
-            onTestRecord
+            onTestRecord,
+            onResetRecord
         } = this.props;
 
         const oaiRecordPanel =
             <OaiRecordDashboard identifier={identifier} oaiRecord={oaiRecord}
                                 onFetchOaiRecord={onFetchOaiRecord}
                                 onTestRecord={onTestRecord}
+                                onResetRecord={onResetRecord}
                                 onTogglePanelCollapse={onTogglePanelCollapse} />;
 
         const oaiRecords = (

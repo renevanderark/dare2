@@ -22,6 +22,7 @@ import org.glassfish.jersey.server.ChunkedOutput;
 import org.skife.jdbi.v2.DBI;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -90,6 +91,7 @@ public class OaiRecordsEndpoint {
         return Response.ok(result).build();
     }
 
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{identifier}")
@@ -104,6 +106,31 @@ public class OaiRecordsEndpoint {
 
         final List<OaiRecordErrorReport> errorReports = errorReportDao.findByRecordIdentifier(oaiRecord.getIdentifier());
 
+        result.put("record", oaiRecord);
+        result.put("errorReports", errorReports);
+
+        return Response.ok(result).build();
+    }
+
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{identifier}/reset")
+    public Response reset(@PathParam("identifier") String identifier) {
+        final Map<String, Object> result = Maps.newHashMap();
+
+        final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
+
+        if (oaiRecord == null) {
+            return Response.status(Response.Status.NOT_FOUND).entity("{}").build();
+        }
+
+        if (oaiRecord.getOaiStatus() != OaiStatus.DELETED) {
+            oaiRecord.setProcessStatus(ProcessStatus.PENDING);
+            errorReportDao.removeForOaiRecord(oaiRecord.getIdentifier());
+            oaiRecordDao.update(oaiRecord);
+        }
+
+        final List<OaiRecordErrorReport> errorReports = errorReportDao.findByRecordIdentifier(oaiRecord.getIdentifier());
         result.put("record", oaiRecord);
         result.put("errorReports", errorReports);
 

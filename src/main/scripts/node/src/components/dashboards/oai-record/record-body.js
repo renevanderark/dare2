@@ -22,12 +22,29 @@ class RecordBody extends React.Component {
         } = this.props;
 
         const {
-            onTestRecord
+            onFetchOaiRecord,
+            onTestRecord,
+            onResetRecord
         } = this.props;
+
+        const resetButton = processStatus === "FAILED" || processStatus === "PROCESSED"
+            ? (<button className="btn btn-default pull-right" onClick={() => onResetRecord(identifier)}>
+                Reset record to pending</button>)
+            : null;
+
+        const testButton = testResultsPending
+            ? (<button className="btn btn-default pull-right" disabled={true}>Test is running</button>)
+            : (<button className="btn btn-default pull-right" onClick={() => onTestRecord(identifier)}>
+                Test download of this record</button>);
 
         return (
             <div>
-                <h3>Record</h3>
+                <h4>
+                    <span className="glyphicon glyphicon-refresh" style={{cursor: "pointer"}}
+                          onClick={() => onFetchOaiRecord(identifier)}
+                    />{" "}
+                    Record
+                </h4>
                 <ul className="list-group">
                     <li className="row list-group-item">
                         <strong className="col-md-4">Identifier</strong>
@@ -57,16 +74,12 @@ class RecordBody extends React.Component {
                         <strong className="col-md-4">Update count</strong>
                         <span className="col-md-16">{updateCount}</span>
                     </li>
-                    <li className="row list-group-item">
-                        <strong className="col-md-4">Test record</strong>
-                        <span className="col-md-16">
-                            {testResultsPending
-                                ? (<span>Test is running</span>)
-                                : (<a onClick={() => onTestRecord(identifier)}>Start test</a>)
-                            }
-                        </span>
-                    </li>
                 </ul>
+                <div className="panel-footer">
+                    {resetButton}
+                    {testButton}
+                    <div className="clearfix" />
+                </div>
             </div>
         );
     }

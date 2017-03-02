@@ -47,6 +47,13 @@ const fetchOaiRecord = (identifier) => (dispatch) => {
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
 };
 
+const resetOaiRecord = (identifier) => (dispatch) => {
+    xhr({
+        url: `/records/${encodeURIComponent(identifier)}/reset?${new Date().getTime()}`,
+        method: "PUT"
+    }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
+};
+
 const testOaiRecord = (identifier) => (dispatch) => {
     const url = `/records/${encodeURIComponent(identifier)}/test?${new Date().getTime()}`;
     const req = new XMLHttpRequest();
@@ -81,6 +88,6 @@ const testOaiRecord = (identifier) => (dispatch) => {
     req.send();
 };
 
-export { fetchOaiRecords, setRecordQueryFilter, setRecordQueryOffset, fetchOaiRecord, testOaiRecord }
+export { fetchOaiRecords, setRecordQueryFilter, setRecordQueryOffset, fetchOaiRecord, testOaiRecord, resetOaiRecord }
 
 

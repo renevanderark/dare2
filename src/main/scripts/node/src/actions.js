@@ -22,7 +22,8 @@ import {
     setRecordQueryOffset,
     fetchOaiRecords,
     fetchOaiRecord,
-    testOaiRecord
+    testOaiRecord,
+    resetOaiRecord
 } from "./actions/oai-records";
 
 import {urls} from "./router"
@@ -64,6 +65,7 @@ export default function actionsMaker(navigateTo, dispatch) {
             dispatch(fetchOaiRecord(identifier));
             dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-record-panel"})
         },
-        onTestRecord: (identifier) => dispatch(testOaiRecord(identifier))
+        onTestRecord: (identifier) => dispatch(testOaiRecord(identifier)),
+        onResetRecord: (identifier) =>  dispatch(resetOaiRecord(identifier)),
     };
 }

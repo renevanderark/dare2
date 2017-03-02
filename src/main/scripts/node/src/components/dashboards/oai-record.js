@@ -25,14 +25,17 @@ class OaiRecordDashboard extends React.Component {
 
     render() {
         const { oaiRecord: { record, collapsed, errorReports, repositoryName, testResults }, identifier } = this.props;
-        const { onTogglePanelCollapse, onTestRecord } = this.props;
+        const { onTogglePanelCollapse, onTestRecord, onResetRecord, onFetchOaiRecord } = this.props;
 
         const body = !record
             ? (<div>Loading: {identifier}</div>)
             : (<div>
                 <RecordBody {...record}
                             testResultsPending={(testResults || {}).pending}
-                            onTestRecord={onTestRecord} repositoryName={repositoryName} />
+                            onFetchOaiRecord={onFetchOaiRecord}
+                            onTestRecord={onTestRecord}
+                            onResetRecord={onResetRecord}
+                            repositoryName={repositoryName} />
                 <OaiRecordTestResults {...testResults} />
                 <ErrorList recordIdentifier={record.identifier} errorReports={errorReports} />
             </div>);

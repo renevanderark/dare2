@@ -5,7 +5,8 @@ import ErrorReport from "./error-report";
 class ErrorList extends React.Component {
 
     shouldComponentUpdate(nextProps) {
-        return this.props.recordIdentifier !== nextProps.recordIdentifier;
+        return this.props.recordIdentifier !== nextProps.recordIdentifier ||
+                this.props.errorReports.length !== nextProps.errorReports.length;
     }
 
     render() {
