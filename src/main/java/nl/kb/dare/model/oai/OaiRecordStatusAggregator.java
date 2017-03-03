@@ -12,6 +12,7 @@ import org.skife.jdbi.v2.Handle;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.stream.Collectors.toSet;
 import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.FINALIZE_MANIFEST;
@@ -35,8 +36,8 @@ public class OaiRecordStatusAggregator {
 
     private final DBI db;
     private final OaiRecordQueryFactory oaiRecordQueryFactory;
-    private final Map<String, Map<String, ProgressReport>> progressReportMap = Maps.newHashMap();
-
+    private final Map<String, Map<String, ProgressReport>> progressReportMap = new ConcurrentHashMap<String, Map<String, ProgressReport>>();
+    
     public OaiRecordStatusAggregator(DBI db, OaiRecordQueryFactory oaiRecordQueryFactory) {
         this.db = db;
         this.oaiRecordQueryFactory = oaiRecordQueryFactory;
@@ -82,14 +83,9 @@ public class OaiRecordStatusAggregator {
                 .getResults(db)
                 .stream()
                 .map(OaiRecord::getIdentifier)
-                .collect(toSet());
-
-        for (String recordId : progressReportMap.keySet()) {
-            if (!actualRecords.contains(recordId)) {
-                progressReportMap.remove(recordId);
-            }
-        }
-
+                .collect(toSet());  
+        
+        progressReportMap.entrySet().removeIf(recordId-> !actualRecords.contains(recordId));  
     }
 
 
