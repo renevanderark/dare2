@@ -42,7 +42,7 @@ class GetRecordResourceOperations {
     List<ErrorReport> downloadResource(
             ObjectResource objectResource,
             FileStorageHandle fileStorageHandle,
-            Integer fileCount,
+            Integer fileIndex,
             Integer amountOfFiles,
             OaiRecord oaiRecord) throws IOException, NoSuchAlgorithmException {
 
@@ -51,7 +51,12 @@ class GetRecordResourceOperations {
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
-        final ByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream();
+        final ByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream(
+                oaiRecord,
+                fileIndex,
+                amountOfFiles,
+                onProgress
+        );
 
         // First try to fetch the resource by encoding the url name one way (whitespace as '+')
         final String preparedUrlWithPluses = prepareUrl(fileLocation, false);
