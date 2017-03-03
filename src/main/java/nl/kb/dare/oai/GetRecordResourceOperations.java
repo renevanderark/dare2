@@ -51,7 +51,7 @@ class GetRecordResourceOperations {
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
-        final ByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream(
+        final ProgressReportingByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream(
                 oaiRecord,
                 fileIndex,
                 amountOfFiles,
@@ -98,10 +98,12 @@ class GetRecordResourceOperations {
         objectResource.setSize(byteCountOut.getCurrentByteCount());
     }
 
-    private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut, OutputStream byteCountOut,
+    private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut,
+                                              ProgressReportingByteCountOutputStream byteCountOut,
                                               String preparedUrl) throws UnsupportedEncodingException, MalformedURLException {
         final HttpResponseHandler responseHandler = responseHandlerFactory
                 .getStreamCopyingResponseHandler(objectOut, checksumOut, byteCountOut);
+
         final URL objectUrl = new URL(preparedUrl);
 
         httpFetcher.execute(objectUrl, responseHandler);

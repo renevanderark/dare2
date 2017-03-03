@@ -18,7 +18,7 @@ public class MockHttpFetcher implements HttpFetcher {
 
     @Override
     public void execute(URL url, HttpResponseHandler responseHandler) {
-        responseHandler.onResponseData(Response.Status.ACCEPTED, mockResponses[count++]);
+        responseHandler.onResponseData(Response.Status.ACCEPTED, mockResponses[count++], null);
     }
 
 }
