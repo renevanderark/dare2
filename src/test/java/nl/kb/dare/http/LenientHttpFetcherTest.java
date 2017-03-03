@@ -1,5 +1,6 @@
 package nl.kb.dare.http;
 
+import com.google.common.collect.Maps;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -9,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -43,11 +46,12 @@ public class LenientHttpFetcherTest {
         final InputStream responseData = mock(InputStream.class);
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         final URL url = makeUrl(responseData, connection);
+        final Map<String, List<String>> headerFields = Maps.newHashMap();
         when(connection.getResponseCode()).thenReturn(200);
-
+        when(connection.getHeaderFields()).thenReturn(headerFields);
         instance.execute(url, responseHandler);
 
-        verify(responseHandler).onResponseData(Response.Status.OK, responseData);
+        verify(responseHandler).onResponseData(Response.Status.OK, responseData, headerFields);
         verify(responseHandler, never()).onRequestError(any());
         verify(responseHandler, never()).onResponseError(any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());
@@ -81,7 +85,7 @@ public class LenientHttpFetcherTest {
         verify(responseHandler).onRequestError(ioException);
         verify(responseHandler, never()).onRedirect(any(), any());
         verify(responseHandler, never()).onResponseError(any(), any());
-        verify(responseHandler, never()).onResponseData(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any(), any());
     }
 
     @Test
@@ -99,7 +103,7 @@ public class LenientHttpFetcherTest {
         verify(responseHandler).onResponseError(any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());
         verify(responseHandler, never()).onRequestError(any());
-        verify(responseHandler, never()).onResponseData(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any(), any());
     }
 
     @Test
@@ -115,7 +119,7 @@ public class LenientHttpFetcherTest {
 
         verify(responseHandler).onResponseError(Response.Status.INTERNAL_SERVER_ERROR, null);
         verify(responseHandler, never()).onRequestError(any());
-        verify(responseHandler, never()).onResponseData(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());
     }
 
@@ -136,7 +140,7 @@ public class LenientHttpFetcherTest {
         verify(responseHandler).onRedirect("http://example.com:80/", redirectLocation);
         verify(responseHandler).onRequestError(any(Exception.class));
         verify(responseHandler, never()).onResponseError(any(), any());
-        verify(responseHandler, never()).onResponseData(any(), any());
+        verify(responseHandler, never()).onResponseData(any(), any(), any());
     }
 
 }

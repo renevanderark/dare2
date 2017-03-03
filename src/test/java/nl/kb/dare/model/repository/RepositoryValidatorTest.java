@@ -39,9 +39,9 @@ public class RepositoryValidatorTest {
             @Override
             public void execute(URL url, HttpResponseHandler responseHandler) {
                 if (count == 0) {
-                    responseHandler.onResponseData(Response.Status.ACCEPTED, firstExpected);
+                    responseHandler.onResponseData(Response.Status.ACCEPTED, firstExpected, null);
                 } else {
-                    responseHandler.onResponseData(Response.Status.ACCEPTED, secondExpected);
+                    responseHandler.onResponseData(Response.Status.ACCEPTED, secondExpected, null);
                 }
                 count++;
             }

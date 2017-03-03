@@ -84,16 +84,22 @@ const testOaiRecord = (identifier) => (dispatch) => {
         }
     };
 
+    let offset = 0;
     req.onreadystatechange = function() {
         const payload = req.responseText;
+        const end = payload.lastIndexOf("!--end-chunk--!");
+
+        if (end < 0) { return; }
         dispatch({
             type: ActionTypes.UPDATE_RECORD_TEST_RESULTS,
-            payload: payload
+            payload: payload.substr(offset, end - offset)
                 .split("!--end-chunk--!")
                 .map(chunk => parseJson(chunk))
                 .filter(x => x !== null),
             identifier: identifier
         });
+        offset = end;
+
     };
 
     req.onload = function() {

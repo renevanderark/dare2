@@ -8,6 +8,7 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
@@ -47,6 +48,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class GetRecordOperationsTest {
+
+    private Consumer<ProgressReport> onProgress = progressReport -> {};
 
     @Test
     public void getFileStorageHandleShouldReturnAHandleIfAvailable() throws IOException {
@@ -368,18 +371,19 @@ public class GetRecordOperationsTest {
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
                 mock(ManifestFinalizer.class), errorReport -> {});
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
                 objectResource1, objectResource2
         );
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        when(resourceOperations.downloadResource(any(), any())).thenReturn(Lists.newArrayList());
+        when(resourceOperations.downloadResource(any(), any(), any(), any(), any())).thenReturn(Lists.newArrayList());
 
-        final boolean success = instance.downloadResources(fileStorageHandle, objectResources);
+        final boolean success = instance.downloadResources(fileStorageHandle, objectResources, oaiRecord);
 
-        verify(resourceOperations).downloadResource(objectResource1, fileStorageHandle);
-        verify(resourceOperations).downloadResource(objectResource2, fileStorageHandle);
+        verify(resourceOperations).downloadResource(objectResource1, fileStorageHandle, 1, 2, oaiRecord);
+        verify(resourceOperations).downloadResource(objectResource2, fileStorageHandle, 2, 2, oaiRecord);
         assertThat(success, is(true));
     }
 
@@ -390,15 +394,16 @@ public class GetRecordOperationsTest {
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
                 mock(ManifestFinalizer.class), errorReport -> {});
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
                 objectResource1, objectResource2
         );
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
-        when(resourceOperations.downloadResource(any(), any())).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
+        when(resourceOperations.downloadResource(any(), any(), any(), any(), any())).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
 
-        final boolean success = instance.downloadResources(fileStorageHandle, objectResources);
+        final boolean success = instance.downloadResources(fileStorageHandle, objectResources, oaiRecord);
 
         assertThat(success, is(false));
     }
@@ -412,15 +417,16 @@ public class GetRecordOperationsTest {
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
                 mock(ManifestFinalizer.class), onError);
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ErrorReport report1 = mock(ErrorReport.class);
         final ErrorReport report2 = mock(ErrorReport.class);
         final List<ErrorReport> reportedErrors = Lists.newArrayList(
                 report1, report2
         );
-        when(resourceOperations.downloadResource(any(), any())).thenReturn(reportedErrors);
+        when(resourceOperations.downloadResource(any(), any(), any(), any(), any())).thenReturn(reportedErrors);
 
-        instance.downloadResources(fileStorageHandle, Lists.newArrayList(new ObjectResource(), new ObjectResource()));
+        instance.downloadResources(fileStorageHandle, Lists.newArrayList(new ObjectResource(), new ObjectResource()), oaiRecord);
 
         assertThat(reports.size(), is(4));
         assertThat(reports.get(0), is(report1));
@@ -433,15 +439,17 @@ public class GetRecordOperationsTest {
     public void downloadResourcesShouldReturnFalseAndLogAnyCaughtIOException() throws IOException, NoSuchAlgorithmException {
         final List<ErrorReport> reports = Lists.newArrayList();
         final Consumer<ErrorReport> onError = reports::add;
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         final GetRecordResourceOperations resourceOperations = mock(GetRecordResourceOperations.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
                 mock(ManifestFinalizer.class), onError);
 
-        when(resourceOperations.downloadResource(any(), any())).thenThrow(IOException.class);
+        when(resourceOperations.downloadResource(any(), any(), any(), any(), any())).thenThrow(IOException.class);
 
-        final boolean success = instance.downloadResources(mock(FileStorageHandle.class), Lists.newArrayList(new ObjectResource()));
+        final boolean success = instance.downloadResources(
+                mock(FileStorageHandle.class), Lists.newArrayList(new ObjectResource()), oaiRecord);
 
 
         assertThat(success, is(false));

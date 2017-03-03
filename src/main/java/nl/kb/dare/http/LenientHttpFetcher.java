@@ -54,7 +54,7 @@ public class LenientHttpFetcher implements HttpFetcher {
 
         final InputStream responseData = responseDataOpt.get();
         if (statusCode >= 200 && statusCode < 300 ) {
-            responseHandler.onResponseData(Response.Status.fromStatusCode(statusCode), responseData);
+            responseHandler.onResponseData(Response.Status.fromStatusCode(statusCode), responseData, connection.getHeaderFields());
         }
 
     }

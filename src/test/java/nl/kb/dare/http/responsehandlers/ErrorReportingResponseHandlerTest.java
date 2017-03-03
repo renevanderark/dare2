@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -39,7 +41,7 @@ public class ErrorReportingResponseHandlerTest {
         instance = new ErrorReportingResponseHandler() {
 
             @Override
-            public void onResponseData(Response.Status status, InputStream responseData) {
+            public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
 
             }
         };

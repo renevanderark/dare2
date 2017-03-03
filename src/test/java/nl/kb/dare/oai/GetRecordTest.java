@@ -92,7 +92,7 @@ public class GetRecordTest {
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(any())).thenReturn(Lists.newArrayList());
-        when(getRecordOperations.downloadResources(any(), any())).thenReturn(false);
+        when(getRecordOperations.downloadResources(any(), any(), any())).thenReturn(false);
 
         final ProcessStatus result = instance.fetch();
 
@@ -118,7 +118,7 @@ public class GetRecordTest {
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(any())).thenReturn(objectResources);
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
-        when(getRecordOperations.downloadResources(any(), any())).thenReturn(false);
+        when(getRecordOperations.downloadResources(any(), any(), any())).thenReturn(false);
 
         final ProcessStatus result = instance.fetch();
 
@@ -127,7 +127,7 @@ public class GetRecordTest {
         inOrder.verify(getRecordOperations).downloadMetadata(fileStorageHandle, oaiRecord);
         inOrder.verify(getRecordOperations).generateManifest(fileStorageHandle);
         inOrder.verify(getRecordOperations).collectResources(fileStorageHandle);
-        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources);
+        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources, oaiRecord);
         verifyNoMoreInteractions(getRecordOperations);
 
         assertThat(result, is(ProcessStatus.FAILED));
@@ -145,7 +145,7 @@ public class GetRecordTest {
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(any())).thenReturn(objectResources);
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(metadataResource));
-        when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadResources(any(), any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any(), any())).thenReturn(false);
 
         final ProcessStatus result = instance.fetch();
@@ -155,7 +155,7 @@ public class GetRecordTest {
         inOrder.verify(getRecordOperations).downloadMetadata(fileStorageHandle, oaiRecord);
         inOrder.verify(getRecordOperations).generateManifest(fileStorageHandle);
         inOrder.verify(getRecordOperations).collectResources(fileStorageHandle);
-        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources);
+        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources, oaiRecord);
         inOrder.verify(getRecordOperations).writeFilenamesAndChecksumsToMetadata(fileStorageHandle, objectResources,
                 metadataResource);
 
@@ -175,7 +175,7 @@ public class GetRecordTest {
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(metadataResource));
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(fileStorageHandle)).thenReturn(objectResources);
-        when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadResources(any(), any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any(), any())).thenReturn(true);
 
         final ProcessStatus result = instance.fetch();
@@ -185,7 +185,7 @@ public class GetRecordTest {
         inOrder.verify(getRecordOperations).downloadMetadata(fileStorageHandle, oaiRecord);
         inOrder.verify(getRecordOperations).generateManifest(fileStorageHandle);
         inOrder.verify(getRecordOperations).collectResources(fileStorageHandle);
-        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources);
+        inOrder.verify(getRecordOperations).downloadResources(fileStorageHandle, objectResources, oaiRecord);
         inOrder.verify(getRecordOperations).writeFilenamesAndChecksumsToMetadata(fileStorageHandle, objectResources,
                 metadataResource);
         verifyNoMoreInteractions(getRecordOperations);
@@ -203,7 +203,7 @@ public class GetRecordTest {
         when(getRecordOperations.generateManifest(fileStorageHandle)).thenReturn(true);
         when(getRecordOperations.collectResources(any())).thenReturn(Lists.newArrayList(mock(ObjectResource.class)));
         when(getRecordOperations.downloadMetadata(any(), any())).thenReturn(Optional.of(mock(ObjectResource.class)));
-        when(getRecordOperations.downloadResources(any(), any())).thenReturn(true);
+        when(getRecordOperations.downloadResources(any(), any(), any())).thenReturn(true);
         when(getRecordOperations.writeFilenamesAndChecksumsToMetadata(any(), any(), any())).thenReturn(true);
 
         instance.fetch();

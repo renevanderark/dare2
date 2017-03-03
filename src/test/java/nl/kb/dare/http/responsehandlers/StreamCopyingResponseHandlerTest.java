@@ -25,7 +25,7 @@ public class StreamCopyingResponseHandlerTest {
         final ByteArrayOutputStream out3 = new ByteArrayOutputStream();
         final HttpResponseHandler instance = new ResponseHandlerFactory().getStreamCopyingResponseHandler(out1, out2, out3);
 
-        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"));
+        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
 
         assertThat(new String(out1.toByteArray(), Charset.forName("UTF8")), is("testing"));
         assertThat(new String(out2.toByteArray(), Charset.forName("UTF8")), is("testing"));
@@ -40,7 +40,7 @@ public class StreamCopyingResponseHandlerTest {
 
         doThrow(IOException.class).when(out).write(any(), anyInt(), anyInt());
 
-        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"));
+        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
 
         assertThat(instance.getExceptions().size(), is(1));
     }

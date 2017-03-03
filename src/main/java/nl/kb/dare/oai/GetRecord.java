@@ -7,6 +7,8 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
+import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
+import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
@@ -15,15 +17,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import static nl.kb.dare.model.reporting.ProgressReport.ProgressStep.COLLECT_RESOURCES;
-import static nl.kb.dare.model.reporting.ProgressReport.ProgressStep.DOWNLOAD_METADATA;
-import static nl.kb.dare.model.reporting.ProgressReport.ProgressStep.DOWNLOAD_RESOURCES;
-import static nl.kb.dare.model.reporting.ProgressReport.ProgressStep.FINALIZE_MANIFEST;
-import static nl.kb.dare.model.reporting.ProgressReport.ProgressStep.GENERATE_MANIFEST;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.COLLECT_RESOURCES;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.DOWNLOAD_METADATA;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.DOWNLOAD_RESOURCES;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.FINALIZE_MANIFEST;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.GENERATE_MANIFEST;
+import static nl.kb.dare.oai.GetRecordResourceOperations.createFilename;
+
 
 public class GetRecord {
     private static final Logger LOG = LoggerFactory.getLogger(GetRecord.class);
@@ -57,7 +63,7 @@ public class GetRecord {
         }
 
         final GetRecordResourceOperations resourceOperations = new GetRecordResourceOperations(
-                httpFetcher, responseHandlerFactory);
+                httpFetcher, responseHandlerFactory, onProgress);
 
         final GetRecordOperations getRecordOperations = new GetRecordOperations(
                 fileStorage, httpFetcher, responseHandlerFactory, xsltTransformer,
@@ -71,45 +77,54 @@ public class GetRecord {
 
         final Optional<FileStorageHandle> fileStorageHandle = getRecordOperations.getFileStorageHandle(oaiRecord);
         if (!fileStorageHandle.isPresent()) {
-            onProgress.accept(new ProgressReport(DOWNLOAD_METADATA, false));
+            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, false));
             return ProcessStatus.FAILED;
         }
 
         final FileStorageHandle handle = fileStorageHandle.get();
         final Optional<ObjectResource> metadataResource = getRecordOperations.downloadMetadata(handle, oaiRecord);
         if (!metadataResource.isPresent()) {
-            onProgress.accept(new ProgressReport(DOWNLOAD_METADATA, false));
+            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new ProgressReport(DOWNLOAD_METADATA, true));
+        onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, true));
 
         if (!getRecordOperations.generateManifest(handle)) {
-            onProgress.accept(new ProgressReport(GENERATE_MANIFEST, false));
+            onProgress.accept(new GetRecordProgressReport(GENERATE_MANIFEST, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new ProgressReport(GENERATE_MANIFEST, true));
+        onProgress.accept(new GetRecordProgressReport(GENERATE_MANIFEST, true));
 
 
         final List<ObjectResource> objectResources = getRecordOperations.collectResources(handle);
         if (objectResources.isEmpty()) {
-            onProgress.accept(new ProgressReport(COLLECT_RESOURCES, false));
+            onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new ProgressReport(COLLECT_RESOURCES, true));
+        onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, true));
+        for (int fileIndex = 0; fileIndex < objectResources.size(); fileIndex++) {
+            try {
+                onProgress.accept(new DownloadProgressReport(
+                        oaiRecord, fileIndex + 1, objectResources.size(),
+                        createFilename(objectResources.get(fileIndex).getXlinkHref()),
+                        0, 1L
+                ));
+            } catch (MalformedURLException | UnsupportedEncodingException ignored) {
+            }
+        }
 
-
-        if (!getRecordOperations.downloadResources(handle, objectResources)) {
-            onProgress.accept(new ProgressReport(DOWNLOAD_RESOURCES, false));
+        if (!getRecordOperations.downloadResources(handle, objectResources, oaiRecord)) {
+            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new ProgressReport(DOWNLOAD_RESOURCES, true));
+        onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, true));
 
 
         if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources, metadataResource.get())) {
-            onProgress.accept(new ProgressReport(FINALIZE_MANIFEST, false));
+            onProgress.accept(new GetRecordProgressReport(FINALIZE_MANIFEST, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new ProgressReport(FINALIZE_MANIFEST, true));
+        onProgress.accept(new GetRecordProgressReport(FINALIZE_MANIFEST, true));
 
         if (inSampleMode) {
             try {

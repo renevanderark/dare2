@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
+import java.util.Map;
 
 class SaxParsingResponseHandler extends ErrorReportingResponseHandler  {
     private final SAXParser saxParser;
@@ -30,7 +32,7 @@ class SaxParsingResponseHandler extends ErrorReportingResponseHandler  {
     }
 
     @Override
-    public void onResponseData(Response.Status status, InputStream responseData) {
+    public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
         try {
             final Reader reader = new InputStreamReader(responseData,"UTF-8");
             final InputSource inputSource = new InputSource(reader);

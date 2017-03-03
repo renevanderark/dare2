@@ -62,7 +62,8 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError) {
+                        ManifestFinalizer manifestFinalizer,
+                        Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
@@ -109,7 +110,7 @@ class GetRecordOperations {
             objectResource.setChecksum(checksumOut.getChecksumString());
             objectResource.setId("metadata");
             objectResource.setChecksumType("MD5");
-            objectResource.setSize(byteCountOut.getTotalSize());
+            objectResource.setSize(byteCountOut.getCurrentByteCount());
             return responseHandler.getExceptions().isEmpty()
                     ? Optional.of(objectResource)
                     : Optional.empty();
@@ -163,13 +164,17 @@ class GetRecordOperations {
         }
     }
 
-    boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources) {
+    boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources, OaiRecord oaiRecord) {
         try {
             final List<ErrorReport> errorReports = Lists.newArrayList();
-
+            final int amountOfFiles = objectResources.size();
+            int fileCount = 1;
             for (ObjectResource objectResource : objectResources) {
 
-                errorReports.addAll(resourceOperations.downloadResource(objectResource, fileStorageHandle));
+                final List<ErrorReport> reports = resourceOperations
+                        .downloadResource(objectResource, fileStorageHandle, fileCount++, amountOfFiles, oaiRecord);
+
+                errorReports.addAll(reports);
 
             }
             errorReports.forEach(onError);
