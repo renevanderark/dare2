@@ -10,7 +10,6 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
-import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
@@ -63,7 +62,8 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError, Consumer<ProgressReport> onProgress) {
+                        ManifestFinalizer manifestFinalizer,
+                        Consumer<ErrorReport> onError) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;
@@ -110,7 +110,7 @@ class GetRecordOperations {
             objectResource.setChecksum(checksumOut.getChecksumString());
             objectResource.setId("metadata");
             objectResource.setChecksumType("MD5");
-            objectResource.setSize(byteCountOut.getTotalSize());
+            objectResource.setSize(byteCountOut.getCurrentByteCount());
             return responseHandler.getExceptions().isEmpty()
                     ? Optional.of(objectResource)
                     : Optional.empty();
@@ -164,13 +164,17 @@ class GetRecordOperations {
         }
     }
 
-    boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources) {
+    boolean downloadResources(FileStorageHandle fileStorageHandle, List<ObjectResource> objectResources, OaiRecord oaiRecord) {
         try {
             final List<ErrorReport> errorReports = Lists.newArrayList();
-
+            final int amountOfFiles = objectResources.size();
+            int fileCount = 1;
             for (ObjectResource objectResource : objectResources) {
 
-                errorReports.addAll(resourceOperations.downloadResource(objectResource, fileStorageHandle));
+                final List<ErrorReport> reports = resourceOperations
+                        .downloadResource(objectResource, fileStorageHandle, fileCount++, amountOfFiles, oaiRecord);
+
+                errorReports.addAll(reports);
 
             }
             errorReports.forEach(onError);

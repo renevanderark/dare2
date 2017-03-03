@@ -64,7 +64,7 @@ public class GetRecord {
         final GetRecordOperations getRecordOperations = new GetRecordOperations(
                 fileStorage, httpFetcher, responseHandlerFactory, xsltTransformer,
                 repositoryConfig, resourceOperations, new ManifestFinalizer(),
-                onError, onProgress);
+                onError);
 
         return new GetRecord(getRecordOperations, oaiRecord, onProgress, inSampleMode).fetch();
     }
@@ -100,7 +100,7 @@ public class GetRecord {
         onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, true));
 
 
-        if (!getRecordOperations.downloadResources(handle, objectResources)) {
+        if (!getRecordOperations.downloadResources(handle, objectResources, oaiRecord)) {
             onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, false));
             return ProcessStatus.FAILED;
         }

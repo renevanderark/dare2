@@ -7,6 +7,7 @@ import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
 import org.junit.Test;
@@ -45,6 +46,7 @@ public class GetRecordResourceOperationsTest {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class),
@@ -52,7 +54,8 @@ public class GetRecordResourceOperationsTest {
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList());
 
 
-        final List<ErrorReport> errorReports = instance.downloadResource(objectResource, fileStorageHandle);
+        final List<ErrorReport> errorReports = instance
+                .downloadResource(objectResource, fileStorageHandle, 1, 1, oaiRecord);
 
 
         InOrder inOrder = Mockito.inOrder(objectResource, fileStorageHandle, responseHandlerFactory, httpFetcher);
@@ -90,6 +93,7 @@ public class GetRecordResourceOperationsTest {
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         when(responseHandler.getExceptions())
@@ -97,7 +101,8 @@ public class GetRecordResourceOperationsTest {
                 .thenReturn(Lists.newArrayList());
 
 
-        final List<ErrorReport> errorReports = instance.downloadResource(objectResource, fileStorageHandle);
+        final List<ErrorReport> errorReports = instance
+                .downloadResource(objectResource, fileStorageHandle, 1, 1, oaiRecord);
 
         InOrder inOrder = Mockito.inOrder(httpFetcher, responseHandlerFactory, objectResource);
 
@@ -130,6 +135,8 @@ public class GetRecordResourceOperationsTest {
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
         final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
+        final OaiRecord oaiRecord = mock(OaiRecord.class);
+
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         final ErrorReport report1 = mock(ErrorReport.class);
@@ -138,7 +145,8 @@ public class GetRecordResourceOperationsTest {
                 .thenReturn(Lists.newArrayList(report1))
                 .thenReturn(Lists.newArrayList(report2));
 
-        final List<ErrorReport> errorReports = instance.downloadResource(objectResource, fileStorageHandle);
+        final List<ErrorReport> errorReports = instance
+                .downloadResource(objectResource, fileStorageHandle, 1, 1, oaiRecord);
 
         assertThat(errorReports.size(), is(2));
         assertThat(errorReports, containsInAnyOrder(report1, report2));

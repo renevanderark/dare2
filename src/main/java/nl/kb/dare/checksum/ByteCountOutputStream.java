@@ -16,7 +16,7 @@ public class ByteCountOutputStream extends ByteArrayOutputStream {
         byteCount.getAndAdd((long) len);
     }
 
-    public long getTotalSize() {
+    public long getCurrentByteCount() {
         return byteCount.get();
     }
 }

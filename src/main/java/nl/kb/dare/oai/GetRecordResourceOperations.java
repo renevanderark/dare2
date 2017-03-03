@@ -3,10 +3,12 @@ package nl.kb.dare.oai;
 import com.google.common.collect.Lists;
 import nl.kb.dare.checksum.ByteCountOutputStream;
 import nl.kb.dare.checksum.ChecksumOutputStream;
+import nl.kb.dare.checksum.ProgressReportingByteCountOutputStream;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
 import org.apache.commons.io.FilenameUtils;
@@ -28,20 +30,28 @@ import static java.util.stream.Collectors.toList;
 class GetRecordResourceOperations {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
+    private final Consumer<ProgressReport> onProgress;
 
-    GetRecordResourceOperations(HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, Consumer<ProgressReport> onProgress) {
+    GetRecordResourceOperations(HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
+                                Consumer<ProgressReport> onProgress) {
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
+        this.onProgress = onProgress;
     }
 
-    List<ErrorReport> downloadResource(ObjectResource objectResource, FileStorageHandle fileStorageHandle)
-            throws IOException, NoSuchAlgorithmException {
+    List<ErrorReport> downloadResource(
+            ObjectResource objectResource,
+            FileStorageHandle fileStorageHandle,
+            Integer fileCount,
+            Integer amountOfFiles,
+            OaiRecord oaiRecord) throws IOException, NoSuchAlgorithmException {
+
         final String fileLocation = objectResource.getXlinkHref();
         final String filename = createFilename(fileLocation);
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
         final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
-        final ByteCountOutputStream byteCountOut = new ByteCountOutputStream();
+        final ByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream();
 
         // First try to fetch the resource by encoding the url name one way (whitespace as '+')
         final String preparedUrlWithPluses = prepareUrl(fileLocation, false);
@@ -80,7 +90,7 @@ class GetRecordResourceOperations {
         objectResource.setChecksum(checksumOut.getChecksumString());
         objectResource.setChecksumType("MD5");
         objectResource.setLocalFilename(filename);
-        objectResource.setSize(byteCountOut.getTotalSize());
+        objectResource.setSize(byteCountOut.getCurrentByteCount());
     }
 
     private List<ErrorReport> attemptDownload(OutputStream objectOut, OutputStream checksumOut, OutputStream byteCountOut,
