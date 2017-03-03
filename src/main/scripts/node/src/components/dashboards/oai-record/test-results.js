@@ -18,7 +18,7 @@ const toHumanFileSize = (bytes) => {
         bytes /= thresh;
         ++u;
     } while(Math.abs(bytes) >= thresh && u < units.length - 1);
-    return bytes.toFixed(1) + ' ' + units[u];
+    return bytes.toFixed(1) + units[u];
 };
 
 const TestResult = (props) => {
@@ -48,14 +48,23 @@ const TestResult = (props) => {
                     <ul className="list-group col-md-32 col-sm-32 col-xs-32 clearfix" style={{marginTop: 10}}>
                         {downloadProgress.map((dl, i) => (
                             <li className="list-group-item row" key={i}>
-                                <div className="col-md-8 col-sm-12 col-xs-15">
-                                    {dl.filename} ({dl.fileIndex} / {dl.amountOfFiles})
+                                <div className="col-md-1 col-sm-1 col-xs-1 text-center">
+                                    <span style={{display:"inline-block", width: "55%", textAlign: "right"}}>
+                                        {dl.fileIndex}.
+                                    </span>
                                 </div>
-                                <div className="progress col-md-24 col-sm-20 col-xs-17" style={{marginBottom: 0}}>
+                                <div className="col-md-23 col-sm-19 col-xs-16">
+                                    {dl.filename} ({toHumanFileSize(dl.expectedFileSize)})
+                                </div>
+                                <div className="progress col-md-8 col-sm-12 col-xs-15" style={{marginBottom: 0}}>
                                     <div className={`progress-bar ${dl.currentByteCount < dl.expectedFileSize ? "progress-bar-striped active" : ""}`}
-                                         style={{width: toPercentage(dl), transition: "width .3s linear" }} >
-                                        {toHumanFileSize(dl.currentByteCount)} /  {toHumanFileSize(dl.expectedFileSize)}
-                                        ({toPercentage(dl)})
+                                         style={{width: toPercentage(dl), opacity: 0.6 }} >
+                                        <span style={{display: "inline-block", marginRight: 8}}>
+                                            {toHumanFileSize(dl.currentByteCount)}
+                                        </span>
+                                        <span>
+                                            {toPercentage(dl)}
+                                         </span>
                                     </div>
                                 </div>
                             </li>

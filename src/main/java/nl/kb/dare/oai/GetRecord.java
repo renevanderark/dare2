@@ -7,6 +7,7 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
+import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
 import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
@@ -16,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -25,6 +28,7 @@ import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.Progre
 import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.DOWNLOAD_RESOURCES;
 import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.FINALIZE_MANIFEST;
 import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.GENERATE_MANIFEST;
+import static nl.kb.dare.oai.GetRecordResourceOperations.createFilename;
 
 
 public class GetRecord {
@@ -98,7 +102,16 @@ public class GetRecord {
             return ProcessStatus.FAILED;
         }
         onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, true));
-
+        for (int fileIndex = 0; fileIndex < objectResources.size(); fileIndex++) {
+            try {
+                onProgress.accept(new DownloadProgressReport(
+                        oaiRecord, fileIndex + 1, objectResources.size(),
+                        createFilename(objectResources.get(fileIndex).getXlinkHref()),
+                        0, 1L
+                ));
+            } catch (MalformedURLException | UnsupportedEncodingException ignored) {
+            }
+        }
 
         if (!getRecordOperations.downloadResources(handle, objectResources, oaiRecord)) {
             onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, false));
