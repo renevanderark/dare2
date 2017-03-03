@@ -8,6 +8,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.reporting.ProgressReport;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -27,7 +29,7 @@ class GetRecordResourceOperations {
     private final HttpFetcher httpFetcher;
     private final ResponseHandlerFactory responseHandlerFactory;
 
-    GetRecordResourceOperations(HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory) {
+    GetRecordResourceOperations(HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory, Consumer<ProgressReport> onProgress) {
         this.httpFetcher = httpFetcher;
         this.responseHandlerFactory = responseHandlerFactory;
     }

@@ -8,6 +8,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.reporting.ProgressReport;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -15,6 +16,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -35,6 +37,7 @@ public class GetRecordResourceOperationsTest {
     private static final String EXPECTED_FILENAME = "file 1.ext";
     private static final String TRANSFORMED_ENC_FILE_1 = "file+1.ext";
     private static final String TRANSFORMED_ENC_FILE_2 = "file%201.ext";
+    private Consumer<ProgressReport> onProgress = progressReport -> {};
 
     @Test
     public void downloadResourceShouldSaveTheFileAndTheChecksum() throws IOException, NoSuchAlgorithmException {
@@ -42,7 +45,7 @@ public class GetRecordResourceOperationsTest {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
-        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
+        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(ChecksumOutputStream.class),
                 any(ByteCountOutputStream.class))).thenReturn(responseHandler);
@@ -85,7 +88,7 @@ public class GetRecordResourceOperationsTest {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
-        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
+        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
@@ -125,7 +128,7 @@ public class GetRecordResourceOperationsTest {
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final ObjectResource objectResource = getObjectResource(FULL_URL);
         final HttpFetcher httpFetcher = mock(HttpFetcher.class);
-        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory);
+        final GetRecordResourceOperations instance = new GetRecordResourceOperations(httpFetcher, responseHandlerFactory, onProgress);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);

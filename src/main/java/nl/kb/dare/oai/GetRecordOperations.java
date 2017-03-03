@@ -10,6 +10,7 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
@@ -62,7 +63,7 @@ class GetRecordOperations {
                         XsltTransformer xsltTransformer,
                         Repository repository,
                         GetRecordResourceOperations resourceOperations,
-                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError) {
+                        ManifestFinalizer manifestFinalizer, Consumer<ErrorReport> onError, Consumer<ProgressReport> onProgress) {
 
         this.fileStorage = fileStorage;
         this.httpFetcher = httpFetcher;

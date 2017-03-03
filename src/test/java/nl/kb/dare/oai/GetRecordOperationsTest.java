@@ -8,6 +8,7 @@ import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
+import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.xslt.XsltTransformer;
@@ -48,6 +49,8 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class GetRecordOperationsTest {
 
+    private Consumer<ProgressReport> onProgress = progressReport -> {};
+
     @Test
     public void getFileStorageHandleShouldReturnAHandleIfAvailable() throws IOException {
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -55,7 +58,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(fileStorage, mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenReturn(handle);
 
@@ -71,7 +74,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 fileStorage, mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         when(fileStorage.create(oaiRecord)).thenThrow(IOException.class);
 
@@ -91,7 +94,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), httpFetcher,
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
         when(repository.getUrl()).thenReturn("http://example.com");
         when(repository.getMetadataPrefix()).thenReturn("metadataPrefix");
@@ -123,7 +126,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError, onProgress);
 
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
@@ -156,7 +159,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), responseHandlerFactory, mock(XsltTransformer.class),
                 repository,
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
 
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
@@ -178,7 +181,7 @@ public class GetRecordOperationsTest {
         final Repository repository = mock(Repository.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 responseHandlerFactory, mock(XsltTransformer.class), repository,
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
@@ -205,7 +208,7 @@ public class GetRecordOperationsTest {
         final FileStorageHandle storageHandle = mock(FileStorageHandle.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 responseHandlerFactory, mock(XsltTransformer.class), repository, mock(GetRecordResourceOperations.class),
-                mock(ManifestFinalizer.class), onError);
+                mock(ManifestFinalizer.class), onError, onProgress);
 
         when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
         when(storageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
@@ -224,7 +227,7 @@ public class GetRecordOperationsTest {
         final OutputStream out = mock(OutputStream.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class),
                 mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), xsltTransformer, mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
 
         when(fileStorageHandle.getFile("metadata.xml")).thenReturn(in);
         when(fileStorageHandle.getOutputStream("manifest.initial.xml")).thenReturn(out);
@@ -255,7 +258,7 @@ public class GetRecordOperationsTest {
         final OutputStream out = mock(OutputStream.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class),
                 mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), xsltTransformer, mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError, onProgress);
 
         when(fileStorageHandle.getFile("metadata.xml")).thenReturn(in);
         when(fileStorageHandle.getOutputStream("manifest.initial.xml")).thenThrow(IOException.class);
@@ -276,7 +279,7 @@ public class GetRecordOperationsTest {
         final OutputStream out = mock(OutputStream.class);
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class),
                 mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), xsltTransformer, mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), onError, onProgress);
 
         when(fileStorageHandle.getFile("metadata.xml")).thenReturn(in);
         when(fileStorageHandle.getOutputStream("manifest.initial.xml")).thenReturn(out);
@@ -293,7 +296,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {}, onProgress);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(GetRecordOperationsTest.class.getResourceAsStream("/oai/manifest.xml"));
 
@@ -314,7 +317,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add, onProgress);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(manifest);
 
@@ -332,7 +335,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add, onProgress);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenReturn(badXml);
 
@@ -349,7 +352,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(
                 mock(FileStorage.class), mock(HttpFetcher.class), mock(ResponseHandlerFactory.class), mock(XsltTransformer.class),
                 mock(Repository.class),
-                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add);
+                mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), errorReports::add, onProgress);
         final FileStorageHandle handle = mock(FileStorageHandle.class);
         when(handle.getFile("manifest.initial.xml")).thenThrow(IOException.class);
 
@@ -367,7 +370,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                mock(ManifestFinalizer.class), errorReport -> {});
+                mock(ManifestFinalizer.class), errorReport -> {}, onProgress);
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
@@ -389,7 +392,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                mock(ManifestFinalizer.class), errorReport -> {});
+                mock(ManifestFinalizer.class), errorReport -> {}, onProgress);
         final ObjectResource objectResource1 = new ObjectResource();
         final ObjectResource objectResource2 = new ObjectResource();
         final List<ObjectResource> objectResources = Lists.newArrayList(
@@ -411,7 +414,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                mock(ManifestFinalizer.class), onError);
+                mock(ManifestFinalizer.class), onError, onProgress);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
         final ErrorReport report1 = mock(ErrorReport.class);
         final ErrorReport report2 = mock(ErrorReport.class);
@@ -437,7 +440,7 @@ public class GetRecordOperationsTest {
         final GetRecordOperations instance = new GetRecordOperations(mock(FileStorage.class), mock(HttpFetcher.class),
                 mock(ResponseHandlerFactory.class), mock(XsltTransformer.class), mock(Repository.class),
                 resourceOperations,
-                mock(ManifestFinalizer.class), onError);
+                mock(ManifestFinalizer.class), onError, onProgress);
 
         when(resourceOperations.downloadResource(any(), any())).thenThrow(IOException.class);
 
@@ -469,7 +472,7 @@ public class GetRecordOperationsTest {
                 mock(Repository.class),
                 mock(GetRecordResourceOperations.class),
                 manifestFinalizer,
-                errorReports::add);
+                errorReports::add, onProgress);
 
         final boolean result = instance.writeFilenamesAndChecksumsToMetadata(handle, objectResources, metadataResource);
 
@@ -506,7 +509,7 @@ public class GetRecordOperationsTest {
                 mock(Repository.class),
                 mock(GetRecordResourceOperations.class),
                 manifestFinalizer,
-                errorReports::add);
+                errorReports::add, onProgress);
 
         doThrow(IOException.class).when(manifestFinalizer).writeResourcesToManifest(any(), any(), any(), any());
 
@@ -536,7 +539,7 @@ public class GetRecordOperationsTest {
                 mock(Repository.class),
                 mock(GetRecordResourceOperations.class),
                 manifestFinalizer,
-                errorReports::add);
+                errorReports::add, onProgress);
 
 
         doThrow(SAXException.class).when(manifestFinalizer).writeResourcesToManifest(any(), any(), any(), any());
