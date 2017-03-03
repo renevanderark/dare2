@@ -15,6 +15,18 @@ const initialState = {
     testResults: null
 };
 
+const consumeTestResult = (state, payload) =>
+    (state.testResults.results || [])
+        .concat(payload.filter(report => typeof report.filename === 'undefined'));
+
+const consumeDownloadProgress = (state, payload) =>
+    payload
+        .filter(report => typeof report.filename !== 'undefined')
+        .reduce((accum, cur) => {
+            accum[cur.fileIndex - 1] = cur;
+            return accum;
+        }, [...state.testResults.downloadProgress || []]);
+
 
 export default function(state=initialState, action) {
     switch (action.type) {
@@ -46,7 +58,11 @@ export default function(state=initialState, action) {
             return {
                 ...state,
                 testResults: action.identifier === (state.current.record || {}).identifier
-                    ? {pending : true, results: action.payload}
+                    ? {
+                        pending : true,
+                        results: consumeTestResult(state, action.payload),
+                        downloadProgress: consumeDownloadProgress(state, action.payload)
+                    }
                     : null
             };
         case ActionTypes.SET_RECORD_TEST_DONE:
