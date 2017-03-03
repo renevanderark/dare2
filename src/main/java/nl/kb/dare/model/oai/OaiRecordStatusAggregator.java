@@ -2,12 +2,20 @@ package nl.kb.dare.model.oai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
+import nl.kb.dare.model.reporting.ProgressReport;
+import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
+import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 
 import java.util.Map;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toSet;
+import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.FINALIZE_MANIFEST;
+
 public class OaiRecordStatusAggregator {
 
     private static final String RECORDS_QUERY =
@@ -26,9 +34,12 @@ public class OaiRecordStatusAggregator {
             "group by repository_id, oai_record_errors.status_code";
 
     private final DBI db;
+    private final OaiRecordQueryFactory oaiRecordQueryFactory;
+    private final Map<String, Map<String, ProgressReport>> progressReportMap = Maps.newHashMap();
 
-    public OaiRecordStatusAggregator(DBI db) {
+    public OaiRecordStatusAggregator(DBI db, OaiRecordQueryFactory oaiRecordQueryFactory) {
         this.db = db;
+        this.oaiRecordQueryFactory = oaiRecordQueryFactory;
     }
 
     public Map<String, Map<String, Map<String, Object>>> getStatus() throws JsonProcessingException {
@@ -44,6 +55,48 @@ public class OaiRecordStatusAggregator {
     }
 
 
+    public void digestProgressReport(ProgressReport progressReport) {
+        final String recordIdentifier = progressReport.getRecordIdentifier();
+
+        if (!progressReportMap.containsKey(recordIdentifier)) {
+            progressReportMap.put(recordIdentifier, Maps.newHashMap());
+        }
+
+        final Map<String, ProgressReport> recordProgressReports = progressReportMap.get(recordIdentifier);
+
+        final String mapKey = progressReport instanceof DownloadProgressReport
+                ? "downloadProgress" : "getRecordProgress";
+
+        recordProgressReports.put(mapKey, progressReport);
+
+        if (progressReport instanceof GetRecordProgressReport && (
+                ((GetRecordProgressReport) progressReport).getProgressStep() == FINALIZE_MANIFEST ||
+                !((GetRecordProgressReport) progressReport).getSuccess()
+            ) && progressReportMap.containsKey(recordIdentifier)) {
+
+            progressReportMap.remove(recordIdentifier);
+        }
+
+        final Set<String> actualRecords = oaiRecordQueryFactory
+                .getInstance(ProcessStatus.PROCESSING)
+                .getResults(db)
+                .stream()
+                .map(OaiRecord::getIdentifier)
+                .collect(toSet());
+
+        for (String recordId : progressReportMap.keySet()) {
+            if (!actualRecords.contains(recordId)) {
+                progressReportMap.remove(recordId);
+            }
+        }
+
+    }
+
+
+    public Map<String, Map<String, ProgressReport>> getProgressReportMap() {
+
+        return progressReportMap;
+    }
 
     private Map<String, Map<String, Object>> getAggregation(String sql, boolean forRecords) {
         final Map<String, Map<String, Object>> result = Maps.newHashMap();

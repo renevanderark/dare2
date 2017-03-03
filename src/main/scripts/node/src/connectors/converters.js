@@ -54,6 +54,7 @@ const convertWorkerControls = (state) => {
             }
         }
     }} = state;
+    console.log(JSON.stringify(state.status.status.recordsBeingProcessed));
     return {
         nextRun: getNextRun(nextRunTime),
         recordFetcherRunState: recordFetcherRunState,

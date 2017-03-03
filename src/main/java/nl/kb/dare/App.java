@@ -70,6 +70,7 @@ public class App extends Application<Config> {
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
         final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
+        final OaiRecordStatusAggregator oaiRecordStatusAggregator = new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
 
@@ -79,8 +80,8 @@ public class App extends Application<Config> {
 
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
                 oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
-                config.getInSampleMode());
-        final StatusUpdater statusUpdater = new StatusUpdater(new OaiRecordStatusAggregator(db),
+                oaiRecordStatusAggregator, config.getInSampleMode());
+        final StatusUpdater statusUpdater = new StatusUpdater(oaiRecordStatusAggregator,
                 oaiHarvester, oaiRecordFetcher, repositoryDao, repositoryNotifier);
 
 

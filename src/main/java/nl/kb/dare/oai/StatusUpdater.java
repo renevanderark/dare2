@@ -46,7 +46,6 @@ public class StatusUpdater extends AbstractScheduledService {
         if (registrations.hasMembers()) {
             try {
                 final Map<String, Map<String, Map<String, Object>>> records = oaiRecordStatusAggregator.getStatus();
-
                 final Map<String, Object> harvesterState = Maps.newHashMap();
                 harvesterState.put("nextRunTime", oaiHarvester.getNextRunTime());
                 harvesterState.put("harvesterRunState", oaiHarvester.getRunState());
@@ -54,21 +53,22 @@ public class StatusUpdater extends AbstractScheduledService {
                 oaiHarvester.getCurrentHarvester()
                         .ifPresent(harvestStatus -> harvesterState.put("currentRepository", harvestStatus));
 
-
                 final Map<String, Object> statusUpdate = Maps.newHashMap();
                 statusUpdate.put("harvesterStatus", harvesterState);
                 statusUpdate.put("recordProcessingStatus", records);
 
+                statusUpdate.put("recordsBeingProcessed", oaiRecordStatusAggregator.getProgressReportMap());
+
                 if (repositoryNotifier.wasUpdated()) {
                     statusUpdate.put("repositoryStatus",
-                            repositoryDao.list().stream().map(repository -> {
-                                final Map<String, Object> repoStatus = Maps.newHashMap();
-                                repoStatus.put("name", repository.getName());
-                                repoStatus.put("dateStamp", repository.getDateStamp());
-                                repoStatus.put("enabled", repository.getEnabled());
-                                repoStatus.put("id", repository.getId());
-                                return repoStatus;
-                            }).collect(toList()));
+                        repositoryDao.list().stream().map(repository -> {
+                            final Map<String, Object> repoStatus = Maps.newHashMap();
+                            repoStatus.put("name", repository.getName());
+                            repoStatus.put("dateStamp", repository.getDateStamp());
+                            repoStatus.put("enabled", repository.getEnabled());
+                            repoStatus.put("id", repository.getId());
+                            return repoStatus;
+                        }).collect(toList()));
                 }
                 registrations.broadcast(OBJECT_MAPPER.writeValueAsString(statusUpdate));
             } catch (Exception e) {

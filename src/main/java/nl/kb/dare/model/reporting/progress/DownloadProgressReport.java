@@ -34,4 +34,21 @@ public class DownloadProgressReport implements ProgressReport {
         this.currentByteCount = currentByteCount;
         this.expectedFileSize = expectedFileSize;
     }
+
+    @Override
+    public String getRecordIdentifier() {
+        return recordIdentifier;
+    }
+
+    @Override
+    public String toString() {
+        return "DownloadProgressReport{" +
+                "recordIdentifier='" + recordIdentifier + '\'' +
+                ", fileIndex=" + fileIndex +
+                ", amountOfFiles=" + amountOfFiles +
+                ", filename='" + filename + '\'' +
+                ", currentByteCount=" + currentByteCount +
+                ", expectedFileSize=" + expectedFileSize +
+                '}';
+    }
 }
