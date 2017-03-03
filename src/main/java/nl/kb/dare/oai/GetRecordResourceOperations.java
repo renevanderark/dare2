@@ -55,6 +55,7 @@ class GetRecordResourceOperations {
                 oaiRecord,
                 fileIndex,
                 amountOfFiles,
+                filename,
                 onProgress
         );
 

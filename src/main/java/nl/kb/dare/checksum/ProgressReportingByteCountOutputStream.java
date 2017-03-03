@@ -3,6 +3,7 @@ package nl.kb.dare.checksum;
 import com.google.common.collect.Lists;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
+import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
 
 import java.util.List;
 import java.util.Map;
@@ -12,17 +13,23 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
 
 
     private final OaiRecord oaiRecord;
-    private final Integer fileCount;
+    private final Integer fileIndex;
     private final Integer amountOfFiles;
+    private final String filename;
     private final Consumer<ProgressReport> onProgress;
     private Long expectedFileSize = -1L;
 
     public ProgressReportingByteCountOutputStream(
-            OaiRecord oaiRecord, Integer fileIndex, Integer amountOfFiles, Consumer<ProgressReport> onProgress) {
+            OaiRecord oaiRecord,
+            Integer fileIndex,
+            Integer amountOfFiles,
+            String filename,
+            Consumer<ProgressReport> onProgress) {
 
         this.oaiRecord = oaiRecord;
-        this.fileCount = fileIndex;
+        this.fileIndex = fileIndex;
         this.amountOfFiles = amountOfFiles;
+        this.filename = filename;
         this.onProgress = onProgress;
     }
 
@@ -34,6 +41,9 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
     @Override
     public synchronized void write(byte b[], int off, int len) {
         super.write(b, off, len);
+        onProgress.accept(new DownloadProgressReport(
+                oaiRecord, fileIndex, amountOfFiles, filename, getCurrentByteCount(), expectedFileSize
+        ));
     }
 
     public void readExpectedFileSize(Map<String, List<String>> headerFields) {
