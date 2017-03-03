@@ -7,7 +7,7 @@ import nl.kb.dare.model.reporting.ProgressReport;
 public class DownloadProgressReport implements ProgressReport {
 
     @JsonProperty
-    private final OaiRecord oaiRecord;
+    private final String recordIdentifier;
     @JsonProperty
     private final Integer fileIndex;
     @JsonProperty
@@ -27,7 +27,7 @@ public class DownloadProgressReport implements ProgressReport {
             long currentByteCount,
             Long expectedFileSize) {
 
-        this.oaiRecord = oaiRecord;
+        this.recordIdentifier = oaiRecord.getIdentifier();
         this.fileIndex = fileIndex;
         this.amountOfFiles = amountOfFiles;
         this.filename = filename;

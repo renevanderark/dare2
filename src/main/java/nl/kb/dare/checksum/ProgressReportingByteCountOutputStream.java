@@ -5,6 +5,8 @@ import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -18,6 +20,8 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
     private final String filename;
     private final Consumer<ProgressReport> onProgress;
     private Long expectedFileSize = -1L;
+
+    private Instant lastWrite = null;
 
     public ProgressReportingByteCountOutputStream(
             OaiRecord oaiRecord,
@@ -36,15 +40,25 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
     @Override
     public synchronized void write(int b) {
         super.write(b);
+        reportProgress();
     }
 
     @Override
     public synchronized void write(byte b[], int off, int len) {
         super.write(b, off, len);
-        onProgress.accept(new DownloadProgressReport(
-                oaiRecord, fileIndex, amountOfFiles, filename, getCurrentByteCount(), expectedFileSize
-        ));
+        reportProgress();
     }
+
+    private void reportProgress() {
+        if (lastWrite == null || expectedFileSize == getCurrentByteCount() ||
+                Duration.between(lastWrite, Instant.now()).toMillis() > 200L) {
+            onProgress.accept(new DownloadProgressReport(
+                    oaiRecord, fileIndex, amountOfFiles, filename, getCurrentByteCount(), expectedFileSize
+            ));
+            lastWrite = Instant.now();
+        }
+    }
+
 
     public void readExpectedFileSize(Map<String, List<String>> headerFields) {
         final List<String> headerKeys = Lists.newArrayList("Content-Length", "Content-length", "content-length");
