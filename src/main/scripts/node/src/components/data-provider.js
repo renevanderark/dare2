@@ -13,6 +13,13 @@ class DataProvider extends React.Component {
         }
     }
 
+    componentDidUpdate() {
+        if (this.props.dataProvider.repository) {
+            document.getElementsByTagName("title")[0].innerHTML =
+                "Dare 2 - data provider " + this.props.dataProvider.repository.name;
+        }
+    }
+
     render() {
         // actions for records
         const { onSetRecordQueryFilter, onRefetchRecords, onSetRecordQueryOffset, onResetRecords } = this.props;

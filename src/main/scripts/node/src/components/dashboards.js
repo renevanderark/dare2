@@ -11,6 +11,8 @@ class DashBoards extends React.Component {
         if (!this.props.records.collapsed) {
             this.props.onSetRecordQueryFilter("repositoryId", null, null);
         }
+
+        document.getElementsByTagName("title")[0].innerHTML = "Dare 2 - overview";
     }
 
     render() {

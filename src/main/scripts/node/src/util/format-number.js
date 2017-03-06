@@ -3,7 +3,7 @@ const numberFormat = (num) =>
         i && ((a.length - i) % 3 === 0) ? '.' + c : c);
 
 const toHumanFileSize = (bytes) => {
-    if (bytes === 1) { return "?"}
+    if (bytes === 1 || bytes === -1) { return "?"}
     const thresh = 1024;
     if(Math.abs(bytes) < thresh) {
         return bytes + ' B';

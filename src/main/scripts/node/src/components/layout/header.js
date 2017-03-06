@@ -16,8 +16,11 @@ class Header extends React.Component {
                         Dare 2
                     </div>
                     <div className="navbar-right navbar-text">
-                            <span style={{transform: "rotate(90deg)", color: socketClosed ? "red" : "green"}}
-                                  className="glyphicon glyphicon-transfer" />
+                        <span className="glyphicon glyphicon-print" style={{cursor: "pointer"}}
+                              onClick={() => window.print()}
+                        />{" "}
+                        <span style={{transform: "rotate(90deg)", color: socketClosed ? "red" : "green"}}
+                              className="glyphicon glyphicon-transfer" />
                     </div>
                 </div>
             </div>

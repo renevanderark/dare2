@@ -13,7 +13,7 @@ class CollapsiblePanel extends React.Component {
         );
 
         return (
-            <div>
+            <div className={collapsed ? "collapsed-panel" : ""}>
                 {collapsed ? null : <div className="clearfix" />}
                 <div className={`panel panel-default ${collapsed ? "col-md-6 col-sm-8 col-xs-16" : ""}`}>
                     <div className="panel-heading">
