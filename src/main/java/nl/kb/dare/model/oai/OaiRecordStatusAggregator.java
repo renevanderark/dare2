@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
-import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.DBI;
@@ -15,7 +14,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.stream.Collectors.toSet;
-import static nl.kb.dare.model.reporting.progress.GetRecordProgressReport.ProgressStep.FINALIZE_MANIFEST;
 
 public class OaiRecordStatusAggregator {
 
@@ -70,22 +68,14 @@ public class OaiRecordStatusAggregator {
 
         recordProgressReports.put(mapKey, progressReport);
 
-        if (progressReport instanceof GetRecordProgressReport && (
-                ((GetRecordProgressReport) progressReport).getProgressStep() == FINALIZE_MANIFEST ||
-                !((GetRecordProgressReport) progressReport).getSuccess()
-            ) && progressReportMap.containsKey(recordIdentifier)) {
-
-            progressReportMap.remove(recordIdentifier);
-        }
-
         final Set<String> actualRecords = oaiRecordQueryFactory
                 .getInstance(ProcessStatus.PROCESSING)
                 .getResults(db)
                 .stream()
                 .map(OaiRecord::getIdentifier)
                 .collect(toSet());  
-        
-        progressReportMap.entrySet().removeIf(recordId-> !actualRecords.contains(recordId));  
+
+        progressReportMap.entrySet().removeIf(recordId-> !actualRecords.contains(recordId.getKey()));
     }
 
 
