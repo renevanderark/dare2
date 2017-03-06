@@ -83,7 +83,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                 ProcessStatus result = GetRecord.getAndRun(
                         repositoryDao, oaiRecord, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                         (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord), // on error
-                        progressReport -> oaiRecordStatusAggregator.digestProgressReport(progressReport),
+                        oaiRecordStatusAggregator::digestProgressReport,
                         inSampleMode
                 );
 
@@ -117,15 +117,15 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                 .map(Repository::getId).collect(toList());
 
         final int dividedLimit = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
-        final int limitPerRepo = dividedLimit > MAX_WORKERS_PER_REPO_PER_ITERATION ? MAX_WORKERS_PER_REPO_PER_ITERATION : dividedLimit;
 
         for (Integer repositoryId : repositoryIds) {
-            result.addAll(oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
+            final List<OaiRecord> list = oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
                     ProcessStatus.PENDING.getCode(),
                     dividedLimit,
                     repositoryId
-            ));
-            limit -= limitPerRepo;
+            );
+            result.addAll(list);
+            limit -= list.size();
             if (limit <= 0) {
                 return result;
             }
