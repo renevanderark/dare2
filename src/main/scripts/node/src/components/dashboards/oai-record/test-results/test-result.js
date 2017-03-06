@@ -1,6 +1,7 @@
 import React from "react";
 import ProgressStep from "./progress-step";
 import DownloadProgress from "./download-progress";
+import styles from "../../../../util/styles";
 
 const toHuman = (str) =>
     str.split("_").map(x => x.toLowerCase().replace(/^./, y => y.toUpperCase())).join(" ");
@@ -33,13 +34,7 @@ const TestResult = (props) => {
         return (
             <ProgressStep title={`${errorStatusCode} - ${toHuman(errorStatus)}`} validates={false}
                           messageOk="" messageFail={toHuman(errorStatus)}>
-                <span style={{
-                        paddingLeft: "10px",
-                        display: "inline-block",
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                        whiteSpace: "nowrap"
-                    }} className="col-md-23 col-sm-19 col-xs-16">
+                <span style={{...styles.ellipsis, paddingLeft: "10px"}} className="col-md-23 col-sm-19 col-xs-16">
                     <a href={url} target="_blank">{url}</a>
                 </span>
             </ProgressStep>

@@ -19,6 +19,8 @@ import DataProvider from "./components/data-provider";
 import NewDataProvider from "./components/data-provider/new-data-provider";
 import DataProviderForm from "./components/data-provider/data-provider-form";
 
+import progressConnector from "./connectors/progress-connector";
+import Progress from "./components/progress";
 const urls = {
     root() {
         return "/";
@@ -40,6 +42,9 @@ const urls = {
     },
     newDataProvider() {
         return "/data-provider/new"
+    },
+    progress() {
+        return "/progress"
     }
 
 };
@@ -66,6 +71,7 @@ export default (
         <Router history={browserHistory}>
             <Route path={urls.root()} component={connectComponent(rootConnector)(App)}>
                 <IndexRoute component={connectComponent(dashboardsConnector)(DashBoards) } />
+                <Route path={urls.progress()} component={connectComponent(progressConnector)(Progress)} />
                 <Route path={urls.record()} component={connectComponent(oaiRecordConnector)(OaiRecord) } />
                 <Route path={urls.newDataProvider()} component={connectComponent(newDataProviderConnector)(NewDataProvider)} />
                 <Route path={urls.dataProvider()} component={connectComponent(dataProviderConnector)(DataProvider)}>
