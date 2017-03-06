@@ -11,7 +11,11 @@ public class GetRecordProgressReport implements ProgressReport {
     }
 
     public enum ProgressStep {
-        GENERATE_MANIFEST, COLLECT_RESOURCES, DOWNLOAD_RESOURCES, FINALIZE_MANIFEST, DOWNLOAD_METADATA
+        DOWNLOAD_METADATA,
+        GENERATE_MANIFEST,
+        COLLECT_RESOURCES,
+        DOWNLOAD_RESOURCES,
+        FINALIZE_MANIFEST
     }
 
     @JsonProperty

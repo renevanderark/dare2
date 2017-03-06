@@ -68,19 +68,23 @@ public class OaiRecordStatusAggregator {
 
         recordProgressReports.put(mapKey, progressReport);
 
+        cleanUpProgressReport();
+    }
+
+    private void cleanUpProgressReport() {
         final Set<String> actualRecords = oaiRecordQueryFactory
                 .getInstance(ProcessStatus.PROCESSING)
                 .getResults(db)
                 .stream()
                 .map(OaiRecord::getIdentifier)
-                .collect(toSet());  
+                .collect(toSet());
 
         progressReportMap.entrySet().removeIf(recordId-> !actualRecords.contains(recordId.getKey()));
     }
 
 
     public Map<String, Map<String, ProgressReport>> getProgressReportMap() {
-
+        cleanUpProgressReport();
         return progressReportMap;
     }
 
