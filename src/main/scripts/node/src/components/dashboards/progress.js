@@ -38,7 +38,7 @@ class ProgressDashboard extends React.Component {
         return (
             <CollapsiblePanel id="progress-panel" collapsed={this.props.collapsed} title="Processing progress"
                               onTogglePanelCollapse={onTogglePanelCollapse}>
-                <ul className="list-group">
+                <ul className="list-group" style={{height: 800, backgroundColor: "rgba(128,128,255,.1)"}}>
                     {progress.map(prog => (
                        <li key={prog.identifier} className="list-group-item row">
                            <div className="col-md-8" style={styles.ellipsis}>
