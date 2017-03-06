@@ -1,8 +1,11 @@
 import React from "react";
+import { Link } from "react-router";
+
 import CollapsiblePanel from "../panels/collapsible-panel";
 import InnerPanel from "../panels/inner-panel";
 import InnerPanelSpacer from "../panels/inner-panel-spacer";
 import CounterBadge from "../widgets/counter-badge";
+import { urls } from "../../router";
 
 class Workflow extends React.Component {
 
@@ -33,7 +36,10 @@ class Workflow extends React.Component {
                    <span className="glyphicon glyphicon-arrow-right" style={{top: "16px"}} />
                 </InnerPanelSpacer>
                 <InnerPanel>
-                    Processing
+                    Processing{" "}
+                    <Link to={urls.progress()}>
+                        <span className="glyphicon glyphicon-search" />
+                    </Link>
                     <CounterBadge onSetRecordQueryFilter={onSetRecordQueryFilter}
                                   filterKey="processStatus"
                                   filterValue="processing"

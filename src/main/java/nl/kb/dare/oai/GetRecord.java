@@ -77,31 +77,31 @@ public class GetRecord {
 
         final Optional<FileStorageHandle> fileStorageHandle = getRecordOperations.getFileStorageHandle(oaiRecord);
         if (!fileStorageHandle.isPresent()) {
-            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, DOWNLOAD_METADATA, false));
             return ProcessStatus.FAILED;
         }
 
         final FileStorageHandle handle = fileStorageHandle.get();
         final Optional<ObjectResource> metadataResource = getRecordOperations.downloadMetadata(handle, oaiRecord);
         if (!metadataResource.isPresent()) {
-            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, DOWNLOAD_METADATA, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new GetRecordProgressReport(DOWNLOAD_METADATA, true));
+        onProgress.accept(new GetRecordProgressReport(oaiRecord, DOWNLOAD_METADATA, true));
 
         if (!getRecordOperations.generateManifest(handle)) {
-            onProgress.accept(new GetRecordProgressReport(GENERATE_MANIFEST, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, GENERATE_MANIFEST, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new GetRecordProgressReport(GENERATE_MANIFEST, true));
+        onProgress.accept(new GetRecordProgressReport(oaiRecord, GENERATE_MANIFEST, true));
 
 
         final List<ObjectResource> objectResources = getRecordOperations.collectResources(handle);
         if (objectResources.isEmpty()) {
-            onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, COLLECT_RESOURCES, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new GetRecordProgressReport(COLLECT_RESOURCES, true));
+        onProgress.accept(new GetRecordProgressReport(oaiRecord, COLLECT_RESOURCES, true));
         for (int fileIndex = 0; fileIndex < objectResources.size(); fileIndex++) {
             try {
                 onProgress.accept(new DownloadProgressReport(
@@ -114,17 +114,17 @@ public class GetRecord {
         }
 
         if (!getRecordOperations.downloadResources(handle, objectResources, oaiRecord)) {
-            onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, DOWNLOAD_RESOURCES, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new GetRecordProgressReport(DOWNLOAD_RESOURCES, true));
+        onProgress.accept(new GetRecordProgressReport(oaiRecord, DOWNLOAD_RESOURCES, true));
 
 
         if (!getRecordOperations.writeFilenamesAndChecksumsToMetadata(handle, objectResources, metadataResource.get())) {
-            onProgress.accept(new GetRecordProgressReport(FINALIZE_MANIFEST, false));
+            onProgress.accept(new GetRecordProgressReport(oaiRecord, FINALIZE_MANIFEST, false));
             return ProcessStatus.FAILED;
         }
-        onProgress.accept(new GetRecordProgressReport(FINALIZE_MANIFEST, true));
+        onProgress.accept(new GetRecordProgressReport(oaiRecord, FINALIZE_MANIFEST, true));
 
         if (inSampleMode) {
             try {

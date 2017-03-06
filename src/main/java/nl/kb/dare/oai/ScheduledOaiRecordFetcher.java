@@ -8,6 +8,7 @@ import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
+import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
@@ -37,6 +38,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
     private final ResponseHandlerFactory responseHandlerFactory;
     private final FileStorage fileStorage;
     private final XsltTransformer xsltTransformer;
+    private final OaiRecordStatusAggregator oaiRecordStatusAggregator;
     private final boolean inSampleMode;
 
     public enum RunState {
@@ -47,7 +49,8 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
 
     public ScheduledOaiRecordFetcher(OaiRecordDao oaiRecordDao, RepositoryDao repositoryDao, ErrorReportDao errorReportDao,
                                      HttpFetcher httpFetcher, ResponseHandlerFactory responseHandlerFactory,
-                                     FileStorage fileStorage, XsltTransformer xsltTransformer, boolean inSampleMode) {
+                                     FileStorage fileStorage, XsltTransformer xsltTransformer,
+                                     OaiRecordStatusAggregator oaiRecordStatusAggregator, boolean inSampleMode) {
 
         this.oaiRecordDao = oaiRecordDao;
         this.repositoryDao = repositoryDao;
@@ -56,6 +59,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         this.responseHandlerFactory = responseHandlerFactory;
         this.fileStorage = fileStorage;
         this.xsltTransformer = xsltTransformer;
+        this.oaiRecordStatusAggregator = oaiRecordStatusAggregator;
         this.inSampleMode = inSampleMode;
         this.runState = RunState.DISABLED;
     }
@@ -79,7 +83,7 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
                 ProcessStatus result = GetRecord.getAndRun(
                         repositoryDao, oaiRecord, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
                         (ErrorReport errorReport) -> saveErrorReport(errorReport, oaiRecord), // on error
-                        progressReport -> { },
+                        progressReport -> oaiRecordStatusAggregator.digestProgressReport(progressReport),
                         inSampleMode
                 );
 
