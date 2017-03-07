@@ -23,6 +23,8 @@ public class LenientHttpFetcher implements HttpFetcher {
         final HttpURLConnection connection = connectionOpt.get();
         if (proactivelyClosing) {
             connection.setRequestProperty("Connection", "close");
+        } else {
+            connection.setRequestProperty("Connection", "keep-Alive");
         }
         connection.setInstanceFollowRedirects(false);
         final Optional<Integer> responseCode = getResponseCode(connection, responseHandler);

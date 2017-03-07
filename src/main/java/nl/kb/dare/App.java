@@ -56,6 +56,7 @@ public class App extends Application<Config> {
         final DBI db = factory.build(environment, config.getDataSourceFactory(), "datasource");
 
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
+        final HttpFetcher downloader = new LenientHttpFetcher(false);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
 
         final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
@@ -79,7 +80,7 @@ public class App extends Application<Config> {
                 repositoryNotifier);
 
         final ScheduledOaiRecordFetcher oaiRecordFetcher = new ScheduledOaiRecordFetcher(
-                oaiRecordDao, repositoryDao, errorReportDao, httpFetcher, responseHandlerFactory, fileStorage, xsltTransformer,
+                oaiRecordDao, repositoryDao, errorReportDao, downloader, responseHandlerFactory, fileStorage, xsltTransformer,
                 oaiRecordStatusAggregator, config.getInSampleMode());
         final StatusUpdater statusUpdater = new StatusUpdater(oaiRecordStatusAggregator,
                 oaiHarvester, oaiRecordFetcher, repositoryDao, repositoryNotifier);
@@ -93,7 +94,7 @@ public class App extends Application<Config> {
 
 
         register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, oaiRecordQueryFactory,
-                fileStorage, repositoryDao, httpFetcher, responseHandlerFactory, xsltTransformer, sampleFileStorage));
+                fileStorage, repositoryDao, downloader, responseHandlerFactory, xsltTransformer, sampleFileStorage));
 
         register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, errorReportDao, repositoryValidator,
                 repositoryNotifier, fileStorage));
