@@ -27,7 +27,7 @@ class RecordBody extends React.Component {
             onResetRecord
         } = this.props;
 
-        const resetButton = processStatus === "FAILED" || processStatus === "PROCESSED"
+        const resetButton = processStatus !== "PENDING"
             ? (<button className="btn btn-default pull-right" onClick={() => onResetRecord(identifier)}>
                 Reset record to pending</button>)
             : null;
