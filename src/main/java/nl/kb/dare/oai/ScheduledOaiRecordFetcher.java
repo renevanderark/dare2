@@ -119,13 +119,22 @@ public class ScheduledOaiRecordFetcher extends AbstractScheduledService {
         final int dividedLimit = new Double(Math.ceil(((float) limit / (float) repositoryIds.size()))).intValue();
 
         for (Integer repositoryId : repositoryIds) {
-            final List<OaiRecord> list = oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
+            final List<OaiRecord> processing = oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
+                    ProcessStatus.PROCESSING.getCode(),
+                    dividedLimit,
+                    repositoryId
+            );
+
+            int remainingLimit = dividedLimit - processing.size();
+            if (remainingLimit <= 0) { continue; }
+            final List<OaiRecord> pending = oaiRecordDao.fetchNextWithProcessStatusByRepositoryId(
                     ProcessStatus.PENDING.getCode(),
                     dividedLimit,
                     repositoryId
             );
-            result.addAll(list);
-            limit -= list.size();
+
+            result.addAll(pending);
+            limit -= pending.size();
             if (limit <= 0) {
                 return result;
             }
