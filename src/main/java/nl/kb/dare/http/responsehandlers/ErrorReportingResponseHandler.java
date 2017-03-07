@@ -36,7 +36,8 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
 
     @Override
     public void onRequestError(Exception exception) {
-        ioExceptions.add(new IOException("Request error", exception));
+
+        ioExceptions.add(new IOException(exception.getMessage(), exception));
     }
 
     @Override
