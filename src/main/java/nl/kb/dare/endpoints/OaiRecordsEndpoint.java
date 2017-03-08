@@ -1,5 +1,6 @@
 package nl.kb.dare.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import nl.kb.dare.files.FileStorage;
@@ -18,9 +19,12 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.GetRecord;
+import nl.kb.dare.oai.ManifestXmlHandler;
+import nl.kb.dare.oai.ObjectResource;
 import nl.kb.dare.xslt.XsltTransformer;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.skife.jdbi.v2.DBI;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -31,10 +35,16 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Path("/records")
@@ -185,22 +195,51 @@ public class OaiRecordsEndpoint {
     }
 
     @GET
-    @Produces("application/zip")
-    @Path("/{identifier}/download")
-    public Response download(@PathParam("identifier") String identifier) {
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{identifier}/manifest")
+    public Response getManifest(@PathParam("identifier") String identifier) throws JsonProcessingException {
         final OaiRecord oaiRecord = oaiRecordDao.findByIdentifier(identifier);
         if (oaiRecord == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        final ProcessStatus processStatus = oaiRecord.getProcessStatus();
+        if (processStatus != ProcessStatus.PROCESSED && processStatus != ProcessStatus.FAILED) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         try {
             final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
-            final StreamingOutput downloadOutput = fileStorageHandle::downloadZip;
-            return Response.ok(downloadOutput)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"download.zip\"")
+            final InputStream manifest = processStatus == ProcessStatus.PROCESSED ?
+                    fileStorageHandle.getFile("manifest.xml") :
+                    fileStorageHandle.getFile("manifest.initial.xml");
+
+            final SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+            final ManifestXmlHandler manifestXmlHandler = new ManifestXmlHandler();
+            saxParser.parse(manifest, manifestXmlHandler);
+
+            final List<ObjectResource> response = manifestXmlHandler
+                    .getObjectResourcesIncludingMetadata()
+                    .stream()
+                    .map(objectResource -> {
+                        try {
+                            final String xlinkHref = objectResource
+                                .getXlinkHref()
+                                .replace("file://./", String.format("/records/%s/download/",
+                                        URLEncoder.encode(identifier, "utf8")));
+                            objectResource.setXlinkHref(xlinkHref);
+                            return objectResource;
+                        } catch (UnsupportedEncodingException e) {
+                            return objectResource;
+                        }
+
+                    }).collect(Collectors.toList());
+            return Response.ok(response).build();
+        } catch (IOException | SAXException | ParserConfigurationException e) {
+            return Response
+                    .status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ObjectMapper().writeValueAsString(e.getMessage()))
                     .build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 

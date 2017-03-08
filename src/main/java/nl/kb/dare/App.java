@@ -7,6 +7,7 @@ import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.jdbi.DBIFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.kb.dare.endpoints.DownloadEndpoint;
 import nl.kb.dare.endpoints.OaiHarvesterEndpoint;
 import nl.kb.dare.endpoints.OaiRecordFetcherEndpoint;
 import nl.kb.dare.endpoints.OaiRecordsEndpoint;
@@ -95,6 +96,8 @@ public class App extends Application<Config> {
 
         register(environment, new OaiRecordsEndpoint(db, oaiRecordDao, errorReportDao, oaiRecordQueryFactory,
                 fileStorage, repositoryDao, downloader, responseHandlerFactory, xsltTransformer, sampleFileStorage));
+
+        register(environment, new DownloadEndpoint(oaiRecordDao, fileStorage));
 
         register(environment, new RepositoriesEndpoint(repositoryDao, oaiRecordDao, errorReportDao, repositoryValidator,
                 repositoryNotifier, fileStorage));
