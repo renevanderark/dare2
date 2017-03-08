@@ -22,6 +22,7 @@ import {
     setRecordQueryOffset,
     fetchOaiRecords,
     fetchOaiRecord,
+    fetchManifest,
     testOaiRecord,
     resetOaiRecord,
     resetOaiRecords
@@ -69,7 +70,9 @@ export default function actionsMaker(navigateTo, dispatch) {
             dispatch(fetchOaiRecord(identifier));
             dispatch({type: ActionTypes.ON_OPEN_PANEL, id: "oai-record-panel"})
         },
+        onFetchManifest: (identifier) => dispatch(fetchManifest(identifier)),
         onTestRecord: (identifier) => dispatch(testOaiRecord(identifier)),
         onResetRecord: (identifier) =>  dispatch(resetOaiRecord(identifier)),
+
     };
 }

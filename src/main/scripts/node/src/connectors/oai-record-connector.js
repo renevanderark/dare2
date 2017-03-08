@@ -9,6 +9,7 @@ const oaiRecordConnector = (state, routed) => {
         oaiRecord: {
             ...oaiRecord,
             testResults: state.oaiRecords.testResults,
+            manifest: state.oaiRecords.manifest,
             repositoryName: repositoryName,
             collapsed: state.panels["oai-record-panel"].collapsed
         },

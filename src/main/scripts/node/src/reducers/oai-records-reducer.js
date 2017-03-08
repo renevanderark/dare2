@@ -12,7 +12,8 @@ const initialState = {
         count: 0
     },
     current: null,
-    testResults: null
+    testResults: null,
+    manifest: null
 };
 
 const consumeTestResult = (state, payload) =>
@@ -44,9 +45,14 @@ export default function(state=initialState, action) {
             return {
                 ...state,
                 testResults: null,
+                manifest: null,
                 current: action.data
             };
-
+        case ActionTypes.RECEIVE_OAI_RECORD_MANIFEST:
+            return {
+                ...state,
+                manifest: action.data
+            };
         case ActionTypes.SET_RECORD_TEST_PENDING:
             return {
                 ...state,

@@ -24,12 +24,18 @@ class RecordBody extends React.Component {
         const {
             onFetchOaiRecord,
             onTestRecord,
-            onResetRecord
+            onResetRecord,
+            onFetchManifest
         } = this.props;
 
         const resetButton = processStatus !== "PENDING"
             ? (<button className="btn btn-default pull-right" onClick={() => onResetRecord(identifier)}>
                 Reset record to pending</button>)
+            : null;
+
+        const manifestButton = processStatus === "PROCESSED" || processStatus === "FAILED"
+            ? (<button className="btn btn-default pull-right" onClick={() => onFetchManifest(identifier)}>
+                Show the files</button>)
             : null;
 
         const testButton = testResultsPending
@@ -78,6 +84,7 @@ class RecordBody extends React.Component {
                 <div className="panel-footer">
                     {resetButton}
                     {testButton}
+                    {manifestButton}
                     <div className="clearfix" />
                 </div>
             </div>

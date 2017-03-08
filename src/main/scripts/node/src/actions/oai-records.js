@@ -62,6 +62,13 @@ const fetchOaiRecord = (identifier) => (dispatch) => {
     }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD, data: JSON.parse(body)}));
 };
 
+const fetchManifest = (identifier) => (dispatch) => {
+    xhr({
+        url: `/records/${encodeURIComponent(identifier)}/manifest?${new Date().getTime()}`,
+        method: "GET"
+    }, (err, resp, body) => dispatch({type: ActionTypes.RECEIVE_OAI_RECORD_MANIFEST, data: JSON.parse(body)}));
+};
+
 const resetOaiRecord = (identifier) => (dispatch) => {
     xhr({
         url: `/records/${encodeURIComponent(identifier)}/reset?${new Date().getTime()}`,
@@ -115,6 +122,7 @@ export {
     setRecordQueryFilter,
     setRecordQueryOffset,
     fetchOaiRecord,
+    fetchManifest,
     testOaiRecord,
     resetOaiRecord
 }

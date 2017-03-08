@@ -4,6 +4,7 @@ import CollapsiblePanel from "../panels/collapsible-panel";
 import RecordBody from "./oai-record/record-body";
 import ErrorList from "./oai-record/error-list";
 import OaiRecordTestResults from "./oai-record/test-results";
+import Manifest from "./oai-record/manifest";
 
 class OaiRecordDashboard extends React.Component {
 
@@ -24,8 +25,8 @@ class OaiRecordDashboard extends React.Component {
     }
 
     render() {
-        const { oaiRecord: { record, collapsed, errorReports, repositoryName, testResults }, identifier } = this.props;
-        const { onTogglePanelCollapse, onTestRecord, onResetRecord, onFetchOaiRecord } = this.props;
+        const { oaiRecord: { record, collapsed, errorReports, repositoryName, testResults, manifest }, identifier } = this.props;
+        const { onTogglePanelCollapse, onTestRecord, onResetRecord, onFetchOaiRecord, onFetchManifest } = this.props;
 
         const body = !record
             ? (<div>Loading: {identifier}</div>)
@@ -33,10 +34,12 @@ class OaiRecordDashboard extends React.Component {
                 <RecordBody {...record}
                             testResultsPending={(testResults || {}).pending}
                             onFetchOaiRecord={onFetchOaiRecord}
+                            onFetchManifest={onFetchManifest}
                             onTestRecord={onTestRecord}
                             onResetRecord={onResetRecord}
                             repositoryName={repositoryName} />
                 <OaiRecordTestResults {...testResults} />
+                <Manifest manifest={manifest || []} identifier={record.identifier} />
                 <ErrorList recordIdentifier={record.identifier} errorReports={errorReports} />
             </div>);
 
