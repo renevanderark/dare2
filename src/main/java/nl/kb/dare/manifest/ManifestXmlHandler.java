@@ -1,4 +1,4 @@
-package nl.kb.dare.oai;
+package nl.kb.dare.manifest;
 
 import com.google.common.collect.Lists;
 import org.xml.sax.Attributes;

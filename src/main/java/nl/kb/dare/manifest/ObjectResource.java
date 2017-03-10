@@ -1,4 +1,4 @@
-package nl.kb.dare.oai;
+package nl.kb.dare.manifest;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

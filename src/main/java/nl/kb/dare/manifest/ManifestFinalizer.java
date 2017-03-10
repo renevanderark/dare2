@@ -1,4 +1,4 @@
-package nl.kb.dare.oai;
+package nl.kb.dare.manifest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -21,7 +21,7 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
 
-class ManifestFinalizer {
+public class ManifestFinalizer {
 
     private static final DocumentBuilder docBuilder;
     private static final TransformerFactory transformerFactory;
@@ -37,10 +37,10 @@ class ManifestFinalizer {
         }
     }
 
-    static final String METS_NS = "http://www.loc.gov/METS/";
-    static final String XLINK_NS = "http://www.w3.org/1999/xlink";
+    public static final String METS_NS = "http://www.loc.gov/METS/";
+    public static final String XLINK_NS = "http://www.w3.org/1999/xlink";
 
-    void writeResourcesToManifest(ObjectResource metadataResource, List<ObjectResource> objectResources, Reader metadata, Writer manifest)
+    public void writeResourcesToManifest(ObjectResource metadataResource, List<ObjectResource> objectResources, Reader metadata, Writer manifest)
             throws IOException, SAXException, TransformerException {
 
         synchronized (docBuilder) {

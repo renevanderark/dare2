@@ -1,7 +1,7 @@
 package nl.kb.dare.http.responsehandlers;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.checksum.ProgressReportingByteCountOutputStream;
+import nl.kb.dare.oai.ProgressReportingByteCountOutputStream;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;

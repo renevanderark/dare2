@@ -1,6 +1,7 @@
-package nl.kb.dare.checksum;
+package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.checksum.ByteCountOutputStream;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
@@ -23,7 +24,7 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
 
     private Instant lastWrite = null;
 
-    public ProgressReportingByteCountOutputStream(
+    ProgressReportingByteCountOutputStream(
             OaiRecord oaiRecord,
             Integer fileIndex,
             Integer amountOfFiles,
