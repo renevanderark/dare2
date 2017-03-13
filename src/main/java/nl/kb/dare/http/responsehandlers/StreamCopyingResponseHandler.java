@@ -1,6 +1,7 @@
 package nl.kb.dare.http.responsehandlers;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.io.InputStreamSplitter;
 import nl.kb.dare.oai.ProgressReportingByteCountOutputStream;
 
 import javax.ws.rs.core.Response;
@@ -26,21 +27,8 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
                     .filter(out -> out instanceof ProgressReportingByteCountOutputStream)
                     .forEach(out -> ((ProgressReportingByteCountOutputStream) out).readExpectedFileSize(headerFields));
 
-            byte[] buffer = new byte[1024];
-            int numRead;
-            do {
-                numRead = responseData.read(buffer);
-                if (numRead > 0) {
-                    for (OutputStream outputStream : outputStreams) {
-                        outputStream.write(buffer, 0, numRead);
-                    }
-
-                }
-            } while (numRead != -1);
-            responseData.close();
-            for (OutputStream outputStream : outputStreams) {
-                outputStream.close();
-            }
+            InputStreamSplitter inputStreamSplitter = new InputStreamSplitter(responseData, outputStreams);
+            inputStreamSplitter.copy();
 
         } catch (IOException e) {
             ioExceptions.add(e);
