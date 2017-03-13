@@ -8,6 +8,7 @@ public class ChecksumOutputStream extends ByteArrayOutputStream {
 
 
     private final MessageDigest digest;
+    private String checkSumString = null;
 
     public ChecksumOutputStream(String algorithm) throws NoSuchAlgorithmException {
         digest = MessageDigest.getInstance(algorithm);
@@ -28,11 +29,14 @@ public class ChecksumOutputStream extends ByteArrayOutputStream {
     }
 
     public String getChecksumString() {
-        final StringBuilder sb = new StringBuilder();
-        for (byte b : getChecksum()) {
-            sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+        if (checkSumString == null) {
+            final StringBuilder sb = new StringBuilder();
+            for (byte b : getChecksum()) {
+                sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+            }
+            checkSumString = sb.toString();
         }
-        return sb.toString();
+        return checkSumString;
     }
 
 }

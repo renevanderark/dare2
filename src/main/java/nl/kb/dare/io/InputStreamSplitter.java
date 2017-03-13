@@ -1,5 +1,7 @@
 package nl.kb.dare.io;
 
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +15,10 @@ public class InputStreamSplitter {
     public InputStreamSplitter(InputStream inputStream, List<OutputStream> outputStreams) {
         this.inputStream = inputStream;
         this.outputStreams = outputStreams;
+    }
+
+    public InputStreamSplitter(InputStream inputStream, OutputStream... outputStreams) {
+        this(inputStream, Lists.newArrayList(outputStreams));
     }
 
     public void copy() throws IOException {
