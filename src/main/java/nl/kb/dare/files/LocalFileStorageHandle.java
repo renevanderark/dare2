@@ -22,7 +22,7 @@ import static nl.kb.dare.checksum.ChecksumUtil.getChecksumString;
 
 class LocalFileStorageHandle implements FileStorageHandle {
     private static final int MAX_ENTRIES = 10_000;
-    private static final MessageDigest md5;
+    private static final MessageDigest digest;
     private static final LinkedHashMap<String, LocalFileStorageHandle> instances = new LinkedHashMap<String, LocalFileStorageHandle>(){
         protected boolean removeEldestEntry(Map.Entry<String, LocalFileStorageHandle> eldest) {
             return size() > MAX_ENTRIES;
@@ -31,7 +31,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
 
     static {
         try {
-            md5 = MessageDigest.getInstance("MD5");
+            digest = MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -54,7 +54,7 @@ class LocalFileStorageHandle implements FileStorageHandle {
     static String getFilePath(OaiRecord oaiRecord, String basePath) {
         final Integer repositoryId = oaiRecord.getRepositoryId();
         final String dateStampPart = oaiRecord.getDateStamp().substring(0, 13);
-        final String idPart = getChecksumString(md5.digest(oaiRecord.getIdentifier().getBytes()));
+        final String idPart = getChecksumString(digest.digest(oaiRecord.getIdentifier().getBytes()));
         return String.format("%s/%d/%s/%s", basePath, repositoryId, dateStampPart, idPart);
     }
 

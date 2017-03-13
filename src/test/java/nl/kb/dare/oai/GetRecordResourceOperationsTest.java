@@ -79,7 +79,7 @@ public class GetRecordResourceOperationsTest {
         // if (firstAttemptErrors.isEmpty()) {
         // .. writeChecksum(objectResource, checksumOut);
         inOrder.verify(objectResource).setChecksum(argThat(is(instanceOf(String.class))));
-        inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
+        inOrder.verify(objectResource).setChecksumType(argThat(is("SHA-512")));
         inOrder.verify(objectResource).setLocalFilename(EXPECTED_FILENAME);
         // .. return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));
@@ -121,7 +121,7 @@ public class GetRecordResourceOperationsTest {
         // if (secondAttemptErrors.isEmpty()) {
         // ..  writeChecksum(objectResource, checksumOut);
         inOrder.verify(objectResource).setChecksum(argThat(is(instanceOf(String.class))));
-        inOrder.verify(objectResource).setChecksumType(argThat(is("MD5")));
+        inOrder.verify(objectResource).setChecksumType(argThat(is("SHA-512")));
         inOrder.verify(objectResource).setLocalFilename(EXPECTED_FILENAME);
         // ..  return Lists.newArrayList();
         assertThat(errorReports.isEmpty(), is(true));

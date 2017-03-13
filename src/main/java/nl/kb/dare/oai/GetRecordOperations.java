@@ -96,7 +96,7 @@ class GetRecordOperations {
                     repository.getUrl(), repository.getMetadataPrefix(), oaiRecord.getIdentifier());
 
             final OutputStream out = fileStorageHandle.getOutputStream("metadata.xml");
-            final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+            final ChecksumOutputStream checksumOut = new ChecksumOutputStream("SHA-512");
             final ByteCountOutputStream byteCountOut = new ByteCountOutputStream();
             // final Writer outputStreamWriter = new OutputStreamWriter(out, "UTF8");
             LOG.info("fetching record: {}", urlStr);
@@ -112,7 +112,7 @@ class GetRecordOperations {
             objectResource.setLocalFilename("metadata.xml");
             objectResource.setChecksum(checksumOut.getChecksumString());
             objectResource.setId("metadata");
-            objectResource.setChecksumType("MD5");
+            objectResource.setChecksumType("SHA-512");
             objectResource.setSize(byteCountOut.getCurrentByteCount());
             return responseHandler.getExceptions().isEmpty()
                     ? Optional.of(objectResource)

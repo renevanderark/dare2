@@ -50,7 +50,7 @@ class GetRecordResourceOperations {
         final String filename = createFilename(fileLocation);
 
         final OutputStream objectOut = fileStorageHandle.getOutputStream("resources", filename);
-        final ChecksumOutputStream checksumOut = new ChecksumOutputStream("MD5");
+        final ChecksumOutputStream checksumOut = new ChecksumOutputStream("SHA-512");
         final ProgressReportingByteCountOutputStream byteCountOut = new ProgressReportingByteCountOutputStream(
                 oaiRecord,
                 fileIndex,
@@ -94,7 +94,7 @@ class GetRecordResourceOperations {
                                           String filename) throws UnsupportedEncodingException {
 
         objectResource.setChecksum(checksumOut.getChecksumString());
-        objectResource.setChecksumType("MD5");
+        objectResource.setChecksumType("SHA-512");
         objectResource.setLocalFilename(filename);
         objectResource.setSize(byteCountOut.getCurrentByteCount());
     }

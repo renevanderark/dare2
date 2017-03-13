@@ -265,7 +265,7 @@ public class IntegrationTest {
 
         while((entry = zip.getNextEntry())!= null) {
             final String filename = entry.getName();
-            final ChecksumOutputStream out = new ChecksumOutputStream("MD5");
+            final ChecksumOutputStream out = new ChecksumOutputStream("SHA-512");
             if (filename.equals("manifest.xml")) {
                 final ManifestXmlHandler manifestXmlHandler = new ManifestXmlHandler();
                 synchronized (saxParser) {
