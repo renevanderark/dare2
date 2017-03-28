@@ -30,7 +30,8 @@ public interface OaiRecordDao {
             "   oai_status_code = :oaiRecord.oaiStatusCode, " +
             "   repository_id = :oaiRecord.repositoryId, " +
             "   process_status_code = :oaiRecord.processStatusCode, " +
-            "   update_count = :oaiRecord.updateCount " +
+            "   update_count = :oaiRecord.updateCount, " +
+            "   total_file_size = :oaiRecord.totalFileSize " +
             "where identifier = :oaiRecord.identifier")
     void update(@BindBean("oaiRecord") OaiRecord oaiRecord);
 

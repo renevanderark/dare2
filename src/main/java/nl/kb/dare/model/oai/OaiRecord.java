@@ -13,6 +13,7 @@ public class OaiRecord {
     private Integer repositoryId;
     private ProcessStatus processStatus;
     private Integer updateCount = 0;
+    private Long totalFileSize = 0L;
 
     public OaiRecord() {
 
@@ -76,6 +77,14 @@ public class OaiRecord {
 
     public Integer getProcessStatusCode() { return processStatus.getCode(); }
 
+    public Long getTotalFileSize() {
+        return totalFileSize;
+    }
+
+    public void setTotalFileSize(Long totalFileSize) {
+        this.totalFileSize = totalFileSize;
+    }
+
     @JsonProperty
     public void setOaiStatus(String oaiStatus) {
         this.oaiStatus = OaiStatus.forString(oaiStatus);
@@ -117,6 +126,7 @@ public class OaiRecord {
                 ", repositoryId=" + repositoryId +
                 ", processStatus=" + processStatus +
                 ", updateCount=" + updateCount +
+                ", totalFileSize=" + totalFileSize +
                 '}';
     }
 
@@ -127,4 +137,5 @@ public class OaiRecord {
     public void setUpdateCount(Integer updateCount) {
         this.updateCount = updateCount;
     }
+
 }

@@ -31,6 +31,7 @@ public class OaiRecordDaoTest {
             "  `repository_id` int(11) DEFAULT NULL,\n" +
             "  `oai_status_code` int(11) DEFAULT NULL,\n" +
             "  `process_status_code` int(11) DEFAULT NULL,\n" +
+            "  `total_file_size` bigint(20) DEFAULT NULL,\n" +
             "  `update_count` int(11) NOT NULL DEFAULT 0)";
 
     private JdbcConnectionPool dataSource;

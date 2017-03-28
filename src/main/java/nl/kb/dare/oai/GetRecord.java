@@ -128,6 +128,8 @@ public class GetRecord {
         }
         onProgress.accept(new GetRecordProgressReport(oaiRecord, FINALIZE_MANIFEST, true));
 
+        oaiRecord.setTotalFileSize(objectResources.stream().mapToLong(ObjectResource::getSize).sum());
+
         if (inSampleMode) {
             try {
                 handle.deleteFiles();

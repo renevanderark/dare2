@@ -1,3 +1,5 @@
+-- noinspection SqlDialectInspectionForFile
+
 DROP TABLE IF EXISTS `harvester_errors`;
 CREATE TABLE `harvester_errors` (
   `repository_id` int(11) DEFAULT NULL,
@@ -24,6 +26,7 @@ CREATE TABLE `oai_records` (
   `oai_status_code` int(11) DEFAULT NULL,
   `process_status_code` int(11) DEFAULT NULL,
   `update_count` int(11) NOT NULL DEFAULT 0,
+  `total_file_size` bigint(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`identifier`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 DROP TABLE IF EXISTS `repositories`;

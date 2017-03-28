@@ -69,6 +69,7 @@ CREATE TABLE `oai_records` (
   `oai_status_code` int(11) DEFAULT NULL,
   `process_status_code` int(11) DEFAULT NULL,
   `update_count` int(11) NOT NULL DEFAULT 0,
+  `total_file_size` BIGINT(20) NOT NULL DEFAULT 0,
   PRIMARY KEY (`identifier`),
   KEY `oai_record_index` (`datestamp`,`repository_id`),
   KEY `oai_record_index2` (`oai_status_code`),
