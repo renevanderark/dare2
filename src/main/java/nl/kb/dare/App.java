@@ -25,6 +25,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidator;
+import nl.kb.dare.oai.IndexMetadataTask;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
@@ -72,9 +73,15 @@ public class App extends Application<Config> {
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
         final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
+
         final OaiRecordStatusAggregator oaiRecordStatusAggregator = new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
+        final PipedXsltTransformer indexTransformer = PipedXsltTransformer.newInstance(
+                new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl")),
+                new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-index.xsl"))
+
+        );
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
                 repositoryDao, errorReportDao, oaiRecordDao, httpFetcher, responseHandlerFactory, fileStorage,
@@ -107,6 +114,8 @@ public class App extends Application<Config> {
         register(environment, new RootEndpoint(config.getAppTitle(), config.getHostName(), config.getWsProtocol()));
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");
+
+        environment.admin().addTask(new IndexMetadataTask(oaiRecordDao, repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
     }
 
     private void register(Environment environment, Object component) {

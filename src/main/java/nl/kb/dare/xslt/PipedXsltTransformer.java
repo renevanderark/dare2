@@ -1,6 +1,7 @@
 package nl.kb.dare.xslt;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
@@ -19,6 +20,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
@@ -78,10 +80,22 @@ public class PipedXsltTransformer implements XsltTransformer {
 
     @Override
     public void transform(InputStream in, Result out) throws TransformerException, UnsupportedEncodingException {
+        transform(in, out, Maps.newHashMap());
+    }
+
+    @Override
+    public void transform(InputStream in, Result out, Map<String, String> parameters) throws TransformerException, UnsupportedEncodingException {
         final List<TransformerHandler> transformerHandlers = getHandlers();
         final TransformerHandler startChain = transformerHandlers.get(0);
         final TransformerHandler endChain = transformerHandlers.get(transformerHandlers.size() - 1);
         final Transformer transformer = factory.newTransformer();
+
+        for (Map.Entry<String, String> parameter : parameters.entrySet()) {
+            for (TransformerHandler transformerHandler : transformerHandlers) {
+                transformerHandler.getTransformer().setParameter(parameter.getKey(), parameter.getValue());
+            }
+        }
+
         final Reader reader = new InputStreamReader(in,"UTF-8");
 
         endChain.setResult(out);

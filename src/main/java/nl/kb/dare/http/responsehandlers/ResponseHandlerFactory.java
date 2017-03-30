@@ -3,7 +3,12 @@ package nl.kb.dare.http.responsehandlers;
 import nl.kb.dare.http.HttpResponseHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class ResponseHandlerFactory {
 
@@ -13,6 +18,15 @@ public class ResponseHandlerFactory {
 
     public HttpResponseHandler getStreamCopyingResponseHandler(OutputStream... outputStreams) {
         return new StreamCopyingResponseHandler(outputStreams);
+    }
+
+    public ErrorReportingResponseHandler getBaseHandler(Consumer<InputStream> onData) {
+        return new ErrorReportingResponseHandler() {
+            @Override
+            public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
+                onData.accept(responseData);
+            }
+        };
     }
 
 }
