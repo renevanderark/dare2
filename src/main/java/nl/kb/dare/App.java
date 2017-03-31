@@ -78,9 +78,7 @@ public class App extends Application<Config> {
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
         final PipedXsltTransformer indexTransformer = PipedXsltTransformer.newInstance(
-                new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl")),
-                new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-index.xsl"))
-
+                new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/oai-to-index.xsl"))
         );
 
         final ScheduledOaiHarvester oaiHarvester = new ScheduledOaiHarvester(
@@ -115,7 +113,7 @@ public class App extends Application<Config> {
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");
 
-        environment.admin().addTask(new IndexMetadataTask(oaiRecordDao, repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
+        environment.admin().addTask(new IndexMetadataTask(repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
     }
 
     private void register(Environment environment, Object component) {
