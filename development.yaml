@@ -21,18 +21,18 @@ logging:
 
 # Database settings.
 database:
-
+  validationQuery: "select 1 from dual"
   # the name of your JDBC driver
-  driverClass: com.mysql.jdbc.Driver
+  driverClass: oracle.jdbc.driver.OracleDriver
 
   # the username
-  user: daredev
+  user: system
 
   # the password
-  password: daredev
+  password: oracle
 
   # the JDBC URL 127.0.0.1:3306
-  url: jdbc:mysql://127.0.0.1:3306/dare?verifyServerCertificate=false&useSSL=false
+  url: jdbc:oracle:thin:system/oracle@localhost:49161:xe
 
 appTitle: "Dare dash"
 hostName: localhost:8080
