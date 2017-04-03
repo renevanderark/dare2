@@ -4,7 +4,7 @@ import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
-import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -18,10 +18,10 @@ public class OaiRecordErrorReportMapper implements ResultSetMapper<OaiRecordErro
         final String url = resultSet.getString("url");
         final ErrorStatus errorStatus = ErrorStatus.forCode(resultSet.getInt("status_code"));
         final String recordIdentifier = resultSet.getString("record_identifier");
-        final Blob stacktrace = resultSet.getBlob("stacktrace");
+        final Clob stacktrace = resultSet.getClob("stacktrace");
 
         final String filteredStackTrace = stacktrace == null ? "" :
-                new String(stacktrace.getBytes(1L, (int) stacktrace.length()));
+                stacktrace.getSubString(1L, (int) stacktrace.length());
 
         return new OaiRecordErrorReport(
                 message, filteredStackTrace,
