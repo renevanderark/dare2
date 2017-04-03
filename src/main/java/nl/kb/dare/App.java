@@ -26,6 +26,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidator;
+import nl.kb.dare.model.repository.oracle.OracleRepositoryDao;
 import nl.kb.dare.oai.IndexMetadataTask;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
@@ -62,7 +63,9 @@ public class App extends Application<Config> {
         final HttpFetcher downloader = new LenientHttpFetcher(false);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
 
-        final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
+        final RepositoryDao repositoryDao = config.getDatabaseProvider().equals("oracle")
+                ? db.onDemand(OracleRepositoryDao.class)
+                : db.onDemand(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = new RepositoryNotifier();
         final RepositoryValidator repositoryValidator = new RepositoryValidator(httpFetcher, responseHandlerFactory);
 
