@@ -66,7 +66,7 @@
         <dependency>
             <groupId>oracle</groupId>
             <artifactId>ojdbc6</artifactId>
-            <version>11.2.0.4</version>
+            <version>11.2.0.3</version>
         </dependency>
 
         <!-- jetty websocket server -->
@@ -146,6 +146,10 @@
             <id>central</id>
             <name>Central repository</name>
             <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>codelds</id>
+            <url>http://www.datanucleus.org/downloads/maven2/</url>
         </repository>
 
     </repositories>
