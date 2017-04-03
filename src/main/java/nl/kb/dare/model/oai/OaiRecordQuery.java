@@ -24,6 +24,10 @@ import static java.util.stream.Collectors.toList;
 public class OaiRecordQuery {
     private static final String UPDATE_SELECTION_SQL =
             "update oai_records %s where identifier in (select identifier from (%s) as intermediary_alias)";
+
+    private static final String UPDATE_SELECTION_SQL_ORACLE =
+            "update oai_records %s where identifier in (%s)";
+
     private Integer repositoryId;
     private Integer offset;
     private Integer limit;
@@ -226,7 +230,9 @@ public class OaiRecordQuery {
             if (updateClause == null) {
                 query = h.createQuery(sb.toString());
             } else {
-                final String updateSql = String.format(UPDATE_SELECTION_SQL, updateClause, sb.toString());
+                final String updateSql = databaseProvider.equals("oracle")
+                        ? String.format(UPDATE_SELECTION_SQL_ORACLE, updateClause, sb.toString())
+                        : String.format(UPDATE_SELECTION_SQL, updateClause, sb.toString());
                 update = h.createStatement(updateSql);
             }
 

@@ -21,6 +21,7 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
+import nl.kb.dare.model.oai.oracle.OracleOaiRecordDao;
 import nl.kb.dare.model.oai.oracle.OracleStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
@@ -62,7 +63,6 @@ public class App extends Application<Config> {
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
         final HttpFetcher downloader = new LenientHttpFetcher(false);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
-
         final RepositoryDao repositoryDao = config.getDatabaseProvider().equals("oracle")
                 ? db.onDemand(OracleRepositoryDao.class)
                 : db.onDemand(RepositoryDao.class);
@@ -71,7 +71,9 @@ public class App extends Application<Config> {
 
 
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
-        final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
+        final OaiRecordDao oaiRecordDao =  config.getDatabaseProvider().equals("oracle")
+                ? db.onDemand(OracleOaiRecordDao.class)
+                : db.onDemand(OaiRecordDao.class);
         final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory(config.getDatabaseProvider());
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
