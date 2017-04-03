@@ -21,6 +21,7 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
+import nl.kb.dare.model.oai.oracle.OracleStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
@@ -74,7 +75,9 @@ public class App extends Application<Config> {
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
         final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
 
-        final OaiRecordStatusAggregator oaiRecordStatusAggregator = new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
+        final OaiRecordStatusAggregator oaiRecordStatusAggregator = config.getDatabaseProvider().equals("oracle")
+                ? new OracleStatusAggregator(db, oaiRecordQueryFactory)
+                : new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
         final PipedXsltTransformer indexTransformer = PipedXsltTransformer.newInstance(

@@ -10,7 +10,7 @@ public class OaiRecordQueryFactory {
         return new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
     }
 
-    public OaiRecordQuery  getInstance(ProcessStatus processStatus) {
+    public OaiRecordQuery getInstance(ProcessStatus processStatus) {
         return getInstance(null, null,null,processStatus,null, null);
     }
 }

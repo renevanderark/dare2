@@ -16,6 +16,9 @@ class Config extends Configuration {
     @JsonProperty
     private String wsProtocol;
     @JsonProperty
+    private String databaseProvider;
+
+    @JsonProperty
     private Boolean inSampleMode = false;
 
     @JsonProperty("database")
@@ -54,4 +57,7 @@ class Config extends Configuration {
         this.fileStorageFactory = fileStorageFactory;
     }
 
+    String getDatabaseProvider() {
+        return databaseProvider;
+    }
 }
