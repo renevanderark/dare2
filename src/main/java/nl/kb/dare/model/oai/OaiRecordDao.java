@@ -42,10 +42,4 @@ public interface OaiRecordDao {
     Iterator<String> findAllForRepository(@Bind("repositoryId") Integer repositoryId);
 
 
-    @SqlQuery("select * from oai_records")
-    Iterator<OaiRecord> listAll();
-
-    @SqlUpdate("delete from oai_records where identifier = :oaiRecord.identifier")
-    void delete(@BindBean("oaiRecord") OaiRecord oaiRecord);
-
 }
