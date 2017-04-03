@@ -56,11 +56,17 @@
             <artifactId>dropwizard-jdbi</artifactId>
             <version>${dropwizard.version}</version>
         </dependency>
+
         <!-- jdbc driver -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.39</version>
+        </dependency>
+        <dependency>
+            <groupId>oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.3</version>
         </dependency>
 
         <!-- jetty websocket server -->
@@ -69,6 +75,7 @@
             <artifactId>websocket-server</artifactId>
             <version>${jetty.version}</version>
         </dependency>
+
         <!-- apache commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -141,7 +148,10 @@
             <name>Central repository</name>
             <url>http://repo1.maven.org/maven2/</url>
         </repository>
-
+        <repository>
+            <id>codelds</id>
+            <url>http://www.datanucleus.org/downloads/maven2/</url>
+        </repository>
     </repositories>
 
     <build>

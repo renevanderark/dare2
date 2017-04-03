@@ -21,15 +21,20 @@ import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQueryFactory;
 import nl.kb.dare.model.oai.OaiRecordStatusAggregator;
+import nl.kb.dare.model.oai.oracle.OracleOaiRecordDao;
+import nl.kb.dare.model.oai.oracle.OracleStatusAggregator;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidator;
+import nl.kb.dare.model.repository.oracle.OracleRepositoryDao;
 import nl.kb.dare.oai.IndexMetadataTask;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
 import nl.kb.dare.taskmanagers.ManagedPeriodicTask;
+import nl.kb.dare.tasks.LoadRepositoriesTask;
+import nl.kb.dare.tasks.LoadOracleSchemaTask;
 import nl.kb.dare.xslt.PipedXsltTransformer;
 import org.skife.jdbi.v2.DBI;
 
@@ -60,21 +65,26 @@ public class App extends Application<Config> {
         final HttpFetcher httpFetcher = new LenientHttpFetcher(true);
         final HttpFetcher downloader = new LenientHttpFetcher(false);
         final ResponseHandlerFactory responseHandlerFactory = new ResponseHandlerFactory();
-
-        final RepositoryDao repositoryDao = db.onDemand(RepositoryDao.class);
+        final RepositoryDao repositoryDao = config.getDatabaseProvider().equals("oracle")
+                ? db.onDemand(OracleRepositoryDao.class)
+                : db.onDemand(RepositoryDao.class);
         final RepositoryNotifier repositoryNotifier = new RepositoryNotifier();
         final RepositoryValidator repositoryValidator = new RepositoryValidator(httpFetcher, responseHandlerFactory);
 
 
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
-        final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
-        final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory();
+        final OaiRecordDao oaiRecordDao =  config.getDatabaseProvider().equals("oracle")
+                ? db.onDemand(OracleOaiRecordDao.class)
+                : db.onDemand(OaiRecordDao.class);
+        final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory(config.getDatabaseProvider());
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));
         final StreamSource didlToManifestXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/didl-to-manifest.xsl"));
 
-        final OaiRecordStatusAggregator oaiRecordStatusAggregator = new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
+        final OaiRecordStatusAggregator oaiRecordStatusAggregator = config.getDatabaseProvider().equals("oracle")
+                ? new OracleStatusAggregator(db, oaiRecordQueryFactory)
+                : new OaiRecordStatusAggregator(db, oaiRecordQueryFactory);
 
         final PipedXsltTransformer xsltTransformer = PipedXsltTransformer.newInstance(stripOaiXslt, didlToManifestXslt);
         final PipedXsltTransformer indexTransformer = PipedXsltTransformer.newInstance(
@@ -113,6 +123,8 @@ public class App extends Application<Config> {
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");
 
+        environment.admin().addTask(new LoadOracleSchemaTask(db));
+        environment.admin().addTask(new LoadRepositoriesTask(repositoryDao));
         environment.admin().addTask(new IndexMetadataTask(repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
     }
 

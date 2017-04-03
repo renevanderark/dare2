@@ -4,3 +4,4 @@ target/
 dump.*
 prepare.*
 local.yaml
+csv/

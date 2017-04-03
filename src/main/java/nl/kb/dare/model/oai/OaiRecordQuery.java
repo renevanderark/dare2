@@ -24,19 +24,24 @@ import static java.util.stream.Collectors.toList;
 public class OaiRecordQuery {
     private static final String UPDATE_SELECTION_SQL =
             "update oai_records %s where identifier in (select identifier from (%s) as intermediary_alias)";
+
+    private static final String UPDATE_SELECTION_SQL_ORACLE =
+            "update oai_records %s where identifier in (%s)";
+
     private Integer repositoryId;
     private Integer offset;
     private Integer limit;
     private ProcessStatus processStatus;
     private OaiStatus oaiStatus;
     private ErrorStatus errorStatus;
+    private String databaseProvider;
 
     public OaiRecordQuery() {
 
     }
 
     OaiRecordQuery(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
-                   OaiStatus oaiStatus, ErrorStatus errorStatus) {
+                   OaiStatus oaiStatus, ErrorStatus errorStatus, String databaseProvider) {
 
         this.repositoryId = repositoryId;
         this.offset = offset;
@@ -44,6 +49,7 @@ public class OaiRecordQuery {
         this.processStatus = processStatus;
         this.oaiStatus = oaiStatus;
         this.errorStatus = errorStatus;
+        this.databaseProvider = databaseProvider;
     }
 
     @JsonProperty
@@ -96,7 +102,9 @@ public class OaiRecordQuery {
     @JsonIgnore
     public List<OaiRecord> getResults(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return getBaseFilter(h, "select distinct oai_records.* from oai_records", null)
+            return getBaseFilter(h, "select distinct oai_records.*" +
+                        (databaseProvider.equals("oracle") ? ", rownum as rn" : "") +
+                        " from oai_records", null)
                     .withLimit(limit)
                     .withOffset(offset)
                     .build()
@@ -204,11 +212,17 @@ public class OaiRecordQuery {
 
             sb.append(clauses.stream().collect(joining(" and ")));
 
-            if (this.limit != null) {
-                sb.append(" limit :limit");
-            }
-            if (this.offset != null) {
-                sb.append(" offset :offset");
+            // for compatibilty we require both limit and offset
+            if (this.limit != null && this.offset != null) {
+                if (databaseProvider.equals("oracle")) {
+                    final String coreQuery = sb.toString();
+                    sb.setLength(0);
+                    sb.append("select * from(")
+                            .append(coreQuery)
+                            .append(") where rn between :offset + 1 and :offset + :limit");
+                } else {
+                    sb.append(" limit :limit").append(" offset :offset");
+                }
             }
 
 
@@ -216,10 +230,10 @@ public class OaiRecordQuery {
             if (updateClause == null) {
                 query = h.createQuery(sb.toString());
             } else {
-                final String updateSql = String.format(UPDATE_SELECTION_SQL, updateClause, sb.toString());
-
+                final String updateSql = databaseProvider.equals("oracle")
+                        ? String.format(UPDATE_SELECTION_SQL_ORACLE, updateClause, sb.toString())
+                        : String.format(UPDATE_SELECTION_SQL, updateClause, sb.toString());
                 update = h.createStatement(updateSql);
-
             }
 
             final SQLStatement statement = updateClause == null ? query : update;

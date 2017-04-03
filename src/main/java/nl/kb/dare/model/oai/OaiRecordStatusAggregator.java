@@ -92,8 +92,8 @@ public class OaiRecordStatusAggregator {
         final Map<String, Map<String, Object>> result = Maps.newHashMap();
         final Handle handle = db.open();
         for (Map<String, Object> row : handle.createQuery(sql)) {
-            final String repositoryId = String.format("%d", (Integer) row.get("repository_id"));
-            final Integer statusCode = (Integer) row.get("status_code");
+            final String repositoryId = String.format("%d", getRowInt(row, "repository_id"));
+            final Integer statusCode = getRowInt(row, "status_code");
 
             final Map<String, Object> statusMap = result.getOrDefault(repositoryId, Maps.newHashMap());
             if (forRecords) {
@@ -112,5 +112,9 @@ public class OaiRecordStatusAggregator {
         }
         handle.close();
         return result;
+    }
+
+    protected Integer getRowInt(Map<String, Object> row, String repository_id) {
+        return (Integer) row.get(repository_id);
     }
 }

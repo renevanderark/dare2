@@ -37,14 +37,14 @@ public class OaiRecordQueryTest {
             "  `stacktrace` text,\n"+
             "  `status_code` int(11) DEFAULT NULL)";
 
-    private final OaiRecordQuery allQ = new OaiRecordQuery(null, null, null, null, null, null);
-    private final OaiRecordQuery offsetAndLimitQ = new OaiRecordQuery(null, 1, 2, null, null, null);
-    private final OaiRecordQuery forRepoQ = new OaiRecordQuery(1, null, null, null, null, null);
-    private final OaiRecordQuery pendingQ = new OaiRecordQuery(null, null, null, ProcessStatus.PENDING, null, null);
-    private final OaiRecordQuery deletedQ = new OaiRecordQuery(null, null, null, null, OaiStatus.DELETED, null);
-    private final OaiRecordQuery combinedQ = new OaiRecordQuery(null, null, null, ProcessStatus.PROCESSED, OaiStatus.AVAILABLE, null);
-    private final OaiRecordQuery errorQ1 = new OaiRecordQuery(null, null, null, ProcessStatus.FAILED, null, ErrorStatus.NOT_FOUND);
-    private final OaiRecordQuery errorQ2 = new OaiRecordQuery(null, null, null, ProcessStatus.FAILED, null, ErrorStatus.INTERNAL_SERVER_ERROR);
+    private final OaiRecordQuery allQ = new OaiRecordQuery(null, null, null, null, null, null, "");
+    private final OaiRecordQuery offsetAndLimitQ = new OaiRecordQuery(null, 1, 2, null, null, null, "");
+    private final OaiRecordQuery forRepoQ = new OaiRecordQuery(1, null, null, null, null, null, "");
+    private final OaiRecordQuery pendingQ = new OaiRecordQuery(null, null, null, ProcessStatus.PENDING, null, null, "");
+    private final OaiRecordQuery deletedQ = new OaiRecordQuery(null, null, null, null, OaiStatus.DELETED, null, "");
+    private final OaiRecordQuery combinedQ = new OaiRecordQuery(null, null, null, ProcessStatus.PROCESSED, OaiStatus.AVAILABLE, null, "");
+    private final OaiRecordQuery errorQ1 = new OaiRecordQuery(null, null, null, ProcessStatus.FAILED, null, ErrorStatus.NOT_FOUND, "");
+    private final OaiRecordQuery errorQ2 = new OaiRecordQuery(null, null, null, ProcessStatus.FAILED, null, ErrorStatus.INTERNAL_SERVER_ERROR, "");
 
     private JdbcConnectionPool dataSource;
     private OaiRecordDao oaiRecordDao;
