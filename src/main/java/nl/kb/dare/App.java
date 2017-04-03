@@ -33,6 +33,7 @@ import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
 import nl.kb.dare.taskmanagers.ManagedPeriodicTask;
+import nl.kb.dare.tasks.LoadOracleSchemaTask;
 import nl.kb.dare.xslt.PipedXsltTransformer;
 import org.skife.jdbi.v2.DBI;
 
@@ -121,6 +122,7 @@ public class App extends Application<Config> {
 
         registerServlet(environment, new StatusWebsocketServlet(), "statusWebsocket");
 
+        environment.admin().addTask(new LoadOracleSchemaTask(db));
         environment.admin().addTask(new IndexMetadataTask(repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
     }
 
