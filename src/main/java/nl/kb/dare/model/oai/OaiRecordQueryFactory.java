@@ -5,9 +5,17 @@ import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 
 public class OaiRecordQueryFactory {
+
+    private final String databaseProvider;
+
+    public OaiRecordQueryFactory(String databaseProvider) {
+
+        this.databaseProvider = databaseProvider;
+    }
+
     public OaiRecordQuery getInstance(Integer repositoryId, Integer offset, Integer limit, ProcessStatus processStatus,
                                       OaiStatus oaiStatus, ErrorStatus errorStatus) {
-        return new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus);
+        return new OaiRecordQuery(repositoryId, offset, limit, processStatus, oaiStatus, errorStatus, databaseProvider);
     }
 
     public OaiRecordQuery getInstance(ProcessStatus processStatus) {

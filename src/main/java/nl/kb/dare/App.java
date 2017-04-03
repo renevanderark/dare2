@@ -69,7 +69,7 @@ public class App extends Application<Config> {
 
         final ErrorReportDao errorReportDao = db.onDemand(ErrorReportDao.class);
         final OaiRecordDao oaiRecordDao = db.onDemand(OaiRecordDao.class);
-        final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory();
+        final OaiRecordQueryFactory oaiRecordQueryFactory = new OaiRecordQueryFactory(config.getDatabaseProvider());
         final FileStorage fileStorage = config.getFileStorageFactory().getFileStorage();
         final FileStorage sampleFileStorage = config.getFileStorageFactory().sampleFileStorage();
         final StreamSource stripOaiXslt = new StreamSource(PipedXsltTransformer.class.getResourceAsStream("/xslt/strip_oai_wrapper.xsl"));

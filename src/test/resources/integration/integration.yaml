@@ -32,6 +32,7 @@ database:
   password: daredev
 
   url: jdbc:h2:mem:dareintegration
+databaseProvider: h2
 
 appTitle: "Dare dash"
 hostName: localhost:4567
