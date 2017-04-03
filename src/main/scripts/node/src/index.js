@@ -17,5 +17,4 @@ import { connectSocket } from "./bootstrap";
 
 setInterval(runPerf, 1100);*/
 
-document.addEventListener("DOMContentLoaded", () =>
-    connectSocket(() => ReactDOM.render(router, document.getElementById("app"))));
+connectSocket(() => ReactDOM.render(router, document.getElementById("app")));

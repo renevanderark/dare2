@@ -16,7 +16,14 @@
 <script type="text/javascript">
     <%= JS_ENVIRONMENT %>
 </script>
-<script type='text/javascript' src='/assets/javascripts/index.js?retry'></script>
+<script type='text/javascript'>
+    (function(d, t) {
+        var g = d.createElement(t),
+            s = d.getElementsByTagName(t)[1];
+        g.src = '/assets/javascripts/index.js?' + new Date().getTime();
+        s.parentNode.insertBefore(g, s);
+    }(document, 'script'));
+</script>
 
 </body>
 </html>
