@@ -12,6 +12,7 @@ import nl.kb.dare.xslt.PipedXsltTransformer;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class IndexMetadataTask extends Task {
 
@@ -31,8 +32,12 @@ public class IndexMetadataTask extends Task {
 
 
     @Override
-    public void execute(ImmutableMultimap<String, String> immutableMultimap, PrintWriter printWriter) throws Exception {
-        final List<Repository> repositories = repositoryDao.list();
+    public void execute(ImmutableMultimap<String, String> params, PrintWriter printWriter) throws Exception {
+        final List<Repository> repositories = params.containsKey("repositoryId")
+                ? repositoryDao.list().stream()
+                    .filter(r -> r.getId() == Integer.parseInt(params.get("repositoryId").iterator().next()))
+                    .collect(Collectors.toList())
+                : repositoryDao.list();
         final List<Thread> threads = Lists.newArrayList();
         final AtomicLong totCount = new AtomicLong(0L);
         for (Repository repository : repositories) {
