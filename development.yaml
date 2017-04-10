@@ -39,7 +39,7 @@ databaseProvider: oracle
 appTitle: "Dare dash"
 hostName: localhost:8080
 wsProtocol: ws
-inSampleMode: true
+inSampleMode: false
 
 fileStorage:
   storageType: local
