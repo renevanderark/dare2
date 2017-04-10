@@ -40,6 +40,23 @@ The current development version expects a MySQL or Oracle database to be present
 ## Building and running for development
 
 ```sh
-mvn clean package
-./target/appassembler/bin/run server development.yaml
+$ mvn clean package
+$ ./target/appassembler/bin/run server development-mysql.yaml # for mysql config
+$ ./target/appassembler/bin/run server development.yaml # for oracle config
 ``` 
+
+## Loading database schemae
+
+Mysql (based on development-mysql.yaml). First create database named 'dare' and grant all priviliges to user named 
+daredev having password daredev
+```sh
+$ mysql -udaredev -pdaredev dare < schema.sql
+```
+
+Oracle (based on development.yaml)
+```sh
+$ ./target/appassembler/bin/run server development.yaml (start server)
+$ curl -X POST http://localhost:8081/tasks/create-oracle-schema
+```
+This setup was tested with Oracle XE in a docker:
+[wnameless/docker-oracle-xe-11g](https://github.com/wnameless/docker-oracle-xe-11g)
