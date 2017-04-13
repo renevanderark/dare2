@@ -135,7 +135,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                     case FAILED: // when the record is present on the file system, remove it.
                     case PROCESSED:
                         try {
-                            fileStorage.create(existingRecord).deleteFiles();
+                            fileStorage.create(existingRecord.getIdentifier()).deleteFiles();
                         } catch (IOException e) {
                             LOG.warn("Failed to delete failed record", e);
                         }

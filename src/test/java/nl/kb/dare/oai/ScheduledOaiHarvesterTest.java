@@ -184,7 +184,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -220,7 +220,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -256,7 +256,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PENDING);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -292,7 +292,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.DELETED, 123, ProcessStatus.SKIP);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();

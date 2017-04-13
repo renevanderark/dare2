@@ -93,7 +93,10 @@ public class IntegrationTest {
 
     private static void cleanFiles() {
         try {
+            FileUtils.deleteDirectory(new File("./0"));
+            FileUtils.deleteDirectory(new File("./6"));
             FileUtils.deleteDirectory(new File("./1"));
+
         } catch (IOException ignored) {
 
         }

@@ -47,7 +47,7 @@ public class DownloadEndpoint {
         }
 
         try {
-            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
+            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord.getIdentifier());
             final StreamingOutput downloadOutput = fileStorageHandle::downloadZip;
             return Response.ok(downloadOutput)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"download.zip\"")
@@ -88,7 +88,7 @@ public class DownloadEndpoint {
         }
 
         try {
-            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
+            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord.getIdentifier());
             final InputStream manifest = fileStorageHandle.getFile("manifest.xml");
 
             final SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();

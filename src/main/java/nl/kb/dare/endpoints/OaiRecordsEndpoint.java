@@ -209,7 +209,7 @@ public class OaiRecordsEndpoint {
         }
 
         try {
-            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord);
+            final FileStorageHandle fileStorageHandle = fileStorage.create(oaiRecord.getIdentifier());
             final InputStream manifest = processStatus == ProcessStatus.PROCESSED ?
                     fileStorageHandle.getFile("manifest.xml") :
                     fileStorageHandle.getFile("manifest.initial.xml");

@@ -62,7 +62,7 @@ public class GetRecordOperationsTest {
                 mock(Repository.class),
                 mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
-        when(fileStorage.create(oaiRecord)).thenReturn(handle);
+        when(fileStorage.create(oaiRecord.getIdentifier())).thenReturn(handle);
 
         final Optional<FileStorageHandle> result = instance.getFileStorageHandle(oaiRecord);
 
@@ -78,7 +78,7 @@ public class GetRecordOperationsTest {
                 mock(Repository.class),
                 mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
         final OaiRecord oaiRecord = mock(OaiRecord.class);
-        when(fileStorage.create(oaiRecord)).thenThrow(IOException.class);
+        when(fileStorage.create(oaiRecord.getIdentifier())).thenThrow(IOException.class);
 
         final Optional<FileStorageHandle> result = instance.getFileStorageHandle(oaiRecord);
 

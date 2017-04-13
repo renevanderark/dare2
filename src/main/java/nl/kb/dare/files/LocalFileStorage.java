@@ -1,6 +1,5 @@
 package nl.kb.dare.files;
 
-import nl.kb.dare.model.oai.OaiRecord;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -14,8 +13,8 @@ class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public FileStorageHandle create(OaiRecord oaiRecord) throws IOException {
-        return LocalFileStorageHandle.getInstance(oaiRecord, storageDir)
+    public FileStorageHandle create(String oaiRecordIdentifier) throws IOException {
+        return LocalFileStorageHandle.getInstance(oaiRecordIdentifier, storageDir)
                 .create();
     }
 

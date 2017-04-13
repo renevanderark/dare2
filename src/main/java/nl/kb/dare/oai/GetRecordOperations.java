@@ -80,7 +80,7 @@ class GetRecordOperations {
 
     Optional<FileStorageHandle> getFileStorageHandle(OaiRecord oaiRecord) {
         try {
-            return Optional.of(fileStorage.create(oaiRecord));
+            return Optional.of(fileStorage.create(oaiRecord.getIdentifier()));
         } catch (IOException e) {
             onError.accept(new ErrorReport(
                     new IOException("Failed to create storage location for record " + oaiRecord.getIdentifier(), e),

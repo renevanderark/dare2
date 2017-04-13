@@ -1,6 +1,5 @@
 package nl.kb.dare.files;
 
-import nl.kb.dare.model.oai.OaiRecord;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -19,19 +18,12 @@ import static org.hamcrest.Matchers.is;
 public class LocalFileStorageHandleTest {
 
     private static final String IDENTIFIER = "identifier";
-    private static final int REPOSITORY_ID = 1;
-    private static final String DATE_STAMP = "2015-01-01T01:02:05Z";
     private static final String BASE_PATH = "./test";
     private LocalFileStorageHandle instance;
-    private OaiRecord oaiRecord;
 
     @Before
     public void setUp() {
-        oaiRecord = new OaiRecord();
-        oaiRecord.setRepositoryId(REPOSITORY_ID);
-        oaiRecord.setIdentifier(IDENTIFIER);
-        oaiRecord.setDateStamp(DATE_STAMP);
-        instance = LocalFileStorageHandle.getInstance(oaiRecord, BASE_PATH);
+        instance = LocalFileStorageHandle.getInstance(IDENTIFIER, BASE_PATH);
     }
     @After
     public void tearDown() throws IOException {
@@ -44,7 +36,7 @@ public class LocalFileStorageHandleTest {
 
         instance.create();
 
-        final File expectedDir = new File(LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH));
+        final File expectedDir = new File(LocalFileStorageHandle.getFilePath(IDENTIFIER, BASE_PATH));
 
         assertThat(expectedDir.exists(), is(true));
         assertThat(expectedDir.isDirectory(), is(true));
@@ -55,7 +47,7 @@ public class LocalFileStorageHandleTest {
 
         instance.create();
 
-        final String filePath = LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH);
+        final String filePath = LocalFileStorageHandle.getFilePath(IDENTIFIER, BASE_PATH);
 
         final String testSubdirPath = String.format("%s/%s", filePath, "testing");
         final String testFilePath = String.format("%s/%s", testSubdirPath, "test1");
@@ -72,7 +64,7 @@ public class LocalFileStorageHandleTest {
     public void getOutputStreamPointsToTheRequestedFile() throws IOException {
         final OutputStream outputStream = instance.create().getOutputStream("test.foo");
         final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF8")));
-        final String filePath = LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH);
+        final String filePath = LocalFileStorageHandle.getFilePath(IDENTIFIER, BASE_PATH);
 
         printWriter.print("testing");
         printWriter.flush();
@@ -88,7 +80,7 @@ public class LocalFileStorageHandleTest {
         final OutputStream outputStream = instance.create().getOutputStream("sub/dir","test.foo");
         final PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(outputStream, Charset.forName("UTF8")));
 
-        final String filePath = LocalFileStorageHandle.getFilePath(oaiRecord, BASE_PATH);
+        final String filePath = LocalFileStorageHandle.getFilePath(IDENTIFIER, BASE_PATH);
 
         printWriter.print("testing");
         printWriter.flush();
