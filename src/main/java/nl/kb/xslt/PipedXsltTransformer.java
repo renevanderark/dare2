@@ -1,7 +1,4 @@
-package nl.kb.dare.xslt;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+package nl.kb.xslt;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
@@ -18,7 +15,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +30,7 @@ public class PipedXsltTransformer implements XsltTransformer {
 
     private PipedXsltTransformer(StreamSource... styleSheets) throws IOException, TransformerConfigurationException {
 
-        final List<TransformerConfigurationException> transformerConfigurationExceptions = Lists.newArrayList();
+        final List<TransformerConfigurationException> transformerConfigurationExceptions = new ArrayList<>();
         templates = Arrays.stream(styleSheets).map(styleSheet -> {
             try {
                 return factory.newTemplates(styleSheet);
@@ -50,7 +49,7 @@ public class PipedXsltTransformer implements XsltTransformer {
     }
 
     private List<TransformerHandler> getHandlers() throws TransformerConfigurationException {
-        final List<TransformerConfigurationException> transformerConfigurationExceptions = Lists.newArrayList();
+        final List<TransformerConfigurationException> transformerConfigurationExceptions = new ArrayList<>();
         final List<TransformerHandler> transformerHandlers = templates.stream().map(template -> {
             try {
                 return factory.newTransformerHandler(template);
@@ -80,7 +79,7 @@ public class PipedXsltTransformer implements XsltTransformer {
 
     @Override
     public void transform(InputStream in, Result out) throws TransformerException, UnsupportedEncodingException {
-        transform(in, out, Maps.newHashMap());
+        transform(in, out, new HashMap<>());
     }
 
     @Override

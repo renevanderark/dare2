@@ -1,4 +1,4 @@
-package nl.kb.dare.xslt;
+package nl.kb.xslt;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.TransformerException;

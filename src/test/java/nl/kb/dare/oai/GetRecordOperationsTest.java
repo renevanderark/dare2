@@ -13,7 +13,7 @@ import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.xml.sax.SAXException;

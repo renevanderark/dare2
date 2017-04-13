@@ -21,7 +21,7 @@ import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.GetRecord;
 import nl.kb.mets.manifest.ManifestXmlHandler;
 import nl.kb.mets.manifest.ObjectResource;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.skife.jdbi.v2.DBI;
 import org.xml.sax.SAXException;

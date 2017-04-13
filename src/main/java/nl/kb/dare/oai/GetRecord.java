@@ -14,7 +14,7 @@ import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,7 +15,7 @@ import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;

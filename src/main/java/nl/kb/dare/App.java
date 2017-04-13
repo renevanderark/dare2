@@ -35,7 +35,7 @@ import nl.kb.dare.oai.StatusUpdater;
 import nl.kb.dare.taskmanagers.ManagedPeriodicTask;
 import nl.kb.dare.tasks.LoadRepositoriesTask;
 import nl.kb.dare.tasks.LoadOracleSchemaTask;
-import nl.kb.dare.xslt.PipedXsltTransformer;
+import nl.kb.xslt.PipedXsltTransformer;
 import org.skife.jdbi.v2.DBI;
 
 import javax.servlet.Servlet;
