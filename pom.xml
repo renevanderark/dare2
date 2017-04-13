@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nl.kb</groupId>
-    <artifactId>dare2</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>dare-refactor</artifactId>
+    <version>1.1-SNAPSHOT</version>
 
     <prerequisites>
         <maven>3.0</maven>
@@ -185,7 +185,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${basedir}/build-assets.sh</executable>
+                            <executable>${basedir}/src/main/scripts/sh/build-assets.sh</executable>
                         </configuration>
                     </execution>
                 </executions>

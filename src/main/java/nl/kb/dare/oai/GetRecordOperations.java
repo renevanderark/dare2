@@ -1,21 +1,21 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.checksum.ByteCountOutputStream;
-import nl.kb.dare.checksum.ChecksumOutputStream;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.files.FileStorageHandle;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.manifest.ManifestFinalizer;
-import nl.kb.dare.manifest.ManifestXmlHandler;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.stream.ByteCountOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.HttpResponseHandler;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.mets.manifest.ManifestFinalizer;
+import nl.kb.mets.manifest.ManifestXmlHandler;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -80,7 +80,7 @@ class GetRecordOperations {
 
     Optional<FileStorageHandle> getFileStorageHandle(OaiRecord oaiRecord) {
         try {
-            return Optional.of(fileStorage.create(oaiRecord));
+            return Optional.of(fileStorage.create(oaiRecord.getIdentifier()));
         } catch (IOException e) {
             onError.accept(new ErrorReport(
                     new IOException("Failed to create storage location for record " + oaiRecord.getIdentifier(), e),
@@ -106,7 +106,7 @@ class GetRecordOperations {
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 
-            responseHandler.getExceptions().forEach(onError);
+            ErrorReport.fromExceptionList(responseHandler.getExceptions()).forEach(onError);
 
             final ObjectResource objectResource = new ObjectResource();
             objectResource.setLocalFilename("metadata.xml");

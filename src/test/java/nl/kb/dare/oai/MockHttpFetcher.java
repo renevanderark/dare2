@@ -1,7 +1,7 @@
 package nl.kb.dare.oai;
 
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.HttpResponseHandler;
 
 import javax.ws.rs.core.Response;
 import java.io.InputStream;

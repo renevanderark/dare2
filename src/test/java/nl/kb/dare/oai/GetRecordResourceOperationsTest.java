@@ -1,19 +1,20 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.checksum.ByteCountOutputStream;
-import nl.kb.dare.checksum.ChecksumOutputStream;
-import nl.kb.dare.files.FileStorageHandle;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.stream.ByteCountOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.HttpResponseHandler;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -98,7 +99,7 @@ public class GetRecordResourceOperationsTest {
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         when(responseHandler.getExceptions())
-                .thenReturn(Lists.newArrayList(mock(ErrorReport.class)))
+                .thenReturn(Lists.newArrayList(mock(Exception.class)))
                 .thenReturn(Lists.newArrayList());
 
 
@@ -140,17 +141,21 @@ public class GetRecordResourceOperationsTest {
 
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
-        final ErrorReport report1 = mock(ErrorReport.class);
-        final ErrorReport report2 = mock(ErrorReport.class);
+
+
         when(responseHandler.getExceptions())
-                .thenReturn(Lists.newArrayList(report1))
-                .thenReturn(Lists.newArrayList(report2));
+                .thenReturn(Lists.newArrayList(new IOException("ex 1")))
+                .thenReturn(Lists.newArrayList(new SAXException("ex 2")));
 
         final List<ErrorReport> errorReports = instance
                 .downloadResource(objectResource, fileStorageHandle, 1, 1, oaiRecord);
 
         assertThat(errorReports.size(), is(2));
-        assertThat(errorReports, containsInAnyOrder(report1, report2));
+        assertThat(errorReports, containsInAnyOrder(allOf(
+                hasProperty("exception", instanceOf(IOException.class))
+        ), allOf(
+                hasProperty("exception", instanceOf(SAXException.class))
+        )));
     }
 
     private ObjectResource getObjectResource(String url) {

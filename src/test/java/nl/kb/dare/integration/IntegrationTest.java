@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.kb.dare.App;
-import nl.kb.dare.checksum.ChecksumOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.manifest.ManifestXmlHandler;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.mets.manifest.ManifestXmlHandler;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -93,7 +93,10 @@ public class IntegrationTest {
 
     private static void cleanFiles() {
         try {
+            FileUtils.deleteDirectory(new File("./0"));
+            FileUtils.deleteDirectory(new File("./6"));
             FileUtils.deleteDirectory(new File("./1"));
+
         } catch (IOException ignored) {
 
         }

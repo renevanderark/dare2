@@ -1,7 +1,8 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorage;
+import nl.kb.http.HttpResponseException;
+import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
@@ -70,7 +71,6 @@ public class RepositoriesEndpointTest {
         final Response response = instance.delete(id);
 
         final InOrder inOrder = inOrder(fileStorage, dao, repositoryNotifier, oaiRecordDao, errorReportDao);
-        inOrder.verify(fileStorage).purgeRepositoryFiles(id);
         inOrder.verify(oaiRecordDao).findAllForRepository(id);
         inOrder.verify(errorReportDao).removeForOaiRecord("testing");
         inOrder.verify(oaiRecordDao).removeForRepository(id);
@@ -178,7 +178,7 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -195,7 +195,7 @@ public class RepositoriesEndpointTest {
         assertThat(response.getEntity(), equalTo(validationResult));
     }
     @Test
-    public void validateNewShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+    public void validateNewShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -227,7 +227,7 @@ public class RepositoriesEndpointTest {
 
 
     @Test
-    public void validateShouldHandleSAXException() throws IOException, SAXException {
+    public void validateShouldHandleSAXException() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -245,7 +245,7 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void validateShouldHandleIOException() throws IOException, SAXException {
+    public void validateShouldHandleIOException() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);

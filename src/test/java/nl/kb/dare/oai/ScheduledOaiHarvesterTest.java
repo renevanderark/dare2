@@ -1,9 +1,9 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.files.FileStorageHandle;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
@@ -184,7 +184,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -220,7 +220,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PROCESSED);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -256,7 +256,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.AVAILABLE, 123, ProcessStatus.PENDING);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();
@@ -292,7 +292,7 @@ public class ScheduledOaiHarvesterTest {
         final OaiRecord existingRecord = new OaiRecord(duplicateIdentifier, "2017-01-18T01:00:28Z", OaiStatus.DELETED, 123, ProcessStatus.SKIP);
         when(oaiRecordDao.findByIdentifier(duplicateIdentifier))
                 .thenReturn(existingRecord);
-        when(fileStorage.create(existingRecord)).thenReturn(fileStorageHandle);
+        when(fileStorage.create(existingRecord.getIdentifier())).thenReturn(fileStorageHandle);
 
         instance.enable();
         instance.runOneIteration();

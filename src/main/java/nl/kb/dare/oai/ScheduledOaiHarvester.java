@@ -3,9 +3,9 @@ package nl.kb.dare.oai;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReport;
@@ -135,7 +135,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                     case FAILED: // when the record is present on the file system, remove it.
                     case PROCESSED:
                         try {
-                            fileStorage.create(existingRecord).deleteFiles();
+                            fileStorage.create(existingRecord.getIdentifier()).deleteFiles();
                         } catch (IOException e) {
                             LOG.warn("Failed to delete failed record", e);
                         }

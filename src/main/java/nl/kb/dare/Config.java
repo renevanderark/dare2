@@ -3,7 +3,7 @@ package nl.kb.dare;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
 import io.dropwizard.db.DataSourceFactory;
-import nl.kb.dare.files.FileStorageFactory;
+import nl.kb.dare.config.FileStorageFactory;
 
 class Config extends Configuration {
     private DataSourceFactory database;

@@ -1,11 +1,11 @@
 package nl.kb.dare.oai;
 
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.files.FileStorageHandle;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.manifest.ManifestFinalizer;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.mets.manifest.ManifestFinalizer;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
@@ -14,7 +14,7 @@ import nl.kb.dare.model.reporting.progress.GetRecordProgressReport;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

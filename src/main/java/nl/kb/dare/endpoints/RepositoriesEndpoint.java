@@ -1,6 +1,7 @@
 package nl.kb.dare.endpoints;
 
-import nl.kb.dare.files.FileStorage;
+import nl.kb.http.HttpResponseException;
+import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.repository.Repository;
@@ -124,7 +125,7 @@ public class RepositoriesEndpoint {
         try {
             final RepositoryValidator.ValidationResult result = validator.validate(repositoryConfig);
             return Response.ok(result).build();
-        } catch (IOException e) {
+        } catch (IOException | HttpResponseException e) {
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ErrorResponse("repository url could not be reached: " + repositoryConfig.getUrl(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))
@@ -140,17 +141,13 @@ public class RepositoriesEndpoint {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Integer id) {
-        try {
-            fileStorage.purgeRepositoryFiles(id);
             oaiRecordDao.findAllForRepository(id)
                     .forEachRemaining(errorReportDao::removeForOaiRecord);
             oaiRecordDao.removeForRepository(id);
             dao.remove(id);
             repositoryNotifier.notifyUpdate();
             return Response.ok("{}").build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+
     }
 
     private Response notFoundResponse(Integer id) {

@@ -1,7 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.checksum.ByteCountOutputStream;
+import nl.kb.http.HeaderConsumer;
+import nl.kb.stream.ByteCountOutputStream;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.reporting.progress.DownloadProgressReport;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ProgressReportingByteCountOutputStream extends ByteCountOutputStream {
+public class ProgressReportingByteCountOutputStream extends ByteCountOutputStream implements HeaderConsumer {
 
 
     private final OaiRecord oaiRecord;
@@ -61,7 +62,8 @@ public class ProgressReportingByteCountOutputStream extends ByteCountOutputStrea
     }
 
 
-    public void readExpectedFileSize(Map<String, List<String>> headerFields) {
+    @Override
+    public void consumeHeaders(Map<String, List<String>> headerFields) {
         final List<String> headerKeys = Lists.newArrayList("Content-Length", "Content-length", "content-length");
         for (String headerKey : headerKeys) {
             if (headerFields.containsKey(headerKey) && headerFields.get(headerKey).size() > 0) {

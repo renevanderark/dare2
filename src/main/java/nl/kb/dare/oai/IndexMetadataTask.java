@@ -3,11 +3,11 @@ package nl.kb.dare.oai;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import io.dropwizard.servlets.tasks.Task;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
-import nl.kb.dare.xslt.PipedXsltTransformer;
+import nl.kb.xslt.PipedXsltTransformer;
 
 import java.io.PrintWriter;
 import java.util.List;

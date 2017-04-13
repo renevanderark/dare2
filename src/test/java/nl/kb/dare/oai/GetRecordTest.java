@@ -1,8 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorageHandle;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
 import nl.kb.dare.model.statuscodes.ProcessStatus;

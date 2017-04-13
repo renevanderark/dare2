@@ -1,9 +1,9 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.oai.OaiRecordQuery;
@@ -15,7 +15,7 @@ import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.xslt.XsltTransformer;
+import nl.kb.xslt.XsltTransformer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
