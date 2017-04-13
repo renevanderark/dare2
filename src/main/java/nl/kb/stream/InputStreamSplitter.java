@@ -1,10 +1,9 @@
 package nl.kb.stream;
 
-import com.google.common.collect.Lists;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,7 +20,7 @@ public class InputStreamSplitter {
     }
 
     public InputStreamSplitter(InputStream inputStream, OutputStream... outputStreams) {
-        this(inputStream, Lists.newArrayList(outputStreams));
+        this(inputStream, Arrays.asList(outputStreams));
     }
 
     /**
