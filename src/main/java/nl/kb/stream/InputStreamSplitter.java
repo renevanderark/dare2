@@ -7,6 +7,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+/**
+ * Used to split one input stream into multiple outputstreams
+ */
 public class InputStreamSplitter {
 
     private final InputStream inputStream;
@@ -21,6 +24,11 @@ public class InputStreamSplitter {
         this(inputStream, Lists.newArrayList(outputStreams));
     }
 
+    /**
+     * Reads the entire input stream in chunks and copies the chunks to the output streams
+     * Proactively closes all the streams when done.
+     * @throws IOException
+     */
     public void copy() throws IOException {
         byte[] buffer = new byte[1024];
         int numRead;

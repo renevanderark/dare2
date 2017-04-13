@@ -3,6 +3,9 @@ package nl.kb.stream;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Outputstream that counts bytes written to it
+ */
 public class ByteCountOutputStream extends ByteArrayOutputStream {
     private final AtomicLong byteCount = new AtomicLong(0L);
 
@@ -16,6 +19,10 @@ public class ByteCountOutputStream extends ByteArrayOutputStream {
         byteCount.getAndAdd((long) len);
     }
 
+    /**
+     *
+     * @return the amount of bytes currently passed through the stream
+     */
     public long getCurrentByteCount() {
         return byteCount.get();
     }
