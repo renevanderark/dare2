@@ -60,3 +60,30 @@ $ curl -X POST http://localhost:8081/tasks/create-oracle-schema
 ```
 This setup was tested with Oracle XE in a docker:
 [wnameless/docker-oracle-xe-11g](https://github.com/wnameless/docker-oracle-xe-11g)
+
+## Source layout
+
+Source layout is standard maven layout. 
+
+Java sources are under ```src/main/java``` and ```src/test/java```
+
+Utility scripts are under ```src/main/scripts/[lang]``` 
+
+Frontend sources are under ```src/main/scripts/node```
+
+### Package descriptions
+
+[nl.kb.stream](src/main/java/nl/kb/stream): Utility classes for streaming IO
+
+
+## Frontend build step
+
+The frontend sources are contained in an npm package.
+ 
+Details can be found in [src/main/scripts/node](src/main/scripts/node)
+ 
+Dare 2 uses the ```dropwizard-assets```  extension to host static files that can be found in ```src/main/resources/assets```.
+
+The frontend code is built into an ```index.js``` in the ```prepare-package``` life cycle step of maven, using the bash script ```src/main/scripts/sh/build-assets.sh```.
+
+The root endpoint in ```src/main/java/dare/endpoints/RootEndpoint.java``` (mapped to '/*') takes care of hosting the frontend.
