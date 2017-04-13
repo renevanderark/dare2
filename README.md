@@ -70,10 +70,10 @@ Utility scripts are under ```src/main/scripts/[lang]```
 
 Frontend sources are under ```src/main/scripts/node```
 
-### Package descriptions
+## Package descriptions
 
 [nl.kb.stream](src/main/java/nl/kb/stream): Utility classes for streaming IO
-
+[nl.kb.files](src/main/java/nl/kb/files): Abstraction layer for file storage
 
 ## Frontend build step
 
