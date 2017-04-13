@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.kb.dare.App;
-import nl.kb.dare.checksum.ChecksumOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;

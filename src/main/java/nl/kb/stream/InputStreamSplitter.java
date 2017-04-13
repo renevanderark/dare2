@@ -1,4 +1,4 @@
-package nl.kb.dare.io;
+package nl.kb.stream;
 
 import com.google.common.collect.Lists;
 

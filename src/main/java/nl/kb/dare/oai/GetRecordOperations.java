@@ -1,8 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.checksum.ByteCountOutputStream;
-import nl.kb.dare.checksum.ChecksumOutputStream;
+import nl.kb.stream.ByteCountOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
 import nl.kb.dare.files.FileStorage;
 import nl.kb.dare.files.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;

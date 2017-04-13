@@ -1,4 +1,4 @@
-package nl.kb.dare.checksum;
+package nl.kb.stream;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;

@@ -1,7 +1,7 @@
 package nl.kb.dare.http.responsehandlers;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.io.InputStreamSplitter;
+import nl.kb.stream.InputStreamSplitter;
 import nl.kb.dare.oai.ProgressReportingByteCountOutputStream;
 
 import javax.ws.rs.core.Response;

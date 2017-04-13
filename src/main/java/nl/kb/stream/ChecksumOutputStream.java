@@ -1,4 +1,4 @@
-package nl.kb.dare.checksum;
+package nl.kb.stream;
 
 import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
