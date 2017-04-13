@@ -11,31 +11,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static nl.kb.dare.checksum.ChecksumUtil.getChecksumString;
-
 class LocalFileStorageHandle implements FileStorageHandle {
     private static final int MAX_ENTRIES = 10_000;
-    private static final MessageDigest digest;
     private static final LinkedHashMap<String, LocalFileStorageHandle> instances = new LinkedHashMap<String, LocalFileStorageHandle>(){
         protected boolean removeEldestEntry(Map.Entry<String, LocalFileStorageHandle> eldest) {
             return size() > MAX_ENTRIES;
         }
     };
-
-    static {
-        try {
-            digest = MessageDigest.getInstance("SHA-512");
-        } catch (NoSuchAlgorithmException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
 
     private final String fileDir;
 
@@ -53,9 +42,23 @@ class LocalFileStorageHandle implements FileStorageHandle {
 
     static String getFilePath(OaiRecord oaiRecord, String basePath) {
         final Integer repositoryId = oaiRecord.getRepositoryId();
-        final String dateStampPart = oaiRecord.getDateStamp().substring(0, 13);
-        final String idPart = getChecksumString(digest.digest(oaiRecord.getIdentifier().getBytes()));
-        return String.format("%s/%d/%s/%s", basePath, repositoryId, dateStampPart, idPart);
+        final String reversedId = new StringBuilder(oaiRecord.getIdentifier()).reverse().toString();
+
+        try {
+            if (reversedId.length() < 3) {
+                // code not expected to be reached, all identifiers are expected to be greater than 3 characters
+                return String.format("%s/%d/%s__short_id", basePath, repositoryId,
+                        URLEncoder.encode(oaiRecord.getIdentifier(), "UTF-8"));
+            } else {
+                return String.format("%s/%d/%s/%s/%s/%s", basePath, repositoryId,
+                        URLEncoder.encode(reversedId.substring(0, 1), "UTF-8"),
+                        URLEncoder.encode(reversedId.substring(1, 2), "UTF-8"),
+                        URLEncoder.encode(reversedId.substring(2, 3), "UTF-8"),
+                        URLEncoder.encode(oaiRecord.getIdentifier(), "UTF-8"));
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("Panic!! unsupported encoding UTF-8", e);
+        }
     }
 
     @Override
