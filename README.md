@@ -74,7 +74,7 @@ Frontend sources are under ```src/main/scripts/node```
 
 [nl.kb.stream](src/main/java/nl/kb/stream): Utility classes for streaming IO
 
-[nl.kb.files](src/main/java/nl/kb/files): Abstraction layer for file storage
+[nl.kb.filestorage](src/main/java/nl/kb/filestorage): Abstraction layer for file storage
 
 ## Frontend build step
 
