@@ -1,10 +1,10 @@
-package nl.kb.dare.manifest;
+package nl.kb.mets.manifest;
 
-import com.google.common.collect.Lists;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -13,7 +13,7 @@ public class ManifestXmlHandler extends DefaultHandler {
 
 
     private ObjectResource currentResource = new ObjectResource();
-    private final List<ObjectResource> objectResources = Lists.newArrayList();
+    private final List<ObjectResource> objectResources = new ArrayList<>();
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -45,6 +45,6 @@ public class ManifestXmlHandler extends DefaultHandler {
     }
 
     public List<ObjectResource> getObjectResourcesIncludingMetadata() {
-        return objectResources.stream().collect(toList());
+        return objectResources;
     }
 }

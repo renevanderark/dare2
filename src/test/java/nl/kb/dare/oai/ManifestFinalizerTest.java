@@ -1,8 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.manifest.ManifestFinalizer;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.mets.manifest.ManifestFinalizer;
+import nl.kb.mets.manifest.ObjectResource;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -23,8 +23,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.List;
 
-import static nl.kb.dare.manifest.ManifestFinalizer.METS_NS;
-import static nl.kb.dare.manifest.ManifestFinalizer.XLINK_NS;
+import static nl.kb.mets.manifest.ManifestFinalizer.METS_NS;
+import static nl.kb.mets.manifest.ManifestFinalizer.XLINK_NS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 

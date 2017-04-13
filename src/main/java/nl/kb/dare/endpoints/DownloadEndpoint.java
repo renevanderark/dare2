@@ -7,8 +7,8 @@ import nl.kb.filestorage.FileStorageHandle;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
-import nl.kb.dare.manifest.ManifestXmlHandler;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.mets.manifest.ManifestXmlHandler;
+import nl.kb.mets.manifest.ObjectResource;
 import org.apache.commons.io.IOUtils;
 import org.xml.sax.SAXException;
 

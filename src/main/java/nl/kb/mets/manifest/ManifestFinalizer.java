@@ -1,4 +1,4 @@
-package nl.kb.dare.manifest;
+package nl.kb.mets.manifest;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

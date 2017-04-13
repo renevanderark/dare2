@@ -7,7 +7,7 @@ import nl.kb.filestorage.FileStorageHandle;
 import nl.kb.http.HttpFetcher;
 import nl.kb.http.HttpResponseHandler;
 import nl.kb.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.manifest.ObjectResource;
+import nl.kb.mets.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
