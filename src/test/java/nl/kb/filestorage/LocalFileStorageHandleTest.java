@@ -1,5 +1,6 @@
-package nl.kb.dare.files;
+package nl.kb.filestorage;
 
+import nl.kb.filestorage.LocalFileStorageHandle;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;

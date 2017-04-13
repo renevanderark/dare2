@@ -2,8 +2,8 @@ package nl.kb.dare.endpoints;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.files.FileStorageHandle;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.FileStorageHandle;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.statuscodes.ProcessStatus;

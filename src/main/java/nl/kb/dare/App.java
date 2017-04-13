@@ -14,7 +14,7 @@ import nl.kb.dare.endpoints.OaiRecordsEndpoint;
 import nl.kb.dare.endpoints.RepositoriesEndpoint;
 import nl.kb.dare.endpoints.RootEndpoint;
 import nl.kb.dare.endpoints.StatusWebsocketServlet;
-import nl.kb.dare.files.FileStorage;
+import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.LenientHttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;

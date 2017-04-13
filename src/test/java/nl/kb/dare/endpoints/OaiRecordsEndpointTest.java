@@ -1,7 +1,7 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorage;
+import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;

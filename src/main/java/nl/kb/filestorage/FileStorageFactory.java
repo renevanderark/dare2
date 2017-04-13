@@ -1,4 +1,4 @@
-package nl.kb.dare.files;
+package nl.kb.filestorage;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,4 +1,4 @@
-package nl.kb.dare.files;
+package nl.kb.filestorage;
 
 import java.io.IOException;
 

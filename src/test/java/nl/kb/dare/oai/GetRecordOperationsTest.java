@@ -1,8 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.files.FileStorage;
-import nl.kb.dare.files.FileStorageHandle;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
