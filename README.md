@@ -48,7 +48,7 @@ $ ./target/appassembler/bin/run server development.yaml # for oracle config
 Mysql (based on development-mysql.yaml). First create database named 'dare' and grant all priviliges to user named 
 daredev having password daredev
 ```sh
-$ mysql -udaredev -pdaredev dare < schema.sql
+$ mysql -udaredev -pdaredev dare < src/main/scripts/sql/schema.sql
 ```
 
 Oracle (based on development.yaml)
