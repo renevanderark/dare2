@@ -72,9 +72,18 @@ Frontend sources are under ```src/main/scripts/node```
 
 ## Package descriptions
 
-[nl.kb.stream](src/main/java/nl/kb/stream): Utility classes for streaming IO
+[nl.kb.dare](src/main/java/nl/kb/dare): Main workflow and business logic of this harvester
 
 [nl.kb.filestorage](src/main/java/nl/kb/filestorage): Abstraction layer for file storage
+
+[nl.kb.http](src/main/java/nl/kb/http): Contains the LenientHttpFetcher with the CrappyUrlFixingHelper
+
+[nl.kb.mets.manifest](src/main/java/nl/kb/mets/manifest): model and xml handlers for tiny subset of mets, as mentioned above
+
+[nl.kb.stream](src/main/java/nl/kb/stream): Utility classes for streaming IO
+
+[nl.kb.xslt](src/main/java/nl/kb/xslt): includes the PipedXsltTransformer
+
 
 ## Frontend build step
 
