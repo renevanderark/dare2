@@ -185,7 +185,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>${basedir}/build-assets.sh</executable>
+                            <executable>${basedir}/src/main/scripts/sh/build-assets.sh</executable>
                         </configuration>
                     </execution>
                 </executions>
