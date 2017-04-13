@@ -2,6 +2,7 @@ package nl.kb.dare.model.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.kb.dare.http.HttpFetcher;
+import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
 import org.xml.sax.Attributes;
@@ -27,7 +28,7 @@ public class RepositoryValidator {
         this.responseHandlerFactory = responseHandlerFactory;
     }
 
-    public ValidationResult validate(Repository repositoryConfig) throws IOException, SAXException {
+    public ValidationResult validate(Repository repositoryConfig) throws IOException, SAXException, HttpResponseException {
         final URL listSetsUrl = new URL(String.format("%s?verb=ListSets", repositoryConfig.getUrl()));
         final URL listMdUrl = new URL(String.format("%s?verb=ListMetadataFormats", repositoryConfig.getUrl()));
 

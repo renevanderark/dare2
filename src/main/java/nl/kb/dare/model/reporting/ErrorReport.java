@@ -1,9 +1,15 @@
 package nl.kb.dare.model.reporting;
 
+import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 public class ErrorReport {
 
@@ -53,5 +59,25 @@ public class ErrorReport {
 
     public ErrorStatus getErrorStatus() {
         return errorStatus;
+    }
+
+    public static List<ErrorReport> fromExceptionList(List<Exception> exceptions) {
+        return exceptions.stream().map(exception -> new ErrorReport(exception,
+                exception instanceof HttpResponseException ? ((HttpResponseException) exception).getUrl() : null,
+                exception instanceof SAXException ? ErrorStatus.XML_PARSING_ERROR :
+                        exception instanceof IOException ? ErrorStatus.IO_EXCEPTION :
+                                exception instanceof  HttpResponseException ? ErrorStatus.forCode(((HttpResponseException) exception).getStatusCode())
+                                        : ErrorStatus.INTERNAL_SERVER_ERROR
+        )).collect(toList());
+    }
+
+    @Override
+    public String toString() {
+        return "ErrorReport{" +
+                "exception=" + exception +
+                ", url=" + url +
+                ", errorStatus=" + errorStatus +
+                ", dateStamp='" + dateStamp + '\'' +
+                '}';
     }
 }

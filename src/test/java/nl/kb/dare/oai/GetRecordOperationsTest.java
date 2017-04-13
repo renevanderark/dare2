@@ -119,9 +119,7 @@ public class GetRecordOperationsTest {
         final Consumer<ErrorReport> onError = reports::add;
         final ResponseHandlerFactory responseHandlerFactory = mock(ResponseHandlerFactory.class);
         final HttpResponseHandler responseHandler = mock(HttpResponseHandler.class);
-        final ErrorReport errorReport = new ErrorReport(new IOException("test"), ErrorStatus.XML_PARSING_ERROR);
-        final ErrorReport errorReport2 = new ErrorReport(new IOException("test 2"), ErrorStatus.IO_EXCEPTION);
-        final List<ErrorReport> returnedReports = Lists.newArrayList(errorReport, errorReport2);
+        final List<Exception> returnedReports = Lists.newArrayList(new SAXException("test"), new IOException("test 2"));
         final OaiRecord oaiRecord = mock(OaiRecord.class);
         final Repository repository = mock(Repository.class);
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
@@ -142,7 +140,7 @@ public class GetRecordOperationsTest {
 
         assertThat(reports, containsInAnyOrder(
                 allOf(
-                    hasProperty("exception", is(instanceOf(IOException.class))),
+                    hasProperty("exception", is(instanceOf(SAXException.class))),
                     hasProperty("errorStatus", is(ErrorStatus.XML_PARSING_ERROR))
                 ), allOf(
                     hasProperty("exception", is(instanceOf(IOException.class))),
@@ -186,7 +184,7 @@ public class GetRecordOperationsTest {
                 mock(GetRecordResourceOperations.class), mock(ManifestFinalizer.class), (errorReport) -> {});
         final FileStorageHandle fileStorageHandle = mock(FileStorageHandle.class);
 
-        when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
+        when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(Exception.class)));
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         when(oaiRecord.getIdentifier()).thenReturn("identifier");
@@ -212,7 +210,7 @@ public class GetRecordOperationsTest {
                 responseHandlerFactory, mock(XsltTransformer.class), repository, mock(GetRecordResourceOperations.class),
                 mock(ManifestFinalizer.class), onError);
 
-        when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(ErrorReport.class)));
+        when(responseHandler.getExceptions()).thenReturn(Lists.newArrayList(mock(Exception.class)));
         when(storageHandle.getOutputStream("metadata.xml")).thenReturn(new ByteArrayOutputStream());
 
         final Optional<ObjectResource> result = instance.downloadMetadata(storageHandle, oaiRecord);

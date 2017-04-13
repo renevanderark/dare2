@@ -1,7 +1,6 @@
 package nl.kb.dare.http.responsehandlers;
 
 import nl.kb.dare.http.HttpResponseException;
-import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,15 +55,13 @@ public class ErrorReportingResponseHandlerTest {
 
         assertThat(instance.getExceptions(), contains(
             allOf(
-                instanceOf(ErrorReport.class),
-                hasProperty("url", is(THE_URL.toString())),
-                hasProperty("errorStatus", is(ErrorStatus.BAD_REQUEST)),
-                hasProperty("exception", is(instanceOf(HttpResponseException.class)))
+                instanceOf(HttpResponseException.class),
+                hasProperty("url", is(THE_URL)),
+                hasProperty("statusCode", is(ErrorStatus.BAD_REQUEST.getCode()))
             ), allOf(
-                instanceOf(ErrorReport.class),
-                hasProperty("url", is(THE_URL.toString())),
-                hasProperty("errorStatus", is(ErrorStatus.INTERNAL_SERVER_ERROR)),
-                hasProperty("exception", is(instanceOf(HttpResponseException.class)))
+                instanceOf(HttpResponseException.class),
+                hasProperty("url", is(THE_URL)),
+                hasProperty("statusCode", is(ErrorStatus.INTERNAL_SERVER_ERROR.getCode()))
             )
         ));
     }
@@ -74,17 +71,13 @@ public class ErrorReportingResponseHandlerTest {
         instance.onRequestError(new IOException("problem"));
         instance.onRequestError(new SAXException("another problem"));
 
-        assertThat(instance.getExceptions(), contains(
+        assertThat(instance.getExceptions(), containsInAnyOrder(
                 allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION)),
-                    hasProperty("exception", is(instanceOf(IOException.class)))
+                    instanceOf(IOException.class),
+                    hasProperty("message", is("problem"))
                 ), allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION)),
-                    hasProperty("exception", is(instanceOf(IOException.class)))
+                    instanceOf(IOException.class),
+                    hasProperty("message", is("another problem"))
                 )
         ));
     }
@@ -96,7 +89,7 @@ public class ErrorReportingResponseHandlerTest {
     }
 
     @Test(expected = Exception.class)
-    public void throwAnyExceptionShouldThrowAnExceptionFromTheListOfExceptions() throws IOException, SAXException {
+    public void throwAnyExceptionShouldThrowAnExceptionFromTheListOfExceptions() throws IOException, SAXException, HttpResponseException {
         instance.onRequestError(new IOException("problem"));
         instance.onResponseError(Response.Status.INTERNAL_SERVER_ERROR, mock(InputStream.class));
 
@@ -112,25 +105,17 @@ public class ErrorReportingResponseHandlerTest {
 
         assertThat(instance.getExceptions(), containsInAnyOrder(
             allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.BAD_REQUEST)),
-                    hasProperty("exception", is(instanceOf(HttpResponseException.class)))
+                    instanceOf(HttpResponseException.class),
+                    hasProperty("url", is(THE_URL)),
+                    hasProperty("statusCode", is(ErrorStatus.BAD_REQUEST.getCode()))
             ), allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.INTERNAL_SERVER_ERROR)),
-                    hasProperty("exception", is(instanceOf(HttpResponseException.class)))
+                    instanceOf(HttpResponseException.class),
+                    hasProperty("url", is(THE_URL)),
+                    hasProperty("statusCode", is(ErrorStatus.INTERNAL_SERVER_ERROR.getCode()))
             ), allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION)),
-                    hasProperty("exception", is(instanceOf(IOException.class)))
+                    instanceOf(IOException.class)
             ), allOf(
-                    instanceOf(ErrorReport.class),
-                    hasProperty("url", is(THE_URL.toString())),
-                    hasProperty("errorStatus", is(ErrorStatus.IO_EXCEPTION)),
-                    hasProperty("exception", is(instanceOf(IOException.class)))
+                    instanceOf(IOException.class)
             )
         ));
     }

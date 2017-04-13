@@ -78,7 +78,7 @@ class ListIdentifiers {
                 final Optional<String> optDateStamp = xmlHandler.getLastDateStamp();
 
                 if (responseHandler.getExceptions().size() > 0) {
-                    responseHandler.getExceptions().forEach(onException);
+                    ErrorReport.fromExceptionList(responseHandler.getExceptions()).forEach(onException);
                     break;
                 }
 

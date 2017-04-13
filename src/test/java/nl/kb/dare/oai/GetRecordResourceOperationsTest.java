@@ -14,6 +14,7 @@ import nl.kb.dare.model.reporting.ProgressReport;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -98,7 +99,7 @@ public class GetRecordResourceOperationsTest {
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
         when(responseHandler.getExceptions())
-                .thenReturn(Lists.newArrayList(mock(ErrorReport.class)))
+                .thenReturn(Lists.newArrayList(mock(Exception.class)))
                 .thenReturn(Lists.newArrayList());
 
 
@@ -140,17 +141,21 @@ public class GetRecordResourceOperationsTest {
 
         when(responseHandlerFactory.getStreamCopyingResponseHandler(any(), any(), any()))
                 .thenReturn(responseHandler);
-        final ErrorReport report1 = mock(ErrorReport.class);
-        final ErrorReport report2 = mock(ErrorReport.class);
+
+
         when(responseHandler.getExceptions())
-                .thenReturn(Lists.newArrayList(report1))
-                .thenReturn(Lists.newArrayList(report2));
+                .thenReturn(Lists.newArrayList(new IOException("ex 1")))
+                .thenReturn(Lists.newArrayList(new SAXException("ex 2")));
 
         final List<ErrorReport> errorReports = instance
                 .downloadResource(objectResource, fileStorageHandle, 1, 1, oaiRecord);
 
         assertThat(errorReports.size(), is(2));
-        assertThat(errorReports, containsInAnyOrder(report1, report2));
+        assertThat(errorReports, containsInAnyOrder(allOf(
+                hasProperty("exception", instanceOf(IOException.class))
+        ), allOf(
+                hasProperty("exception", instanceOf(SAXException.class))
+        )));
     }
 
     private ObjectResource getObjectResource(String url) {

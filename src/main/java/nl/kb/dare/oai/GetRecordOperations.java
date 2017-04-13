@@ -106,7 +106,7 @@ class GetRecordOperations {
 
             httpFetcher.execute(new URL(urlStr), responseHandler);
 
-            responseHandler.getExceptions().forEach(onError);
+            ErrorReport.fromExceptionList(responseHandler.getExceptions()).forEach(onError);
 
             final ObjectResource objectResource = new ObjectResource();
             objectResource.setLocalFilename("metadata.xml");

@@ -1,9 +1,6 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.stream.ByteCountOutputStream;
-import nl.kb.stream.ChecksumOutputStream;
-import nl.kb.filestorage.FileStorageHandle;
 import nl.kb.dare.http.HttpFetcher;
 import nl.kb.dare.http.HttpResponseHandler;
 import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
@@ -11,6 +8,9 @@ import nl.kb.dare.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.reporting.ProgressReport;
+import nl.kb.filestorage.FileStorageHandle;
+import nl.kb.stream.ByteCountOutputStream;
+import nl.kb.stream.ChecksumOutputStream;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
@@ -109,7 +109,7 @@ class GetRecordResourceOperations {
 
         httpFetcher.execute(objectUrl, responseHandler);
 
-        return responseHandler.getExceptions();
+        return ErrorReport.fromExceptionList(responseHandler.getExceptions());
     }
 
     static String createFilename(String objectFile) throws MalformedURLException, UnsupportedEncodingException {

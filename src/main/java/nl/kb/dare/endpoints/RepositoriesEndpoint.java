@@ -1,5 +1,6 @@
 package nl.kb.dare.endpoints;
 
+import nl.kb.dare.http.HttpResponseException;
 import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
@@ -124,7 +125,7 @@ public class RepositoriesEndpoint {
         try {
             final RepositoryValidator.ValidationResult result = validator.validate(repositoryConfig);
             return Response.ok(result).build();
-        } catch (IOException e) {
+        } catch (IOException | HttpResponseException e) {
 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ErrorResponse("repository url could not be reached: " + repositoryConfig.getUrl(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()))

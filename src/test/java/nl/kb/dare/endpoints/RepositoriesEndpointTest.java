@@ -1,6 +1,7 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
+import nl.kb.dare.http.HttpResponseException;
 import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;
@@ -177,7 +178,7 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+    public void validateShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -194,7 +195,7 @@ public class RepositoriesEndpointTest {
         assertThat(response.getEntity(), equalTo(validationResult));
     }
     @Test
-    public void validateNewShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException {
+    public void validateNewShouldReturnTheValidationResultForTheRepositoryConfiguration() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -226,7 +227,7 @@ public class RepositoriesEndpointTest {
 
 
     @Test
-    public void validateShouldHandleSAXException() throws IOException, SAXException {
+    public void validateShouldHandleSAXException() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);
@@ -244,7 +245,7 @@ public class RepositoriesEndpointTest {
     }
 
     @Test
-    public void validateShouldHandleIOException() throws IOException, SAXException {
+    public void validateShouldHandleIOException() throws IOException, SAXException, HttpResponseException {
         final RepositoryDao dao = mock(RepositoryDao.class);
         final RepositoryValidator validator = mock(RepositoryValidator.class);
         final FileStorage fileStorage = mock(FileStorage.class);

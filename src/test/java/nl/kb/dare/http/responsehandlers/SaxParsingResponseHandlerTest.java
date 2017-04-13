@@ -46,7 +46,7 @@ public class SaxParsingResponseHandlerTest {
         instance.onResponseData(Response.Status.ACCEPTED, input, null);
 
         assertThat(instance.getExceptions().isEmpty(), is(false));
-        assertThat(instance.getExceptions().get(0).getException(), is(instanceOf(SAXException.class)));
+        assertThat(instance.getExceptions().get(0), is(instanceOf(SAXException.class)));
     }
 
     @Test
@@ -62,7 +62,7 @@ public class SaxParsingResponseHandlerTest {
         instance.onResponseData(Response.Status.ACCEPTED, input, null);
 
         assertThat(instance.getExceptions().isEmpty(), is(false));
-        assertThat(instance.getExceptions().get(0).getException(), is(instanceOf(IOException.class)));
+        assertThat(instance.getExceptions().get(0), is(instanceOf(IOException.class)));
     }
 
 }

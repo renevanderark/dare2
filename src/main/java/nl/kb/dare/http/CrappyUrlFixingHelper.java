@@ -1,9 +1,8 @@
 package nl.kb.dare.http;
 
-import com.google.common.collect.Lists;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.Arrays;
 
 public class CrappyUrlFixingHelper {
     static String fixCrappyLocationHeaderValue(URL originalUrl, String redirectLocation) throws UnsupportedEncodingException {
@@ -23,7 +22,7 @@ public class CrappyUrlFixingHelper {
         final String pathBit = locationWithProtocolAndHost.substring(0, lastIndexOfSlash + 1);
         final String nameAndQueryBit = locationWithProtocolAndHost.substring(lastIndexOfSlash + 1);
 
-        final String nameBit = Lists.newArrayList(nameAndQueryBit.split("[\\?;]")).get(0);
+        final String nameBit = Arrays.asList(nameAndQueryBit.split("[\\?;]")).get(0);
         final String encodedNameBit = usePercents
                 ? nameBit.replaceAll(" ", "%20")
                 : nameBit.replaceAll(" ", "+");

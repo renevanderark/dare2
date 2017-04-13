@@ -1,6 +1,5 @@
 package nl.kb.dare.http.responsehandlers;
 
-import com.google.common.collect.Lists;
 import nl.kb.dare.http.HeaderConsumer;
 import nl.kb.stream.InputStreamSplitter;
 
@@ -8,6 +7,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +16,7 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
     private final List<OutputStream> outputStreams;
 
     StreamCopyingResponseHandler(OutputStream... outputStreams) {
-        this.outputStreams = Lists.newArrayList(outputStreams);
+        this.outputStreams = Arrays.asList(outputStreams);
     }
 
     @Override

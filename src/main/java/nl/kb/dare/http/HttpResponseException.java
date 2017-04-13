@@ -1,17 +1,25 @@
 package nl.kb.dare.http;
 
+import java.net.URL;
+
 public class HttpResponseException extends Exception {
 
-    private final int errorStatus;
+    private final int statusCode;
+    private final URL url;
 
-    public HttpResponseException(String message, int errorStatus) {
+    public HttpResponseException(String message, int errorStatus, URL url) {
         super(message);
 
-        this.errorStatus = errorStatus;
+        this.statusCode = errorStatus;
+        this.url = url;
     }
 
 
-    public int getErrorStatus() {
-        return errorStatus;
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public URL getUrl() {
+        return url;
     }
 }

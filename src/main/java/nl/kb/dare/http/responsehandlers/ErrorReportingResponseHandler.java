@@ -1,29 +1,20 @@
 package nl.kb.dare.http.responsehandlers;
 
-import com.google.common.collect.Lists;
 import nl.kb.dare.http.HttpResponseException;
 import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.model.reporting.ErrorReport;
-import nl.kb.dare.model.statuscodes.ErrorStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 public abstract class ErrorReportingResponseHandler implements HttpResponseHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(ErrorReportingResponseHandler.class);
-
-    final List<SAXException> saxExceptions = Lists.newArrayList();
-    final List<IOException> ioExceptions = Lists.newArrayList();
-    private final List<HttpResponseException> httpResponseExceptions = Lists.newArrayList();
+    final List<SAXException> saxExceptions = new ArrayList<>();
+    final List<IOException> ioExceptions = new ArrayList<>();
+    private final List<HttpResponseException> httpResponseExceptions = new ArrayList<>();
     private URL url;
 
     @Override
@@ -31,7 +22,7 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
         final String message = String.format("Url responded with status %d - %s",
                 status.getStatusCode(), status.getReasonPhrase());
 
-        httpResponseExceptions.add(new HttpResponseException(message, status.getStatusCode()));
+        httpResponseExceptions.add(new HttpResponseException(message, status.getStatusCode(), url));
     }
 
     @Override
@@ -42,9 +33,6 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
 
     @Override
     public void onRedirect(String sourceLocation, String targetLocation) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Redirect detected from {} to {}", sourceLocation, targetLocation);
-        }
     }
 
     @Override
@@ -53,24 +41,26 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
     }
 
     @Override
-    public void throwAnyException() throws IOException, SAXException {
+    public void throwAnyException() throws IOException, SAXException, HttpResponseException {
         if (ioExceptions.size() > 0) {
             throw ioExceptions.get(0);
         }
         if (saxExceptions.size() > 0) {
             throw saxExceptions.get(0);
         }
+        if (httpResponseExceptions.size() > 0) {
+            throw httpResponseExceptions.get(0);
+        }
     }
 
     @Override
-    public List<ErrorReport> getExceptions() {
-        final Stream<ErrorReport> errorReportStream = Stream.concat(
-                ioExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.IO_EXCEPTION)),
-                saxExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.XML_PARSING_ERROR))
-        );
+    public List<Exception> getExceptions() {
+        final List<Exception> exceptions = new ArrayList<>();
 
-        return Stream.concat(errorReportStream,
-                httpResponseExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.forCode(ex.getErrorStatus())))
-        ).collect(toList());
+        exceptions.addAll(ioExceptions);
+        exceptions.addAll(saxExceptions);
+        exceptions.addAll(httpResponseExceptions);
+
+        return exceptions;
     }
 }
