@@ -140,17 +140,13 @@ public class RepositoriesEndpoint {
     @DELETE
     @Path("/{id}")
     public Response delete(@PathParam("id") Integer id) {
-        try {
-            fileStorage.purgeRepositoryFiles(id);
             oaiRecordDao.findAllForRepository(id)
                     .forEachRemaining(errorReportDao::removeForOaiRecord);
             oaiRecordDao.removeForRepository(id);
             dao.remove(id);
             repositoryNotifier.notifyUpdate();
             return Response.ok("{}").build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+
     }
 
     private Response notFoundResponse(Integer id) {

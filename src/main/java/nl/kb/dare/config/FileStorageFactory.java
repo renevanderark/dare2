@@ -1,6 +1,8 @@
-package nl.kb.filestorage;
+package nl.kb.dare.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.filestorage.LocalFileStorage;
 
 import java.io.File;
 

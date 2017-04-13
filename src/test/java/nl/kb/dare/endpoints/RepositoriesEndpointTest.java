@@ -70,7 +70,6 @@ public class RepositoriesEndpointTest {
         final Response response = instance.delete(id);
 
         final InOrder inOrder = inOrder(fileStorage, dao, repositoryNotifier, oaiRecordDao, errorReportDao);
-        inOrder.verify(fileStorage).purgeRepositoryFiles(id);
         inOrder.verify(oaiRecordDao).findAllForRepository(id);
         inOrder.verify(errorReportDao).removeForOaiRecord("testing");
         inOrder.verify(oaiRecordDao).removeForRepository(id);

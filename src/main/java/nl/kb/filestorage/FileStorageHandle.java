@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Represents a place to store files in
+ */
 public interface FileStorageHandle {
 
     FileStorageHandle create() throws IOException;
