@@ -31,7 +31,7 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
         final String message = String.format("Url responded with status %d - %s",
                 status.getStatusCode(), status.getReasonPhrase());
 
-        httpResponseExceptions.add(new HttpResponseException(message, ErrorStatus.forCode(status.getStatusCode())));
+        httpResponseExceptions.add(new HttpResponseException(message, status.getStatusCode()));
     }
 
     @Override
@@ -70,7 +70,7 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
         );
 
         return Stream.concat(errorReportStream,
-                httpResponseExceptions.stream().map(ex -> new ErrorReport(ex, url, ex.getErrorStatus()))
+                httpResponseExceptions.stream().map(ex -> new ErrorReport(ex, url, ErrorStatus.forCode(ex.getErrorStatus())))
         ).collect(toList());
     }
 }

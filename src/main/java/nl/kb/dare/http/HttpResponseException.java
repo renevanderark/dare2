@@ -1,19 +1,17 @@
 package nl.kb.dare.http;
 
-import nl.kb.dare.model.statuscodes.ErrorStatus;
-
 public class HttpResponseException extends Exception {
 
-    private final ErrorStatus errorStatus;
+    private final int errorStatus;
 
-    public HttpResponseException(String message, ErrorStatus errorStatus) {
+    public HttpResponseException(String message, int errorStatus) {
         super(message);
 
         this.errorStatus = errorStatus;
     }
 
 
-    public ErrorStatus getErrorStatus() {
+    public int getErrorStatus() {
         return errorStatus;
     }
 }
