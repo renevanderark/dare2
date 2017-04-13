@@ -1,6 +1,6 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
-import nl.kb.dare.http.HeaderConsumer;
+import nl.kb.http.HeaderConsumer;
 import nl.kb.stream.InputStreamSplitter;
 
 import javax.ws.rs.core.Response;

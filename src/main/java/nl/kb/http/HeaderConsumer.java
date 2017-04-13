@@ -1,4 +1,4 @@
-package nl.kb.dare.http;
+package nl.kb.http;
 
 import java.util.List;
 import java.util.Map;

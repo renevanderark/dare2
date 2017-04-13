@@ -1,6 +1,6 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
-import nl.kb.dare.http.HttpResponseException;
+import nl.kb.http.HttpResponseException;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package nl.kb.dare.http;
+package nl.kb.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;

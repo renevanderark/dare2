@@ -1,8 +1,8 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Maps;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.xslt.PipedXsltTransformer;

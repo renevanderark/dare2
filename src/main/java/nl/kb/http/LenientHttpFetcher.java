@@ -1,4 +1,4 @@
-package nl.kb.dare.http;
+package nl.kb.http;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;

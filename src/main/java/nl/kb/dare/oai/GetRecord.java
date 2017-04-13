@@ -2,8 +2,8 @@ package nl.kb.dare.oai;
 
 import nl.kb.filestorage.FileStorage;
 import nl.kb.filestorage.FileStorageHandle;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.manifest.ManifestFinalizer;
 import nl.kb.dare.manifest.ObjectResource;
 import nl.kb.dare.model.oai.OaiRecord;

@@ -1,7 +1,7 @@
 package nl.kb.dare.endpoints;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.http.HttpResponseException;
+import nl.kb.http.HttpResponseException;
 import nl.kb.filestorage.FileStorage;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReportDao;

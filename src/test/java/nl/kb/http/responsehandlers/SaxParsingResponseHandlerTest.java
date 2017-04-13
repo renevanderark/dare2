@@ -1,4 +1,4 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;

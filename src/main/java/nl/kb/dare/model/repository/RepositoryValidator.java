@@ -1,10 +1,10 @@
 package nl.kb.dare.model.repository;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseException;
-import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.HttpResponseException;
+import nl.kb.http.HttpResponseHandler;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

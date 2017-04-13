@@ -1,6 +1,6 @@
 package nl.kb.dare.model.reporting;
 
-import nl.kb.dare.http.HttpResponseException;
+import nl.kb.http.HttpResponseException;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.xml.sax.SAXException;
 

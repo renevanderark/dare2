@@ -1,6 +1,6 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
-import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.http.HttpResponseHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.helpers.DefaultHandler;

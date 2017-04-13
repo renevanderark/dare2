@@ -1,7 +1,7 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
-import nl.kb.dare.http.HttpResponseException;
-import nl.kb.dare.http.HttpResponseHandler;
+import nl.kb.http.HttpResponseException;
+import nl.kb.http.HttpResponseHandler;
 import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.Response;

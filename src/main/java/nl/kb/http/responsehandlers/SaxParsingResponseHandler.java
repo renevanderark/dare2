@@ -1,4 +1,4 @@
-package nl.kb.dare.http.responsehandlers;
+package nl.kb.http.responsehandlers;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

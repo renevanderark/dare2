@@ -1,9 +1,9 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Maps;
-import nl.kb.dare.http.HttpFetcher;
-import nl.kb.dare.http.HttpResponseHandler;
-import nl.kb.dare.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.HttpResponseHandler;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ErrorReport;
 import nl.kb.dare.model.repository.Repository;

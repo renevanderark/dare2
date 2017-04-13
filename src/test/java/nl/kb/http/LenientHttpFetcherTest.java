@@ -1,4 +1,4 @@
-package nl.kb.dare.http;
+package nl.kb.http;
 
 import com.google.common.collect.Maps;
 import org.junit.Test;

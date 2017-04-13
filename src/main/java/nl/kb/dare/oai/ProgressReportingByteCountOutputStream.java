@@ -1,7 +1,7 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Lists;
-import nl.kb.dare.http.HeaderConsumer;
+import nl.kb.http.HeaderConsumer;
 import nl.kb.stream.ByteCountOutputStream;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.reporting.ProgressReport;
