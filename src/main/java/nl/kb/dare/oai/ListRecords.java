@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import nl.kb.http.HttpFetcher;
 import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.repository.Repository;
-import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.oaipmh.OaiStatus;
 import nl.kb.xslt.PipedXsltTransformer;
 import org.xml.sax.InputSource;
 

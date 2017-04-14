@@ -1,4 +1,4 @@
-package nl.kb.dare.model.statuscodes;
+package nl.kb.oaipmh;
 
 public enum OaiStatus {
     DELETED(1, "deleted"),
