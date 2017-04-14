@@ -2,8 +2,9 @@ package nl.kb.dare.model.oai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.kb.oaipmh.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.oaipmh.OaiRecordHeader;
+import nl.kb.oaipmh.OaiStatus;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OaiRecord {
@@ -31,6 +32,16 @@ public class OaiRecord {
                      ProcessStatus processStatus, Integer updateCount) {
         this(identifier, dateStamp, oaiStatus, repositoryId, processStatus);
         this.updateCount = updateCount;
+    }
+
+    public static OaiRecord fromHeader(OaiRecordHeader header, Integer repositoryId) {
+        return new OaiRecord(
+                header.getIdentifier(),
+                header.getDateStamp(),
+                header.getOaiStatus(),
+                repositoryId,
+                header.getOaiStatus() == OaiStatus.AVAILABLE ? ProcessStatus.PENDING : ProcessStatus.SKIP
+        );
     }
 
     public void setIdentifier(String identifier) {
@@ -95,6 +106,21 @@ public class OaiRecord {
         this.processStatus = ProcessStatus.forString(processStatus);
     }
 
+    public Integer getUpdateCount() {
+        return updateCount;
+    }
+
+    public void setUpdateCount(Integer updateCount) {
+        this.updateCount = updateCount;
+    }
+
+    public boolean equalsHeader(OaiRecordHeader other, Integer otherRepoId) {
+        if (identifier != null ? !identifier.equals(other.getIdentifier()) : other.getIdentifier() != null) return false;
+        if (dateStamp != null ? !dateStamp.equals(other.getDateStamp()) : other.getDateStamp() != null) return false;
+        if (oaiStatus != null ? !oaiStatus.equals(other.getOaiStatus()) : other.getOaiStatus() != null) return false;
+        return repositoryId != null ? repositoryId.equals(otherRepoId) : otherRepoId == null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,13 +155,4 @@ public class OaiRecord {
                 ", totalFileSize=" + totalFileSize +
                 '}';
     }
-
-    public Integer getUpdateCount() {
-        return updateCount;
-    }
-
-    public void setUpdateCount(Integer updateCount) {
-        this.updateCount = updateCount;
-    }
-
 }

@@ -6,7 +6,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-class ListIdentifiersXmlHandler extends DefaultHandler {
+public class ListIdentifiersXmlHandler extends DefaultHandler {
 
     private static final String RESUMPTION_TOKEN_ELEMENT = "resumptionToken";
     private static final String DATE_STAMP_ELEMENT = "datestamp";
@@ -131,7 +131,7 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
         }
     }
 
-    Optional<String> getResumptionToken() {
+    public Optional<String> getResumptionToken() {
         return resumptionToken == null || resumptionToken.trim().length() == 0
                 ? Optional.empty()
                 : Optional.of(resumptionToken);
@@ -143,7 +143,7 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
                 : Optional.of(lastDateStamp);
     }
 
-    static ListIdentifiersXmlHandler getNewInstance(Consumer<OaiRecordHeader> onOaiRecordHeader) {
+    public static ListIdentifiersXmlHandler getNewInstance(Consumer<OaiRecordHeader> onOaiRecordHeader) {
 
         return new ListIdentifiersXmlHandler(onOaiRecordHeader);
     }

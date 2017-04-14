@@ -1,33 +1,7 @@
-package nl.kb.dare.oai;
-
-import com.google.common.collect.Lists;
-import nl.kb.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.model.oai.OaiRecord;
-import nl.kb.dare.model.reporting.ErrorReport;
-import nl.kb.dare.model.repository.Repository;
-import nl.kb.dare.model.repository.RepositoryValidatorTest;
-import nl.kb.oaipmh.OaiStatus;
-import nl.kb.dare.model.statuscodes.ProcessStatus;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.xml.sax.SAXException;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.function.Consumer;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.core.Is.is;
+package nl.kb.oaipmh;
 
 public class ListIdentifiersTest {
-
+/*
 
     private InputStream withResumptionToken;
     private InputStream withoutResumptionToken;
@@ -150,5 +124,5 @@ public class ListIdentifiersTest {
             hasProperty("processStatus", is(ProcessStatus.PENDING))
         ));
 
-    }
+    }*/
 }

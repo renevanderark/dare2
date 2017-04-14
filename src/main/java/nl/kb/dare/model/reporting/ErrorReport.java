@@ -62,13 +62,22 @@ public class ErrorReport {
     }
 
     public static List<ErrorReport> fromExceptionList(List<Exception> exceptions) {
-        return exceptions.stream().map(exception -> new ErrorReport(exception,
-                exception instanceof HttpResponseException ? ((HttpResponseException) exception).getUrl() : null,
-                exception instanceof SAXException ? ErrorStatus.XML_PARSING_ERROR :
-                        exception instanceof IOException ? ErrorStatus.IO_EXCEPTION :
-                                exception instanceof  HttpResponseException ? ErrorStatus.forCode(((HttpResponseException) exception).getStatusCode())
-                                        : ErrorStatus.INTERNAL_SERVER_ERROR
-        )).collect(toList());
+        return exceptions.stream().map(ErrorReport::fromException).collect(toList());
+    }
+
+    public static ErrorReport fromException(Exception exception) {
+        return new ErrorReport(exception,
+            exception instanceof HttpResponseException
+                ? ((HttpResponseException) exception).getUrl()
+                : null,
+            exception instanceof SAXException
+                ? ErrorStatus.XML_PARSING_ERROR
+                : exception instanceof IOException
+                    ? ErrorStatus.IO_EXCEPTION
+                    : exception instanceof  HttpResponseException
+                        ? ErrorStatus.forCode(((HttpResponseException) exception).getStatusCode())
+                        : ErrorStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     @Override

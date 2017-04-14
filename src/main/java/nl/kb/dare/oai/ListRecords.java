@@ -1,9 +1,10 @@
 package nl.kb.dare.oai;
 
 import com.google.common.collect.Maps;
+import nl.kb.dare.model.repository.Repository;
 import nl.kb.http.HttpFetcher;
 import nl.kb.http.responsehandlers.ResponseHandlerFactory;
-import nl.kb.dare.model.repository.Repository;
+import nl.kb.oaipmh.ListIdentifiersXmlHandler;
 import nl.kb.oaipmh.OaiStatus;
 import nl.kb.xslt.PipedXsltTransformer;
 import org.xml.sax.InputSource;
@@ -68,7 +69,7 @@ class ListRecords {
                 onProgress.accept(requestUrl.toString());
                 AtomicLong recordCount = new AtomicLong(0L);
 
-                final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance(repositoryConfig.getId(), oaiRecord -> {
+                final ListIdentifiersXmlHandler xmlHandler = ListIdentifiersXmlHandler.getNewInstance(oaiRecord -> {
                     if (oaiRecord.getOaiStatus() != OaiStatus.DELETED) {
                         recordCount.incrementAndGet();
                     }
