@@ -102,9 +102,7 @@ public class OaiRecordQuery {
     @JsonIgnore
     public List<OaiRecord> getResults(DBI dbi) {
         try (final Handle h = dbi.open()) {
-            return getBaseFilter(h, "select distinct oai_records.*" +
-                        (databaseProvider.equals("oracle") ? ", rownum as rn" : "") +
-                        " from oai_records", null)
+            return getBaseFilter(h, "select distinct oai_records.* from oai_records", null)
                     .withLimit(limit)
                     .withOffset(offset)
                     .build()
@@ -217,9 +215,9 @@ public class OaiRecordQuery {
                 if (databaseProvider.equals("oracle")) {
                     final String coreQuery = sb.toString();
                     sb.setLength(0);
-                    sb.append("select * from(")
+                    sb.append("select * from (select rownum rn, res.* from(")
                             .append(coreQuery)
-                            .append(") where rn between :offset + 1 and :offset + :limit");
+                            .append(") res where rownum <= :offset + :limit) where rn >= :offset + 1");
                 } else {
                     sb.append(" limit :limit").append(" offset :offset");
                 }
