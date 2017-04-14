@@ -16,7 +16,7 @@ import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
-import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.oaipmh.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.dare.oai.GetRecord;
 import nl.kb.mets.manifest.ManifestXmlHandler;

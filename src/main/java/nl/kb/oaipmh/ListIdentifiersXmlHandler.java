@@ -1,25 +1,21 @@
-package nl.kb.dare.oai;
+package nl.kb.oaipmh;
 
-import nl.kb.dare.model.oai.OaiRecord;
-import nl.kb.dare.model.statuscodes.OaiStatus;
-import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 
-class ListIdentifiersXmlHandler extends DefaultHandler {
+public class ListIdentifiersXmlHandler extends DefaultHandler {
 
     private static final String RESUMPTION_TOKEN_ELEMENT = "resumptionToken";
     private static final String DATE_STAMP_ELEMENT = "datestamp";
     private static final String HEADER_ELEMENT = "header";
     private static final String IDENTIFIER_ELEMENT = "identifier";
 
-    private final Integer repositoryId;
-    private final Consumer<OaiRecord> onOaiRecord;
+    private final Consumer<OaiRecordHeader> onOaiRecord;
 
-    private OaiRecord currentOaiRecord = new OaiRecord();
+    private OaiRecordHeader currentOaiRecordHeader = new OaiRecordHeader();
 
     private boolean inResumptionToken = false;
     private boolean inDateStamp = false;
@@ -32,9 +28,8 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
     private StringBuilder dateStampBuilder = new StringBuilder();
     private StringBuilder identifierBuilder = new StringBuilder();
 
-    private ListIdentifiersXmlHandler(Integer repositoryId, Consumer<OaiRecord> onOaiRecord) {
-        this.repositoryId = repositoryId;
-        this.onOaiRecord = onOaiRecord;
+    private ListIdentifiersXmlHandler(Consumer<OaiRecordHeader> onOaiRecordHeader) {
+        this.onOaiRecord = onOaiRecordHeader;
     }
 
     @Override
@@ -92,28 +87,28 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
 
     private void startDateStamp() {
         inDateStamp = true;
-        dateStampBuilder = new StringBuilder();
+        dateStampBuilder.setLength(0);
     }
 
     private void startResumptionToken() {
         inResumptionToken = true;
-        resumptionTokenBuilder = new StringBuilder();
+        resumptionTokenBuilder.setLength(0);
     }
 
     private void startIdentifier() {
         inIdentifier = true;
-        identifierBuilder = new StringBuilder();
+        identifierBuilder.setLength(0);
     }
 
     private void endOaiRecord() {
-        onOaiRecord.accept(currentOaiRecord);
+        onOaiRecord.accept(currentOaiRecordHeader);
     }
 
     private void endDateStamp() {
 
         inDateStamp = false;
         lastDateStamp = dateStampBuilder.toString();
-        currentOaiRecord.setDateStamp(dateStampBuilder.toString());
+        currentOaiRecordHeader.setDateStamp(dateStampBuilder.toString());
     }
 
     private void endResumptionToken() {
@@ -123,23 +118,20 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
 
     private void endIdentifier() {
         inIdentifier = false;
-        currentOaiRecord.setIdentifier(identifierBuilder.toString());
+        currentOaiRecordHeader.setIdentifier(identifierBuilder.toString());
     }
 
     private void startOaiRecord(Attributes attributes) {
-        currentOaiRecord = new OaiRecord();
-        currentOaiRecord.setRepositoryId(repositoryId);
+        currentOaiRecordHeader = new OaiRecordHeader();
         final String statusAttr = attributes.getValue("status");
         if (statusAttr != null && statusAttr.equalsIgnoreCase("deleted")) {
-            currentOaiRecord.setOaiStatus(OaiStatus.DELETED);
-            currentOaiRecord.setProcessStatus(ProcessStatus.SKIP);
+            currentOaiRecordHeader.setOaiStatus(OaiStatus.DELETED);
         } else {
-            currentOaiRecord.setOaiStatus(OaiStatus.AVAILABLE);
-            currentOaiRecord.setProcessStatus(ProcessStatus.PENDING);
+            currentOaiRecordHeader.setOaiStatus(OaiStatus.AVAILABLE);
         }
     }
 
-    Optional<String> getResumptionToken() {
+    public Optional<String> getResumptionToken() {
         return resumptionToken == null || resumptionToken.trim().length() == 0
                 ? Optional.empty()
                 : Optional.of(resumptionToken);
@@ -151,8 +143,8 @@ class ListIdentifiersXmlHandler extends DefaultHandler {
                 : Optional.of(lastDateStamp);
     }
 
-    static ListIdentifiersXmlHandler getNewInstance(Integer repositoryId, Consumer<OaiRecord> onOaiRecord) {
+    public static ListIdentifiersXmlHandler getNewInstance(Consumer<OaiRecordHeader> onOaiRecordHeader) {
 
-        return new ListIdentifiersXmlHandler(repositoryId, onOaiRecord);
+        return new ListIdentifiersXmlHandler(onOaiRecordHeader);
     }
 }

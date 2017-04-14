@@ -3,9 +3,6 @@ package nl.kb.dare.oai;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import nl.kb.filestorage.FileStorage;
-import nl.kb.http.HttpFetcher;
-import nl.kb.http.responsehandlers.ResponseHandlerFactory;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.oai.OaiRecordDao;
 import nl.kb.dare.model.reporting.ErrorReport;
@@ -16,8 +13,13 @@ import nl.kb.dare.model.repository.Repository;
 import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
-import nl.kb.dare.model.statuscodes.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
+import nl.kb.filestorage.FileStorage;
+import nl.kb.http.HttpFetcher;
+import nl.kb.http.responsehandlers.ResponseHandlerFactory;
+import nl.kb.oaipmh.ListIdentifiers;
+import nl.kb.oaipmh.OaiRecordHeader;
+import nl.kb.oaipmh.OaiStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,10 +84,17 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         runningHarvesters = repositoryDao.list()
                 .stream()
                 .filter(Repository::getEnabled)
-                .map(repo -> new ListIdentifiers(repo, httpFetcher, responseHandlerFactory,
-                        this::saveRepositoryStatus, // onHarvestDone
-                        errorReport -> saveErrorReport(errorReport, repo.getId()), // onError
-                        this::saveOaiRecord // onOaiRecord
+                .map(repo -> new ListIdentifiers(
+                        repo.getUrl(),
+                        repo.getSet(),
+                        repo.getMetadataPrefix(),
+                        repo.getDateStamp(),
+                        httpFetcher,
+                        responseHandlerFactory,
+                        lastRecordedDatestamp -> saveRepositoryStatus(lastRecordedDatestamp, repo),
+                        exception -> saveErrorReport(ErrorReport.fromException(exception), repo.getId()),
+                        oaiRecordHeader -> saveOaiRecord(oaiRecordHeader, repo.getId()),
+                        LOG::info
                 )).collect(Collectors.toList());
 
         runningHarvesters.forEach(harvester -> {
@@ -103,15 +112,15 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
             : RunState.WAITING;;
     }
 
-    private void saveOaiRecord(OaiRecord newOaiRecord) {
-        final OaiRecord existingRecord = oaiRecordDao.findByIdentifier(newOaiRecord.getIdentifier());
+    private void saveOaiRecord(OaiRecordHeader newOaiRecordHeader, Integer repositoryId) {
+        final OaiRecord existingRecord = oaiRecordDao.findByIdentifier(newOaiRecordHeader.getIdentifier());
         if (existingRecord == null) {
-            if (newOaiRecord.getOaiStatus() != OaiStatus.DELETED) {
-                oaiRecordDao.insert(newOaiRecord);
+            if (newOaiRecordHeader.getOaiStatus() != OaiStatus.DELETED) {
+                oaiRecordDao.insert(OaiRecord.fromHeader(newOaiRecordHeader, repositoryId));
             } // else {
                 // Do not save a newly encountered deleted record to save space & make faster queries
             // }
-        } else if (!existingRecord.equals(newOaiRecord)) {
+        } else if (!existingRecord.equalsHeader(newOaiRecordHeader, repositoryId)) {
             // preferably we do not alter the record if the processing thread is using the dao
             synchronized (oaiRecordDao) {
                 // The data provider has updated the record since our last encounter during harvest.
@@ -119,13 +128,15 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                 // Check the processing status of the record we already have.
                 switch (existingRecord.getProcessStatus()) {
                     case PROCESSING:
-                        if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
+                        if (newOaiRecordHeader.getOaiStatus() == OaiStatus.DELETED) {
                             errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.DELETED_DURING_PROCESSING));
+                                    OaiRecord.fromHeader(newOaiRecordHeader, repositoryId),
+                                    ErrorStatus.DELETED_DURING_PROCESSING));
                             // TODO? newOaiRecord.setPendingStatus(ProcessStatus.DELETED_DURING_PROCESSING)
                         } else {
                             errorReportDao.insertOaiRecordError(getOaiRecordErrorReport(
-                                    newOaiRecord, ErrorStatus.UPDATED_DURING_PROCESSING));
+                                    OaiRecord.fromHeader(newOaiRecordHeader, repositoryId),
+                                    ErrorStatus.UPDATED_DURING_PROCESSING));
                             // TODO? newOaiRecord.setPendingStatus(ProcessStatus.UPDATED_DURING_PROCESSING)
                         }
                         // TODO? oaiRecordDao.update(newOaiRecord);
@@ -143,7 +154,7 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
                     case PENDING:
                     case SKIP: // not expected, but possible (provider _undeleted_ the record)
                     default: // update the database record, recording the amount of updates
-
+                        final OaiRecord newOaiRecord = OaiRecord.fromHeader(newOaiRecordHeader, repositoryId);
                         newOaiRecord.setUpdateCount(existingRecord.getUpdateCount() + 1);
                         if (newOaiRecord.getOaiStatus() == OaiStatus.DELETED) {
                             newOaiRecord.setProcessStatus(ProcessStatus.SKIP);
@@ -206,7 +217,8 @@ public class ScheduledOaiHarvester extends AbstractScheduledService {
         errorReportDao.insertHarvesterError(new HarvesterErrorReport(errorReport, repositoryId));
     }
 
-    private void saveRepositoryStatus(Repository repoDone) {
+    private void saveRepositoryStatus(String lastRecordedDatestamp, Repository repoDone) {
+        repoDone.setDateStamp(lastRecordedDatestamp);
         repositoryDao.update(repoDone.getId(), repoDone);
         repositoryNotifier.notifyUpdate();
     }

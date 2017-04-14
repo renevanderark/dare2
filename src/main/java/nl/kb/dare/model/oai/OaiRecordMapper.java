@@ -1,6 +1,6 @@
 package nl.kb.dare.model.oai;
 
-import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.oaipmh.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;

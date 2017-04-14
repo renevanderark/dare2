@@ -8,7 +8,7 @@ import nl.kb.stream.ChecksumOutputStream;
 import nl.kb.dare.integration.crud.CrudOperations;
 import nl.kb.dare.model.oai.OaiRecord;
 import nl.kb.dare.model.repository.Repository;
-import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.oaipmh.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import nl.kb.mets.manifest.ManifestXmlHandler;
 import nl.kb.mets.manifest.ObjectResource;

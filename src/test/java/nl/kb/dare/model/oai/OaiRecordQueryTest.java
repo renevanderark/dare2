@@ -3,7 +3,7 @@ package nl.kb.dare.model.oai;
 import nl.kb.dare.model.reporting.ErrorReportDao;
 import nl.kb.dare.model.reporting.OaiRecordErrorReport;
 import nl.kb.dare.model.statuscodes.ErrorStatus;
-import nl.kb.dare.model.statuscodes.OaiStatus;
+import nl.kb.oaipmh.OaiStatus;
 import nl.kb.dare.model.statuscodes.ProcessStatus;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.junit.After;
