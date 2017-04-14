@@ -31,6 +31,7 @@ public class ListIdentifiers {
 
     private boolean interrupted = false;
     private String lastDateStamp;
+    private String verb = "ListIdentifiers";
 
 
     /**
@@ -74,7 +75,7 @@ public class ListIdentifiers {
 
     private URL makeRequestUrl(String resumptionToken) throws MalformedURLException {
         final StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append(oaiUrl).append("?").append("verb=ListIdentifiers");
+        urlBuilder.append(oaiUrl).append("?").append("verb=").append(verb);
 
         if (resumptionToken != null) {
             urlBuilder.append("&").append(String.format("resumptionToken=%s", resumptionToken));
@@ -148,5 +149,10 @@ public class ListIdentifiers {
         result.put("dateStamp", lastDateStamp);
         result.put("name", oaiSet);
         return result;
+    }
+
+    public ListIdentifiers setVerb(String verb) {
+        this.verb = verb;
+        return this;
     }
 }
