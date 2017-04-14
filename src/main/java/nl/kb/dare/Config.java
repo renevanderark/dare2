@@ -20,6 +20,8 @@ class Config extends Configuration {
 
     @JsonProperty
     private Boolean inSampleMode = false;
+    @JsonProperty
+    private String solrUrl;
 
     @JsonProperty("database")
     DataSourceFactory getDataSourceFactory() {
@@ -59,5 +61,9 @@ class Config extends Configuration {
 
     String getDatabaseProvider() {
         return databaseProvider;
+    }
+
+    String getSolrUrl() {
+        return solrUrl;
     }
 }

@@ -40,6 +40,7 @@ appTitle: "Dare dash"
 hostName: localhost:8080
 wsProtocol: ws
 inSampleMode: false
+solrUrl: http://localhost:8983/solr/gettingstarted/update
 
 fileStorage:
   storageType: local

@@ -28,7 +28,7 @@ import nl.kb.dare.model.repository.RepositoryDao;
 import nl.kb.dare.model.repository.RepositoryNotifier;
 import nl.kb.dare.model.repository.RepositoryValidator;
 import nl.kb.dare.model.repository.oracle.OracleRepositoryDao;
-import nl.kb.dare.oai.IndexMetadataTask;
+import nl.kb.dare.tasks.IndexMetadataTask;
 import nl.kb.dare.oai.ScheduledOaiHarvester;
 import nl.kb.dare.oai.ScheduledOaiRecordFetcher;
 import nl.kb.dare.oai.StatusUpdater;
@@ -125,7 +125,11 @@ public class App extends Application<Config> {
 
         environment.admin().addTask(new LoadOracleSchemaTask(db));
         environment.admin().addTask(new LoadRepositoriesTask(repositoryDao));
-        environment.admin().addTask(new IndexMetadataTask(repositoryDao, httpFetcher, responseHandlerFactory, indexTransformer));
+
+        if (config.getSolrUrl() != null) {
+            environment.admin().addTask(new IndexMetadataTask(repositoryDao, httpFetcher, responseHandlerFactory,
+                    indexTransformer, config.getSolrUrl()));
+        }
     }
 
     private void register(Environment environment, Object component) {
