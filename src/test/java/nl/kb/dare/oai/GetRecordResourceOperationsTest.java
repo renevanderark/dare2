@@ -17,6 +17,8 @@ import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -156,6 +158,16 @@ public class GetRecordResourceOperationsTest {
         ), allOf(
                 hasProperty("exception", instanceOf(SAXException.class))
         )));
+    }
+
+    @Test
+    public void createFilenameShouldStripAnyTrailingSlashes() throws MalformedURLException, UnsupportedEncodingException {
+        final String filename = GetRecordResourceOperations.createFilename("http://che.surfsharekit.nl:8080/fedora/get/smpid%3A64412/DS1/");
+
+        final String filename2 = GetRecordResourceOperations.createFilename("http://che.surfsharekit.nl:8080/fedora/get/smpid%3A64412/DS1.pdf");
+
+        assertThat(filename, is("DS1"));
+        assertThat(filename2, is("DS1.pdf"));
     }
 
     private ObjectResource getObjectResource(String url) {

@@ -113,7 +113,8 @@ class GetRecordResourceOperations {
     }
 
     static String createFilename(String objectFile) throws MalformedURLException, UnsupportedEncodingException {
-        final String decodedFilename = URLDecoder.decode(new URL(objectFile).getPath(), "UTF8");
+        final String decodedFilename = URLDecoder.decode(new URL(objectFile).getPath().replaceAll("/$", ""), "UTF8");
+
         return FilenameUtils.getName(decodedFilename);
     }
 
