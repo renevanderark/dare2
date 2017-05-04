@@ -3,7 +3,6 @@ package nl.kb.http.responsehandlers;
 import nl.kb.http.HeaderConsumer;
 import nl.kb.stream.InputStreamSplitter;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +19,7 @@ class StreamCopyingResponseHandler extends ErrorReportingResponseHandler {
     }
 
     @Override
-    public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
+    public void onResponseData(Integer status, InputStream responseData, Map<String, List<String>> headerFields) {
         try {
             outputStreams
                     .stream()

@@ -4,7 +4,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.ws.rs.core.Response;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
@@ -32,7 +31,7 @@ class SaxParsingResponseHandler extends ErrorReportingResponseHandler  {
     }
 
     @Override
-    public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
+    public void onResponseData(Integer status, InputStream responseData, Map<String, List<String>> headerFields) {
         try {
             final Reader reader = new InputStreamReader(responseData,"UTF-8");
             final InputSource inputSource = new InputSource(reader);

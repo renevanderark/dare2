@@ -3,7 +3,6 @@ package nl.kb.http.responsehandlers;
 import nl.kb.http.HttpResponseHandler;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -23,7 +22,7 @@ public class ResponseHandlerFactory {
     public ErrorReportingResponseHandler getBaseHandler(Consumer<InputStream> onData) {
         return new ErrorReportingResponseHandler() {
             @Override
-            public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
+            public void onResponseData(Integer status, InputStream responseData, Map<String, List<String>> headerFields) {
                 onData.accept(responseData);
             }
         };

@@ -3,7 +3,6 @@ package nl.kb.http.responsehandlers;
 import nl.kb.http.HttpResponseHandler;
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,7 +24,7 @@ public class StreamCopyingResponseHandlerTest {
         final ByteArrayOutputStream out3 = new ByteArrayOutputStream();
         final HttpResponseHandler instance = new ResponseHandlerFactory().getStreamCopyingResponseHandler(out1, out2, out3);
 
-        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
+        instance.onResponseData(200, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
 
         assertThat(new String(out1.toByteArray(), Charset.forName("UTF8")), is("testing"));
         assertThat(new String(out2.toByteArray(), Charset.forName("UTF8")), is("testing"));
@@ -40,7 +39,7 @@ public class StreamCopyingResponseHandlerTest {
 
         doThrow(IOException.class).when(out).write(any(), anyInt(), anyInt());
 
-        instance.onResponseData(Response.Status.OK, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
+        instance.onResponseData(200, StreamCopyingResponseHandler.class.getResourceAsStream("/http/text.txt"), null);
 
         assertThat(instance.getExceptions().size(), is(1));
     }

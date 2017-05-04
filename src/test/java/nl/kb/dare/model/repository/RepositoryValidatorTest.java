@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,9 +39,9 @@ public class RepositoryValidatorTest {
             @Override
             public void execute(URL url, HttpResponseHandler responseHandler) {
                 if (count == 0) {
-                    responseHandler.onResponseData(Response.Status.ACCEPTED, firstExpected, null);
+                    responseHandler.onResponseData(200, firstExpected, null);
                 } else {
-                    responseHandler.onResponseData(Response.Status.ACCEPTED, secondExpected, null);
+                    responseHandler.onResponseData(200, secondExpected, null);
                 }
                 count++;
             }

@@ -4,7 +4,6 @@ import nl.kb.http.HttpResponseException;
 import nl.kb.http.HttpResponseHandler;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -18,11 +17,11 @@ public abstract class ErrorReportingResponseHandler implements HttpResponseHandl
     private URL url;
 
     @Override
-    public void onResponseError(Response.Status status, InputStream responseData) {
-        final String message = String.format("Url responded with status %d - %s",
-                status.getStatusCode(), status.getReasonPhrase());
+    public void onResponseError(Integer status, InputStream responseData) {
+        final String message = String.format("Url responded with status %d",
+                status);
 
-        httpResponseExceptions.add(new HttpResponseException(message, status.getStatusCode(), url));
+        httpResponseExceptions.add(new HttpResponseException(message, status, url));
     }
 
     @Override

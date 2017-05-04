@@ -1,6 +1,5 @@
 package nl.kb.http;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -33,7 +32,7 @@ public class LenientHttpFetcher implements HttpFetcher {
         final Integer statusCode = responseCode.get();
 
         if (statusCode < 200 || statusCode >= 400) {
-            responseHandler.onResponseError(Response.Status.fromStatusCode(statusCode), null);
+            responseHandler.onResponseError(statusCode, null);
             return;
         } else if (statusCode >= 300 && statusCode < 400) {
             final String redirectLocation = connection.getHeaderField("Location") == null ?
@@ -56,7 +55,7 @@ public class LenientHttpFetcher implements HttpFetcher {
 
         final InputStream responseData = responseDataOpt.get();
         if (statusCode >= 200 && statusCode < 300 ) {
-            responseHandler.onResponseData(Response.Status.fromStatusCode(statusCode), responseData, connection.getHeaderFields());
+            responseHandler.onResponseData(statusCode, responseData, connection.getHeaderFields());
         }
 
     }

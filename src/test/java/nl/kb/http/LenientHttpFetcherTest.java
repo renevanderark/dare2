@@ -2,7 +2,6 @@ package nl.kb.http;
 
 import org.junit.Test;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -51,7 +50,7 @@ public class LenientHttpFetcherTest {
         when(connection.getHeaderFields()).thenReturn(headerFields);
         instance.execute(url, responseHandler);
 
-        verify(responseHandler).onResponseData(Response.Status.OK, responseData, headerFields);
+        verify(responseHandler).onResponseData(200, responseData, headerFields);
         verify(responseHandler, never()).onRequestError(any());
         verify(responseHandler, never()).onResponseError(any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());
@@ -117,7 +116,7 @@ public class LenientHttpFetcherTest {
 
         instance.execute(url, responseHandler);
 
-        verify(responseHandler).onResponseError(Response.Status.INTERNAL_SERVER_ERROR, null);
+        verify(responseHandler).onResponseError(500, null);
         verify(responseHandler, never()).onRequestError(any());
         verify(responseHandler, never()).onResponseData(any(), any(), any());
         verify(responseHandler, never()).onRedirect(any(), any());

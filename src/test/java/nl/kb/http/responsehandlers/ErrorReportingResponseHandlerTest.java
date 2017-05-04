@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,7 +38,7 @@ public class ErrorReportingResponseHandlerTest {
         instance = new ErrorReportingResponseHandler() {
 
             @Override
-            public void onResponseData(Response.Status status, InputStream responseData, Map<String, List<String>> headerFields) {
+            public void onResponseData(Integer status, InputStream responseData, Map<String, List<String>> headerFields) {
 
             }
         };
@@ -49,8 +48,8 @@ public class ErrorReportingResponseHandlerTest {
 
     @Test
     public void onResponseErrorShouldAddAnHttpResponseErrorToTheListOfExceptions()  {
-        instance.onResponseError(Response.Status.BAD_REQUEST, mock(InputStream.class));
-        instance.onResponseError(Response.Status.INTERNAL_SERVER_ERROR, mock(InputStream.class));
+        instance.onResponseError(400, mock(InputStream.class));
+        instance.onResponseError(500, mock(InputStream.class));
 
         assertThat(instance.getExceptions(), contains(
             allOf(
@@ -90,15 +89,15 @@ public class ErrorReportingResponseHandlerTest {
     @Test(expected = Exception.class)
     public void throwAnyExceptionShouldThrowAnExceptionFromTheListOfExceptions() throws IOException, SAXException, HttpResponseException {
         instance.onRequestError(new IOException("problem"));
-        instance.onResponseError(Response.Status.INTERNAL_SERVER_ERROR, mock(InputStream.class));
+        instance.onResponseError(500, mock(InputStream.class));
 
         instance.throwAnyException();
     }
 
     @Test
     public void getExceptionsShouldReturnTheListOfExceptions()  {
-        instance.onResponseError(Response.Status.BAD_REQUEST, mock(InputStream.class));
-        instance.onResponseError(Response.Status.INTERNAL_SERVER_ERROR, mock(InputStream.class));
+        instance.onResponseError(400, mock(InputStream.class));
+        instance.onResponseError(500, mock(InputStream.class));
         instance.onRequestError(new IOException("problem"));
         instance.onRequestError(new SAXException("another problem"));
 

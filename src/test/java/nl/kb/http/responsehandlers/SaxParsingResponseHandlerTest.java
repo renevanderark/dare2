@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +30,7 @@ public class SaxParsingResponseHandlerTest {
         final DefaultHandler xmlHandler = mock(DefaultHandler.class);
         final SaxParsingResponseHandler instance = new SaxParsingResponseHandler(xmlHandler);
 
-        instance.onResponseData(Response.Status.ACCEPTED, input, null);
+        instance.onResponseData(200, input, null);
 
         verify(xmlHandler).startElement(anyString(), anyString(), argThat(is("valid")), any());
         verify(xmlHandler).endElement(anyString(), anyString(), argThat(is("valid")));
@@ -43,7 +42,7 @@ public class SaxParsingResponseHandlerTest {
         final DefaultHandler xmlHandler = mock(DefaultHandler.class);
         final SaxParsingResponseHandler instance = new SaxParsingResponseHandler(xmlHandler);
 
-        instance.onResponseData(Response.Status.ACCEPTED, input, null);
+        instance.onResponseData(200, input, null);
 
         assertThat(instance.getExceptions().isEmpty(), is(false));
         assertThat(instance.getExceptions().get(0), is(instanceOf(SAXException.class)));
@@ -59,7 +58,7 @@ public class SaxParsingResponseHandlerTest {
         doThrow(IOException.class).when(input).read(any(), anyInt(), anyInt());
         doThrow(IOException.class).when(input).read();
 
-        instance.onResponseData(Response.Status.ACCEPTED, input, null);
+        instance.onResponseData(200, input, null);
 
         assertThat(instance.getExceptions().isEmpty(), is(false));
         assertThat(instance.getExceptions().get(0), is(instanceOf(IOException.class)));

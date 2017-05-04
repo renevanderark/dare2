@@ -4,7 +4,7 @@ import java.net.URL;
 
 public class HttpResponseException extends Exception {
 
-    private final int statusCode;
+    private final Integer statusCode;
     private final URL url;
 
     public HttpResponseException(String message, int errorStatus, URL url) {

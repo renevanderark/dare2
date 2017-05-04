@@ -3,7 +3,6 @@ package nl.kb.dare.oai;
 import nl.kb.http.HttpFetcher;
 import nl.kb.http.HttpResponseHandler;
 
-import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -18,7 +17,7 @@ public class MockHttpFetcher implements HttpFetcher {
 
     @Override
     public void execute(URL url, HttpResponseHandler responseHandler) {
-        responseHandler.onResponseData(Response.Status.ACCEPTED, mockResponses[count++], null);
+        responseHandler.onResponseData(202, mockResponses[count++], null);
     }
 
 }

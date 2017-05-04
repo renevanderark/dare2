@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +36,7 @@ public class ListIdentifiersTest {
 
         @Override
         public void execute(URL url, HttpResponseHandler responseHandler) {
-            responseHandler.onResponseData(Response.Status.ACCEPTED, mockResponses[count++], null);
+            responseHandler.onResponseData(202, mockResponses[count++], null);
         }
 
     }
