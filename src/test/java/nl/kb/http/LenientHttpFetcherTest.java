@@ -1,6 +1,5 @@
 package nl.kb.http;
 
-import com.google.common.collect.Maps;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -10,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class LenientHttpFetcherTest {
         final InputStream responseData = mock(InputStream.class);
         final HttpURLConnection connection = mock(HttpURLConnection.class);
         final URL url = makeUrl(responseData, connection);
-        final Map<String, List<String>> headerFields = Maps.newHashMap();
+        final Map<String, List<String>> headerFields = new HashMap<>();
         when(connection.getResponseCode()).thenReturn(200);
         when(connection.getHeaderFields()).thenReturn(headerFields);
         instance.execute(url, responseHandler);

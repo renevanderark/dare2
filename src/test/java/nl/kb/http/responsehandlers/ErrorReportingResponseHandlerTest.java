@@ -1,7 +1,6 @@
 package nl.kb.http.responsehandlers;
 
 import nl.kb.http.HttpResponseException;
-import nl.kb.dare.model.statuscodes.ErrorStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -57,11 +56,11 @@ public class ErrorReportingResponseHandlerTest {
             allOf(
                 instanceOf(HttpResponseException.class),
                 hasProperty("url", is(THE_URL)),
-                hasProperty("statusCode", is(ErrorStatus.BAD_REQUEST.getCode()))
+                hasProperty("statusCode", is(400))
             ), allOf(
                 instanceOf(HttpResponseException.class),
                 hasProperty("url", is(THE_URL)),
-                hasProperty("statusCode", is(ErrorStatus.INTERNAL_SERVER_ERROR.getCode()))
+                hasProperty("statusCode", is(500))
             )
         ));
     }
@@ -107,11 +106,11 @@ public class ErrorReportingResponseHandlerTest {
             allOf(
                     instanceOf(HttpResponseException.class),
                     hasProperty("url", is(THE_URL)),
-                    hasProperty("statusCode", is(ErrorStatus.BAD_REQUEST.getCode()))
+                    hasProperty("statusCode", is(400))
             ), allOf(
                     instanceOf(HttpResponseException.class),
                     hasProperty("url", is(THE_URL)),
-                    hasProperty("statusCode", is(ErrorStatus.INTERNAL_SERVER_ERROR.getCode()))
+                    hasProperty("statusCode", is(500))
             ), allOf(
                     instanceOf(IOException.class)
             ), allOf(

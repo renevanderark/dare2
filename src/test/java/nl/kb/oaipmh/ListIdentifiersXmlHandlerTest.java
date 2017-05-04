@@ -1,6 +1,5 @@
 package nl.kb.oaipmh;
 
-import nl.kb.dare.model.repository.RepositoryValidatorTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class ListIdentifiersXmlHandlerTest {
     public void setup() throws ParserConfigurationException, SAXException {
 
         saxParser = SAXParserFactory.newInstance().newSAXParser();
-        xmlWithNewlines = RepositoryValidatorTest.class.getResourceAsStream("/oai/response-with-newlines.xml");
+        xmlWithNewlines = ListIdentifiersXmlHandlerTest.class.getResourceAsStream("/oai/response-with-newlines.xml");
     }
 
 
