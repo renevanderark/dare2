@@ -21,17 +21,18 @@ public class LoadRepositoriesTask extends Task {
         final String dateStamp = params.containsKey("datestamp")
                 ? params.get("datestamp").iterator().next() : null;
         Lists.newArrayList(
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Utrecht", "nl_didl_norm", "uu:dare", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Nijmegen", "nl_didl_norm", "ru:col_2066_13799", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Utrecht", "nl_didl_norm", "uu", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Nijmegen", "nl_didl_norm", "ru", dateStamp, false),
             new Repository("http://oai.gharvester.dans.knaw.nl/", "Groningen", "nl_didl_norm", "rug", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Delft", "nl_didl_norm", "tud:A-set", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Leiden", "nl_didl_norm", "ul:hdl_1887_4539", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Delft", "nl_didl_norm", "tud", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Leiden", "nl_didl_norm", "ul", dateStamp, false),
             new Repository("http://oai.gharvester.dans.knaw.nl/", "Maastricht", "nl_didl_norm", "um", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Twente", "nl_didl_norm", "ut:66756C6C746578743D7075626C6963", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "UvA", "nl_didl_norm", "uva:withfulltext:yes", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Tilburg", "nl_didl_norm", "uvt:withfulltext:yes", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Twente", "nl_didl_norm", "ut", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "UvA", "nl_didl_norm", "uva", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Tilburg", "nl_didl_norm", "uvt", dateStamp, false),
             new Repository("http://oai.gharvester.dans.knaw.nl/", "VU", "nl_didl_norm", "vu", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Wageningen", "nl_didl_norm", "wur:publickb", dateStamp, false)
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Wageningen", "nl_didl_norm", "wur", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Rotterdam", "nl_didl_norm", "eur", dateStamp, false)
         ).forEach(this.repositoryDao::insert);
     }
 }
