@@ -13,7 +13,7 @@ import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 
-class SaxParsingResponseHandler extends ErrorReportingResponseHandler  {
+class SaxParsingResponseHandler extends ErrorReportingResponseHandler {
     private final SAXParser saxParser;
 
     {
