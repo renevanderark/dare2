@@ -1,11 +1,11 @@
 server:
   applicationConnectors:
     - type: http
-      port: 8080
+      port: 28080
       bindHost: 127.0.0.1
   adminConnectors:
     - type: http
-      port: 8081
+      port: 28081
   requestLog:
     appenders:
       - type: console
@@ -36,10 +36,10 @@ databaseProvider: mysql
 
 
 appTitle: "Dare dash"
-hostName: localhost:8080
+hostName: localhost:28080
 wsProtocol: ws
-inSampleMode: false
-solrUrl: http://localhost:8983/solr/gettingstarted/update
+inSampleMode: true
+solrUrl: http://localhost:8983/solr/dare2/update
 
 fileStorage:
   storageType: local

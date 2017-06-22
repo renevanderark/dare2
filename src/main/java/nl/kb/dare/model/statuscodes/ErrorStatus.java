@@ -29,10 +29,12 @@ public enum ErrorStatus {
 
     // PROCESSING ERRORS
     UPDATED_DURING_PROCESSING(1001, "record was updated by provider during processing"),
-    DELETED_DURING_PROCESSING(1002, "record was deleted by provider during processing"),
+    READ_TIMEOUT(1002, "read timeout"),
     XML_PARSING_ERROR(1003, "failed to parse XML"),
     IO_EXCEPTION(1004, "I/O exception occurred"),
-    NO_RESOURCES(1005, "record ships no object files");
+    NO_RESOURCES(1005, "record ships no object files"),
+    DELETED_DURING_PROCESSING(1012, "record was deleted by provider during processing");
+
 
     private final int code;
     private final String status;

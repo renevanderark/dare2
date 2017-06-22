@@ -32,7 +32,8 @@ public class LoadRepositoriesTask extends Task {
             new Repository("http://oai.gharvester.dans.knaw.nl/", "Tilburg", "nl_didl_norm", "uvt:publications:withFiles", dateStamp, false),
             new Repository("http://oai.gharvester.dans.knaw.nl/", "VU", "nl_didl_norm", "vu:publications:withFiles", dateStamp, false),
             new Repository("http://oai.gharvester.dans.knaw.nl/", "Wageningen", "nl_didl_norm", "wur:publickb", dateStamp, false),
-            new Repository("http://oai.gharvester.dans.knaw.nl/", "Rotterdam", "nl_didl_norm", "eur", dateStamp, false)
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Rotterdam", "nl_didl_norm", "eur", dateStamp, false),
+            new Repository("http://oai.gharvester.dans.knaw.nl/", "Eindhoven", "nl_didl_norm", "tue:KB", dateStamp, false)
         ).forEach(this.repositoryDao::insert);
     }
 }

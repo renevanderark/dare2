@@ -84,6 +84,11 @@
             <field name="wmpRights_ss"><xsl:value-of select="normalize-space(.)" /></field>
         </xsl:for-each>
 
+        <xsl:for-each select="$md//rdf:type[@rdf:resource='info:eu-repo/semantics/objectFile']/../../../didl:Component/didl:Resource/@mimeType" >
+            <field name="objectFormats_ss"><xsl:value-of select="normalize-space(.)" /></field>
+        </xsl:for-each>
+
+
         <field name="objectCount_i">
             <xsl:value-of select="normalize-space(count($md//rdf:type[@rdf:resource='info:eu-repo/semantics/objectFile']))" />
         </field>
